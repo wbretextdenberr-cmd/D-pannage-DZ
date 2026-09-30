@@ -8,8 +8,29 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout source code
+      - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Extract APK project
+        run: |
+          mkdir -p project
+          unzip -o DEPANNAGE_DZ_APK_READY.zip -d project
+
+      - name: Find Gradle project
+        id: find_project
+        run: |
+          SETTINGS=$(find project -name "settings.gradle" -o -name "settings.gradle.kts" | head -n 1)
+
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: settings.gradle not found inside ZIP"
+            echo "Files extracted:"
+            find project -maxdepth 4 -type f | head -100
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "Found Gradle project at: $PROJECT_DIR"
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -23,11 +44,12 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build APK
+        working-directory: ${{ env.PROJECT_DIR }}
         run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: D-pannage-DZ-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
