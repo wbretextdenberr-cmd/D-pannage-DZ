@@ -79,6 +79,20 @@ font-size:18px;
 box-shadow:0 10px 25px #0003
 }
 
+/* زر الطوارئ الخاص بحوادث المرور */
+.emergency{
+margin:12px 0 0;
+width:100%;
+border:0;
+border-radius:999px;
+padding:14px 16px;
+background:var(--green);
+color:#fff;
+font-weight:900;
+font-size:16px;
+box-shadow:0 8px 20px #12b76a55
+}
+
 .section{padding:18px}
 
 .section h2{
@@ -347,6 +361,10 @@ DÉPANNAGE<span>.DZ</span>
 
 <button class="sos" onclick="openRequest()">
 🚨 اطلب النجدة الآن
+</button>
+
+<button class="emergency" onclick="showToast('سيتم تحديد جهة الطوارئ حسب موقعك')">
+🚨 في حادث مرور؟ اتصل بالطوارئ
 </button>
 
 </header>
