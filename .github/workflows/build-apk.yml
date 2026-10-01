@@ -9,7 +9,6 @@ runs-on: ubuntu-24.04
 
 ```
 steps:
-
   - name: Checkout repository
     uses: actions/checkout@v5
 
@@ -34,18 +33,10 @@ steps:
     run: |
       gradle assembleDebug --stacktrace
 
-  - name: Show generated APK
-    run: |
-      echo "======================================"
-      echo "GENERATED APK FILES:"
-      echo "======================================"
-      find html-app/app/build/outputs/apk -type f -name "*.apk" -print
-
   - name: Upload APK
     uses: actions/upload-artifact@v4
     with:
       name: D-pannage-DZ-HTML-APK
       path: html-app/app/build/outputs/apk/debug/*.apk
       if-no-files-found: error
-      retention-days: 30
 ```
