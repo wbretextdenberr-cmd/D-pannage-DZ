@@ -104,6 +104,8 @@ margin-top:5px;
 font-size:12px;
 }
 
+/* الخريطة التجريبية الحالية */
+
 .map{
 height:230px;
 background:
@@ -161,7 +163,7 @@ border-radius:12px;
 font-size:11px;
 z-index:3;
 box-shadow:0 2px 8px rgba(0,0,0,.1);
-max-width:75%;
+max-width:78%;
 }
 
 .pin{
@@ -172,6 +174,22 @@ transform:translate(-50%,-50%);
 font-size:42px;
 z-index:4;
 filter:drop-shadow(0 3px 3px rgba(0,0,0,.25));
+}
+
+.pin.active{
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{
+transform:translate(-50%,-50%) scale(1);
+}
+50%{
+transform:translate(-50%,-50%) scale(1.18);
+}
+100%{
+transform:translate(-50%,-50%) scale(1);
+}
 }
 
 .list{
@@ -296,7 +314,8 @@ background:#eef1f4;
 color:#17202a;
 }
 
-input,select{
+input,
+select{
 width:100%;
 padding:14px;
 border:1px solid #d1d5db;
@@ -380,6 +399,7 @@ transform:translateX(-50%) translateY(0);
 </button>
 
 <section class="section">
+
 <h2>ماذا تحتاج؟</h2>
 
 <div class="services">
@@ -409,9 +429,12 @@ transform:translateX(-50%) translateY(0);
 </div>
 
 </div>
+
 </section>
 
+
 <section class="section">
+
 <h2>موقعك</h2>
 
 <div class="map">
@@ -420,27 +443,40 @@ transform:translateX(-50%) translateY(0);
 📍 لم يتم تحديد موقعك بعد
 </span>
 
-<div class="pin">📍</div>
+<div class="pin" id="mapPin">
+📍
+</div>
 
 <div class="location-info" id="locationInfo">
-اضغط «أقرب قاطر إليّ» للسماح للتطبيق بتحديد موقعك.
+اضغط «أريد أقرب قاطر إليّ» لتحديد موقعك.
 </div>
 
 </div>
+
 </section>
+
 
 <section id="providers" class="section hidden">
 
 <div class="row">
-<h2 id="providerTitle">مقدمو الخدمة</h2>
-<button class="back" onclick="hideProviders()">×</button>
+
+<h2 id="providerTitle">
+مقدمو الخدمة
+</h2>
+
+<button class="back" onclick="hideProviders()">
+×
+</button>
+
 </div>
 
-<div id="providerList" class="list"></div>
+<div id="providerList" class="list">
+</div>
 
 </section>
 
 </main>
+
 
 <div class="bottom-nav">
 
@@ -449,7 +485,7 @@ transform:translateX(-50%) translateY(0);
 الرئيسية
 </button>
 
-<button class="nav-btn" onclick="showProviders('الخدمات القريبة')">
+<button class="nav-btn" onclick="findNearby()">
 <span>📍</span>
 القريب
 </button>
@@ -467,7 +503,7 @@ transform:translateX(-50%) translateY(0);
 </div>
 
 
-<!-- TOW MODAL -->
+<!-- نافذة قطر السيارات -->
 
 <div id="towModal" class="modal">
 
@@ -492,36 +528,74 @@ transform:translateX(-50%) translateY(0);
 </button>
 
 </div>
+
 </div>
 
 
-<!-- REQUEST MODAL -->
+<!-- نافذة الطلب -->
 
 <div id="requestModal" class="modal">
 
 <div class="sheet">
 
-<h2 id="requestTitle">طلب خدمة</h2>
+<h2 id="requestTitle">
+طلب خدمة
+</h2>
 
 <div class="form-group">
-<label>نوع السيارة</label>
+
+<label>
+نوع السيارة
+</label>
+
 <select id="vehicleType">
-<option>سيارة سياحية</option>
-<option>سيارة نفعية</option>
-<option>شاحنة</option>
-<option>دراجة نارية</option>
+
+<option>
+سيارة سياحية
+</option>
+
+<option>
+سيارة نفعية
+</option>
+
+<option>
+شاحنة
+</option>
+
+<option>
+دراجة نارية
+</option>
+
 </select>
+
 </div>
 
-<div class="form-group">
-<label>المشكلة أو الطلب</label>
-<input id="problem" placeholder="اكتب وصفاً مختصراً">
-</div>
 
 <div class="form-group">
-<label>الوجهة</label>
-<input id="destination" placeholder="مثلاً: المنزل، الورشة...">
+
+<label>
+المشكلة أو الطلب
+</label>
+
+<input
+id="problem"
+placeholder="اكتب وصفاً مختصراً">
+
 </div>
+
+
+<div class="form-group">
+
+<label>
+الوجهة
+</label>
+
+<input
+id="destination"
+placeholder="مثلاً: المنزل، الورشة...">
+
+</div>
+
 
 <button class="primary" onclick="submitRequest()">
 إرسال الطلب
@@ -532,6 +606,7 @@ transform:translateX(-50%) translateY(0);
 </button>
 
 </div>
+
 </div>
 
 
@@ -540,35 +615,91 @@ transform:translateX(-50%) translateY(0);
 
 <script>
 
+/* =====================================================
+   المتغيرات
+===================================================== */
+
 let currentLocation = null;
+
+
+/* =====================================================
+   بيانات مقدمي الخدمة
+===================================================== */
 
 const providers = {
 
 "ورشة متنقلة":[
-['ورشة متنقلة السريع','4.8','97','3.1 كم','0551000111'],
-['ميكانيكي الطريق','4.6','61','5.2 كم','0661000222']
+
+[
+'ورشة متنقلة السريع',
+'4.8',
+'97',
+'3.1 كم',
+'0551000111'
+],
+
+[
+'ميكانيكي الطريق',
+'4.6',
+'61',
+'5.2 كم',
+'0661000222'
+]
+
 ],
 
 "قطع الغيار":[
-['قطع غيار DZ','4.7','143','2.8 كم','0550000333'],
-['Auto Parts Blida','4.5','72','6.0 كم','0660000444']
+
+[
+'قطع غيار DZ',
+'4.7',
+'143',
+'2.8 كم',
+'0550000333'
+],
+
+[
+'Auto Parts Blida',
+'4.5',
+'72',
+'6.0 كم',
+'0660000444'
+]
+
 ],
 
 "الخدمات القريبة":[
-['قاطر المدينة','4.9','126','2.4 كم','0550000000'],
-['نجدة الطريق','4.7','84','4.1 كم','0660000000']
+
+[
+'قاطر المدينة',
+'4.9',
+'126',
+'2.4 كم',
+'0550000000'
+],
+
+[
+'نجدة الطريق',
+'4.7',
+'84',
+'4.1 كم',
+'0660000000'
+]
+
 ]
 
 };
 
 
-/* =========================
+/* =====================================================
    الطوارئ
-========================= */
+===================================================== */
 
 function emergencyCall(){
 
-showToast('جاري فتح الاتصال بالحماية المدنية...');
+showToast(
+'جاري فتح الاتصال بالحماية المدنية...'
+);
 
 setTimeout(function(){
 
@@ -579,70 +710,85 @@ window.location.href='tel:14';
 }
 
 
-/* =========================
-   قطر السيارات
-========================= */
+/* =====================================================
+   فتح خيارات القطر
+===================================================== */
 
 function openTowOptions(){
 
-document
-.getElementById('towModal')
-.classList
-.add('open');
+const modal =
+document.getElementById('towModal');
+
+if(modal){
+
+modal.classList.add('open');
 
 }
 
+}
+
+
+/* =====================================================
+   إغلاق خيارات القطر
+===================================================== */
 
 function closeTowOptions(){
 
-document
-.getElementById('towModal')
-.classList
-.remove('open');
+const modal =
+document.getElementById('towModal');
+
+if(modal){
+
+modal.classList.remove('open');
+
+}
 
 }
 
 
-/* =========================
-   تحديد الموقع الحقيقي
-========================= */
+/* =====================================================
+   طلب أقرب قاطر
+===================================================== */
 
 function requestNearestTow(){
 
 closeTowOptions();
 
-getRealLocation(function(){
+showToast(
+'📍 جاري تحديد موقعك...'
+);
 
-showToast('📍 تم تحديد موقعك بنجاح');
-
-setTimeout(function(){
-
-showProviders('الخدمات القريبة']);
-
-},700);
-
-});
+getRealLocation();
 
 }
 
 
-function getRealLocation(callback){
+/* =====================================================
+   تحديد الموقع الحقيقي
+===================================================== */
+
+function getRealLocation(){
 
 if(!navigator.geolocation){
 
-showToast('هذا الهاتف أو المتصفح لا يدعم تحديد الموقع');
+showToast(
+'⚠️ هاتفك لا يدعم تحديد الموقع.'
+);
 
 return;
 
 }
 
-showToast('📍 نطلب إذن تحديد موقعك...');
+
+/*
+   نطلب الموقع الحقيقي من نظام الهاتف
+*/
 
 navigator.geolocation.getCurrentPosition(
 
 function(position){
 
-currentLocation = {
+currentLocation={
 
 lat:position.coords.latitude,
 
@@ -652,47 +798,78 @@ accuracy:position.coords.accuracy
 
 };
 
+
+/*
+   تحديث الخريطة والبيانات
+*/
+
 updateLocationDisplay();
 
-if(typeof callback === 'function'){
 
-callback();
+/*
+   رسالة نجاح
+*/
 
-}
+showToast(
+'✅ تم تحديد موقعك بنجاح'
+);
+
+
+/*
+   بعد نجاح تحديد الموقع
+   نظهر مقدمي خدمة القطر
+*/
+
+setTimeout(function(){
+
+showProviders(
+'الخدمات القريبة'
+);
+
+},800);
 
 },
 
+
 function(error){
 
-let message='تعذر تحديد موقعك';
+let message='⚠️ تعذر تحديد موقعك.';
+
 
 if(error.code===1){
 
-message='⚠️ تم رفض إذن تحديد الموقع. فعّل الموقع من إعدادات الهاتف.';
+message=
+'⚠️ تم رفض إذن الموقع. فعّل الموقع من إعدادات الهاتف ثم حاول مرة أخرى.';
 
 }
+
 
 else if(error.code===2){
 
-message='📍 تعذر العثور على موقعك حالياً.';
+message=
+'📍 الهاتف لم يتمكن من تحديد موقعك حالياً.';
 
 }
+
 
 else if(error.code===3){
 
-message='⏳ انتهت مهلة تحديد الموقع. حاول مرة أخرى.';
+message=
+'⏳ انتهت مهلة تحديد الموقع. حاول مرة أخرى.';
 
 }
+
 
 showToast(message);
 
 },
 
+
 {
 
 enableHighAccuracy:true,
 
-timeout:15000,
+timeout:20000,
 
 maximumAge:0
 
@@ -703,17 +880,27 @@ maximumAge:0
 }
 
 
-/* =========================
-   عرض الموقع
-========================= */
+/* =====================================================
+   تحديث عرض الموقع
+===================================================== */
 
 function updateLocationDisplay(){
 
 const status =
-document.getElementById('locationStatus');
+document.getElementById(
+'locationStatus'
+);
 
 const info =
-document.getElementById('locationInfo');
+document.getElementById(
+'locationInfo'
+);
+
+const pin =
+document.getElementById(
+'mapPin'
+);
+
 
 if(!currentLocation){
 
@@ -721,109 +908,240 @@ return;
 
 }
 
-status.innerText='📍 تم تحديد موقعك';
+
+/*
+   حالة الموقع
+*/
+
+status.innerText=
+'📍 تم تحديد موقعك';
+
+
+/*
+   معلومات الموقع
+*/
 
 info.innerText=
-'تم تحديد موقعك الحقيقي. الدقة التقريبية: '+
-Math.round(currentLocation.accuracy)+
+'موقعك محدد بدقة تقريبية '+
+Math.round(
+currentLocation.accuracy
+)+
 ' متر';
 
-}
 
+/*
+   تحريك علامة الموقع بصرياً
+*/
 
-/* =========================
-   وجهة القطر
-========================= */
+if(pin){
 
-function chooseTowDestination(){
-
-closeTowOptions();
-
-openRequest('قطر السيارات');
-
-showToast('📍 حدد وجهة نقل سيارتك في الطلب');
+pin.classList.add('active');
 
 }
 
 
-/* =========================
-   نافذة الطلب
-========================= */
+/*
+   عرض الإحداثيات في وحدة التحكم
+   لأغراض الاختبار فقط
+*/
 
-function openRequest(type){
+console.log(
+'Latitude:',
+currentLocation.lat
+);
 
-document.getElementById('requestTitle').innerText=
-'طلب '+type;
+console.log(
+'Longitude:',
+currentLocation.lng
+);
 
-document
-.getElementById('requestModal')
-.classList
-.add('open');
-
-}
-
-
-function closeModal(){
-
-document
-.getElementById('requestModal')
-.classList
-.remove('open');
+console.log(
+'Accuracy:',
+currentLocation.accuracy
+);
 
 }
 
 
-function submitRequest(){
+/* =====================================================
+   زر القريب في القائمة السفلية
+===================================================== */
 
-const problem =
-document.getElementById('problem').value.trim();
+function findNearby(){
 
-const destination =
-document.getElementById('destination').value.trim();
+if(currentLocation){
 
-if(!problem){
-
-showToast('يرجى وصف المشكلة أو الطلب');
+showProviders(
+'الخدمات القريبة'
+);
 
 return;
 
 }
 
-closeModal();
+showToast(
+'📍 جاري تحديد موقعك...'
+);
 
-showToast('✅ تم تجهيز طلبك بنجاح');
+getRealLocation();
 
 }
 
 
-/* =========================
-   مقدمو الخدمة
-========================= */
+/* =====================================================
+   تحديد وجهة القطر
+===================================================== */
+
+function chooseTowDestination(){
+
+closeTowOptions();
+
+openRequest(
+'قطر السيارات'
+);
+
+showToast(
+'📍 حدد وجهة نقل سيارتك في الطلب'
+);
+
+}
+
+
+/* =====================================================
+   نافذة الطلب
+===================================================== */
+
+function openRequest(type){
+
+const title =
+document.getElementById(
+'requestTitle'
+);
+
+const modal =
+document.getElementById(
+'requestModal'
+);
+
+if(title){
+
+title.innerText=
+'طلب '+type;
+
+}
+
+if(modal){
+
+modal.classList.add('open');
+
+}
+
+}
+
+
+/* =====================================================
+   إغلاق نافذة الطلب
+===================================================== */
+
+function closeModal(){
+
+const modal =
+document.getElementById(
+'requestModal'
+);
+
+if(modal){
+
+modal.classList.remove('open');
+
+}
+
+}
+
+
+/* =====================================================
+   إرسال الطلب
+===================================================== */
+
+function submitRequest(){
+
+const problem =
+document.getElementById(
+'problem'
+).value.trim();
+
+
+if(!problem){
+
+showToast(
+'يرجى وصف المشكلة أو الطلب'
+);
+
+return;
+
+}
+
+
+closeModal();
+
+showToast(
+'✅ تم تجهيز طلبك بنجاح'
+);
+
+}
+
+
+/* =====================================================
+   عرض مقدمي الخدمة
+===================================================== */
 
 function showProviders(type){
 
 const section =
-document.getElementById('providers');
+document.getElementById(
+'providers'
+);
 
 const title =
-document.getElementById('providerTitle');
+document.getElementById(
+'providerTitle'
+);
 
 const list =
-document.getElementById('providerList');
+document.getElementById(
+'providerList'
+);
 
-title.innerText=type;
+
+if(!section || !title || !list){
+
+return;
+
+}
+
+
+title.innerText=
+type;
+
 
 list.innerHTML='';
 
+
 const data =
-providers[type] || providers['الخدمات القريبة'];
+providers[type] ||
+providers['الخدمات القريبة'];
+
 
 data.forEach(function(p){
 
 const item =
-document.createElement('div');
+document.createElement(
+'div'
+);
 
-item.className='provider';
+item.className=
+'provider';
+
 
 item.innerHTML=
 
@@ -833,14 +1151,19 @@ item.innerHTML=
 p[0]+
 '</div>'+
 
-'<div class="rating">⭐ '+p[1]+
-' ('+p[2]+')'+
+'<div class="rating">'+
+'⭐ '+
+p[1]+
+' ('+
+p[2]+
+')'+
 '</div>'+
 
 '</div>'+
 
 '<div class="provider-meta">'+
-'📍 المسافة التجريبية: '+p[3]+
+'📍 المسافة الحالية: '+
+p[3]+
 '</div>'+
 
 '<button class="call" onclick="callProvider(\''+
@@ -851,93 +1174,137 @@ p[4]+
 
 '</button>';
 
+
 list.appendChild(item);
 
 });
 
-section.classList.remove('hidden');
+
+section.classList.remove(
+'hidden'
+);
+
 
 section.scrollIntoView({
+
 behavior:'smooth'
+
 });
 
 }
 
 
-/* =========================
+/* =====================================================
    إخفاء مقدمي الخدمة
-========================= */
+===================================================== */
 
 function hideProviders(){
 
-document
-.getElementById('providers')
-.classList
-.add('hidden');
+const section =
+document.getElementById(
+'providers'
+);
+
+if(section){
+
+section.classList.add(
+'hidden'
+);
+
+}
 
 }
 
 
-/* =========================
+/* =====================================================
    الاتصال بالمزود
-========================= */
+===================================================== */
 
 function callProvider(number){
 
-window.location.href='tel:'+number;
+window.location.href=
+'tel:'+number;
 
 }
 
 
-/* =========================
-   الرئيسية
-========================= */
+/* =====================================================
+   العودة للرئيسية
+===================================================== */
 
 function home(){
 
 hideProviders();
 
 window.scrollTo({
+
 top:0,
+
 behavior:'smooth'
+
 });
 
 }
 
 
-/* =========================
-   الرسائل
-========================= */
+/* =====================================================
+   الرسائل المنبثقة
+===================================================== */
 
 let toastTimer;
+
 
 function showToast(message){
 
 const toast =
-document.getElementById('toast');
+document.getElementById(
+'toast'
+);
 
-toast.innerText=message;
 
-toast.classList.add('show');
+if(!toast){
 
-clearTimeout(toastTimer);
-
-toastTimer=setTimeout(function(){
-
-toast.classList.remove('show');
-
-},3500);
+return;
 
 }
 
 
-/* =========================
+toast.innerText=
+message;
+
+
+toast.classList.add(
+'show'
+);
+
+
+clearTimeout(
+toastTimer
+);
+
+
+toastTimer=
+setTimeout(function(){
+
+toast.classList.remove(
+'show'
+);
+
+},4000);
+
+}
+
+
+/* =====================================================
    Service Worker
-========================= */
+===================================================== */
 
-if('serviceWorker' in navigator){
+if(
+'serviceWorker' in navigator
+){
 
-navigator.serviceWorker.register('sw.js')
+navigator.serviceWorker
+.register('sw.js')
 .catch(function(error){
 
 console.log(
