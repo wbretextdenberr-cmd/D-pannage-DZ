@@ -1,4 +1,3 @@
-```java
 package dz.depannage.app;
 
 import android.Manifest;
@@ -44,10 +43,12 @@ public class MainActivity extends Activity {
                     String origin,
                     GeolocationPermissions.Callback callback) {
 
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                if (checkSelfPermission(
+                        Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED
                         ||
-                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    checkSelfPermission(
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {
 
                     callback.invoke(origin, true, false);
@@ -100,11 +101,10 @@ public class MainActivity extends Activity {
 
             try {
 
-                Intent intent =
-                        new Intent(
-                                Intent.ACTION_DIAL,
-                                Uri.parse(url)
-                        );
+                Intent intent = new Intent(
+                        Intent.ACTION_DIAL,
+                        Uri.parse(url)
+                );
 
                 startActivity(intent);
 
@@ -136,7 +136,6 @@ public class MainActivity extends Activity {
             for (int result : grantResults) {
 
                 if (result == PackageManager.PERMISSION_GRANTED) {
-
                     granted = true;
                     break;
                 }
@@ -169,4 +168,3 @@ public class MainActivity extends Activity {
         }
     }
 }
-```
