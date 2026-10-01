@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
@@ -29,7 +28,7 @@ font-family:Arial,"Noto Sans Arabic",sans-serif;
 color:var(--ink)
 }
 
-button,input{font:inherit}
+button,input,select,textarea{font:inherit}
 
 .app{
 max-width:520px;
@@ -81,9 +80,7 @@ box-shadow:0 10px 25px #0003;
 cursor:pointer
 }
 
-.sos:active{
-transform:scale(.98)
-}
+.sos:active{transform:scale(.98)}
 
 .section{padding:18px}
 
@@ -114,9 +111,7 @@ justify-content:space-between;
 cursor:pointer
 }
 
-.service:active{
-transform:scale(.98)
-}
+.service:active{transform:scale(.98)}
 
 .ico{font-size:30px}
 
@@ -215,9 +210,7 @@ font-weight:800;
 cursor:pointer
 }
 
-.call:active{
-transform:scale(.96)
-}
+.call:active{transform:scale(.96)}
 
 .nav{
 position:fixed;
@@ -292,7 +285,8 @@ border-radius:14px;
 background:#0b1324;
 color:#fff;
 font-weight:900;
-cursor:pointer
+cursor:pointer;
+margin-top:16px
 }
 
 .secondary{
@@ -344,7 +338,6 @@ cursor:pointer
 
 .hidden{display:none}
 </style>
-
 </head>
 
 <body>
@@ -366,8 +359,6 @@ DÉPANNAGE<span>.DZ</span>
 نوصلك بمن يستطيع مساعدتك.
 </div>
 
-<!-- زر الطوارئ أصبح يعمل فعليًا -->
-
 <button class="sos" onclick="emergencyCall()">
 🚨 اتصل بالطوارئ الآن
 </button>
@@ -380,7 +371,9 @@ DÉPANNAGE<span>.DZ</span>
 
 <div class="grid">
 
-<div class="card service" onclick="openRequest('قطر السيارات')">
+<!-- قطر السيارات أصبح يفتح خيارات القطر -->
+
+<div class="card service" onclick="openTowOptions()">
 <div class="ico">🚗</div>
 <b>قطر السيارات</b>
 <small>قاطر قريب منك</small>
@@ -535,8 +528,6 @@ DÉPANNAGE<span>.DZ</span>
 <span>قريب مني</span>
 </button>
 
-<!-- زر النجدة السفلي أصبح اتصالًا حقيقيًا -->
-
 <button onclick="emergencyCall()">
 🚨
 <span>طوارئ</span>
@@ -550,6 +541,38 @@ DÉPANNAGE<span>.DZ</span>
 </nav>
 
 </main>
+
+
+<!-- نافذة خيارات قطر السيارات -->
+
+<div id="towModal" class="modal">
+
+<div class="sheet">
+
+<h2>🚗 خدمة قطر السيارات</h2>
+
+<div class="muted">
+كيف تريد الحصول على خدمة القطر؟
+</div>
+
+<button class="primary" onclick="requestNearestTow()">
+🚗 أريد أقرب قاطر إليّ
+</button>
+
+<button class="secondary" onclick="chooseTowDestination()">
+📍 أريد نقل السيارة إلى وجهة أحددها
+</button>
+
+<button class="secondary" onclick="closeTowOptions()">
+إلغاء
+</button>
+
+</div>
+
+</div>
+
+
+<!-- نافذة طلب النجدة -->
 
 <div id="modal" class="modal">
 
@@ -603,6 +626,7 @@ placeholder="النوع والموديل، مثلاً Golf 5 1.9 TDI">
 
 <div id="toast" class="toast"></div>
 
+
 <script>
 
 const providers={
@@ -627,7 +651,6 @@ const providers={
 
 /* =========================================
    الطوارئ الجزائرية
-   14 = الحماية المدنية
    ========================================= */
 
 function emergencyCall(){
@@ -644,15 +667,73 @@ window.location.href='tel:14';
 
 
 /* =========================================
-   طلب النجدة الخاص بالتطبيق
+   خيارات قطر السيارات
+   ========================================= */
+
+function openTowOptions(){
+
+document
+.getElementById('towModal')
+.classList
+.add('open');
+
+}
+
+
+function closeTowOptions(){
+
+document
+.getElementById('towModal')
+.classList
+.remove('open');
+
+}
+
+
+function requestNearestTow(){
+
+closeTowOptions();
+
+showToast('📍 جاري البحث عن أقرب قاطر إليك...');
+
+setTimeout(function(){
+
+showProviders('الخدمات القريبة');
+
+},700);
+
+}
+
+
+function chooseTowDestination(){
+
+closeTowOptions();
+
+openRequest('قطر السيارات');
+
+showToast('📍 حدد وجهة نقل سيارتك في الطلب');
+
+}
+
+
+/* =========================================
+   طلب النجدة
    ========================================= */
 
 function openRequest(type){
 
-document.getElementById('modal').classList.add('open');
+document
+.getElementById('modal')
+.classList
+.add('open');
 
-if(type)
-document.getElementById('service').value=type;
+if(type){
+
+document
+.getElementById('service')
+.value=type;
+
+}
 
 }
 
@@ -663,7 +744,10 @@ document.getElementById('service').value=type;
 
 function closeModal(){
 
-document.getElementById('modal').classList.remove('open');
+document
+.getElementById('modal')
+.classList
+.remove('open');
 
 }
 
