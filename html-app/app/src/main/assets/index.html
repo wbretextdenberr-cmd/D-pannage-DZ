@@ -1,5 +1,5 @@
-```html
 <!doctype html>
+
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
@@ -383,6 +383,7 @@ opacity:1;
 transform:translateX(-50%) translateY(0);
 }
 </style>
+
 </head>
 
 <body>
@@ -410,7 +411,7 @@ transform:translateX(-50%) translateY(0);
 <small>قاطر قريب منك</small>
 </div>
 
-<div class="card service" onclick="openRequest('قطر الشاحنات')">
+<div class="card service" onclick="openTruckRequest()">
 <div class="ico">🚛</div>
 <b>قطر الشاحنات</b>
 <small>خدمة للمركبات الثقيلة</small>
@@ -431,7 +432,6 @@ transform:translateX(-50%) translateY(0);
 </div>
 
 </section>
-
 
 <section class="section">
 
@@ -455,7 +455,6 @@ transform:translateX(-50%) translateY(0);
 
 </section>
 
-
 <section id="providers" class="section hidden">
 
 <div class="row">
@@ -464,7 +463,7 @@ transform:translateX(-50%) translateY(0);
 مقدمو الخدمة
 </h2>
 
-<button class="back" onclick="hideProviders()">
+<button class="back" onclick="hideProviders">
 ×
 </button>
 
@@ -476,7 +475,6 @@ transform:translateX(-50%) translateY(0);
 </section>
 
 </main>
-
 
 <div class="bottom-nav">
 
@@ -501,7 +499,6 @@ transform:translateX(-50%) translateY(0);
 </button>
 
 </div>
-
 
 <!-- نافذة قطر السيارات -->
 
@@ -531,7 +528,6 @@ transform:translateX(-50%) translateY(0);
 
 </div>
 
-
 <!-- نافذة الطلب -->
 
 <div id="requestModal" class="modal">
@@ -542,6 +538,10 @@ transform:translateX(-50%) translateY(0);
 طلب خدمة
 </h2>
 
+<div class="muted" id="requestDescription">
+أدخل معلومات الطلب ثم أرسله.
+</div>
+
 <div class="form-group">
 
 <label>
@@ -550,26 +550,25 @@ transform:translateX(-50%) translateY(0);
 
 <select id="vehicleType">
 
-<option>
+<option value="سيارة سياحية">
 سيارة سياحية
 </option>
 
-<option>
+<option value="سيارة نفعية">
 سيارة نفعية
 </option>
 
-<option>
+<option value="شاحنة">
 شاحنة
 </option>
 
-<option>
+<option value="دراجة نارية">
 دراجة نارية
 </option>
 
 </select>
 
 </div>
-
 
 <div class="form-group">
 
@@ -583,7 +582,6 @@ placeholder="اكتب وصفاً مختصراً">
 
 </div>
 
-
 <div class="form-group">
 
 <label>
@@ -595,7 +593,6 @@ id="destination"
 placeholder="مثلاً: المنزل، الورشة...">
 
 </div>
-
 
 <button class="primary" onclick="submitRequest()">
 إرسال الطلب
@@ -609,9 +606,7 @@ placeholder="مثلاً: المنزل، الورشة...">
 
 </div>
 
-
 <div id="toast" class="toast"></div>
-
 
 <script>
 
@@ -764,6 +759,79 @@ getRealLocation();
 
 
 /* =====================================================
+   طلب قطر الشاحنات
+===================================================== */
+
+function openTruckRequest(){
+
+const title =
+document.getElementById('requestTitle');
+
+const description =
+document.getElementById('requestDescription');
+
+const vehicle =
+document.getElementById('vehicleType');
+
+const problem =
+document.getElementById('problem');
+
+const destination =
+document.getElementById('destination');
+
+const modal =
+document.getElementById('requestModal');
+
+
+if(title){
+
+title.innerText=
+'🚛 طلب قطر شاحنة';
+
+}
+
+if(description){
+
+description.innerText=
+'أدخل معلومات الشاحنة ومكان/وجهة القطر لإرسال طلبك.';
+
+}
+
+if(vehicle){
+
+vehicle.value=
+'شاحنة';
+
+}
+
+if(problem){
+
+problem.value='';
+
+problem.placeholder=
+'مثلاً: عطل في المحرك، إطار، حادث...';
+
+}
+
+if(destination){
+
+destination.value='';
+
+destination.placeholder=
+'مثلاً: الورشة أو المكان المطلوب نقل الشاحنة إليه';
+
+}
+
+if(modal){
+
+modal.classList.add('open');
+
+}
+
+}
+
+
+/* =====================================================
    تحديد الموقع الحقيقي
 ===================================================== */
 
@@ -780,10 +848,6 @@ return;
 }
 
 
-/*
-   نطلب الموقع الحقيقي من نظام الهاتف
-*/
-
 navigator.geolocation.getCurrentPosition(
 
 function(position){
@@ -799,26 +863,13 @@ accuracy:position.coords.accuracy
 };
 
 
-/*
-   تحديث الخريطة والبيانات
-*/
-
 updateLocationDisplay();
 
-
-/*
-   رسالة نجاح
-*/
 
 showToast(
 '✅ تم تحديد موقعك بنجاح'
 );
 
-
-/*
-   بعد نجاح تحديد الموقع
-   نظهر مقدمي خدمة القطر
-*/
 
 setTimeout(function(){
 
@@ -833,7 +884,8 @@ showProviders(
 
 function(error){
 
-let message='⚠️ تعذر تحديد موقعك.';
+let message=
+'⚠️ تعذر تحديد موقعك.';
 
 
 if(error.code===1){
@@ -909,17 +961,9 @@ return;
 }
 
 
-/*
-   حالة الموقع
-*/
-
 status.innerText=
 '📍 تم تحديد موقعك';
 
-
-/*
-   معلومات الموقع
-*/
 
 info.innerText=
 'موقعك محدد بدقة تقريبية '+
@@ -929,21 +973,12 @@ currentLocation.accuracy
 ' متر';
 
 
-/*
-   تحريك علامة الموقع بصرياً
-*/
-
 if(pin){
 
 pin.classList.add('active');
 
 }
 
-
-/*
-   عرض الإحداثيات في وحدة التحكم
-   لأغراض الاختبار فقط
-*/
 
 console.log(
 'Latitude:',
@@ -964,7 +999,7 @@ currentLocation.accuracy
 
 
 /* =====================================================
-   زر القريب في القائمة السفلية
+   زر القريب
 ===================================================== */
 
 function findNearby(){
@@ -1008,7 +1043,7 @@ showToast(
 
 
 /* =====================================================
-   نافذة الطلب
+   نافذة الطلب العامة
 ===================================================== */
 
 function openRequest(type){
@@ -1018,15 +1053,68 @@ document.getElementById(
 'requestTitle'
 );
 
+const description =
+document.getElementById(
+'requestDescription'
+);
+
+const vehicle =
+document.getElementById(
+'vehicleType'
+);
+
+const problem =
+document.getElementById(
+'problem'
+);
+
+const destination =
+document.getElementById(
+'destination'
+);
+
 const modal =
 document.getElementById(
 'requestModal'
 );
 
+
 if(title){
 
 title.innerText=
 'طلب '+type;
+
+}
+
+if(description){
+
+description.innerText=
+'أدخل معلومات الطلب ثم أرسله.';
+
+}
+
+if(vehicle){
+
+vehicle.value=
+'سيارة سياحية';
+
+}
+
+if(problem){
+
+problem.value='';
+
+problem.placeholder=
+'اكتب وصفاً مختصراً';
+
+}
+
+if(destination){
+
+destination.value='';
+
+destination.placeholder=
+'مثلاً: المنزل، الورشة...';
 
 }
 
@@ -1070,6 +1158,16 @@ document.getElementById(
 'problem'
 ).value.trim();
 
+const vehicle =
+document.getElementById(
+'vehicleType'
+).value;
+
+const destination =
+document.getElementById(
+'destination'
+).value.trim();
+
 
 if(!problem){
 
@@ -1084,9 +1182,20 @@ return;
 
 closeModal();
 
+
+if(vehicle==='شاحنة'){
+
+showToast(
+'🚛 تم تجهيز طلب قطر الشاحنة بنجاح'
+);
+
+}else{
+
 showToast(
 '✅ تم تجهيز طلبك بنجاح'
 );
+
+}
 
 }
 
@@ -1320,4 +1429,3 @@ error
 
 </body>
 </html>
-```
