@@ -1,1427 +1,1092 @@
 <!doctype html>
-
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>DÉPANNAGE.DZ</title>
 
 <style>
 *{
-box-sizing:border-box;
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,Tahoma,sans-serif;
 }
 
 body{
-margin:0;
-font-family:Arial,Tahoma,sans-serif;
-background:#f5f7fa;
-color:#17202a;
+    background:#f4f6f8;
+    color:#17202a;
+    min-height:100vh;
 }
 
 header{
-background:#111827;
-color:white;
-padding:18px 16px;
-text-align:center;
+    background:#111827;
+    color:white;
+    padding:18px 16px;
+    text-align:center;
+    position:relative;
 }
 
-.logo{
-font-size:25px;
-font-weight:bold;
-letter-spacing:1px;
+header h1{
+    font-size:25px;
+    letter-spacing:.5px;
 }
 
-.subtitle{
-font-size:13px;
-opacity:.75;
-margin-top:5px;
-}
-
-main{
-padding:16px;
-padding-bottom:90px;
+header p{
+    margin-top:5px;
+    color:#cbd5e1;
+    font-size:13px;
 }
 
 .sos{
-width:100%;
-border:0;
-border-radius:16px;
-padding:17px;
-background:#f4c430;
-color:#111;
-font-size:17px;
-font-weight:bold;
-margin-bottom:18px;
-box-shadow:0 4px 12px rgba(0,0,0,.12);
+    position:absolute;
+    left:12px;
+    top:13px;
+    background:#dc2626;
+    color:white;
+    border:0;
+    border-radius:50%;
+    width:48px;
+    height:48px;
+    font-size:22px;
+    box-shadow:0 3px 8px #0004;
 }
 
-.section{
-margin-top:18px;
+.container{
+    padding:15px;
+    padding-bottom:90px;
 }
 
-.section h2{
-font-size:19px;
-margin:0 0 12px;
+.section-title{
+    font-size:18px;
+    font-weight:bold;
+    margin:12px 0;
 }
 
 .services{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
 }
 
 .card{
-background:white;
-border-radius:17px;
-padding:17px 12px;
-box-shadow:0 3px 12px rgba(0,0,0,.07);
+    background:white;
+    border-radius:18px;
+    padding:18px 10px;
+    text-align:center;
+    box-shadow:0 3px 12px #00000012;
+    border:1px solid #e5e7eb;
+    min-height:130px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
 }
 
-.service{
-cursor:pointer;
-text-align:center;
+.card:active{
+    transform:scale(.97);
 }
 
-.service:active{
-transform:scale(.98);
+.card .icon{
+    font-size:38px;
+    margin-bottom:9px;
 }
 
-.ico{
-font-size:35px;
-margin-bottom:8px;
+.card h3{
+    font-size:16px;
 }
 
-.service b{
-display:block;
-font-size:15px;
+.card p{
+    color:#64748b;
+    font-size:12px;
+    margin-top:5px;
 }
-
-.service small{
-display:block;
-color:#6b7280;
-margin-top:5px;
-font-size:12px;
-}
-
-/* الخريطة التجريبية الحالية */
 
 .map{
-height:230px;
-background:
-linear-gradient(30deg,#dfe5e8 12%,transparent 12.5%,transparent 87%,#dfe5e8 87.5%),
-linear-gradient(150deg,#dfe5e8 12%,transparent 12.5%,transparent 87%,#dfe5e8 87.5%),
-#eef2f3;
-background-size:45px 45px;
-border-radius:18px;
-position:relative;
-overflow:hidden;
-border:1px solid #d8dee3;
+    margin-top:18px;
+    height:190px;
+    background:
+      linear-gradient(#0000 95%,#ffffff55 95%),
+      linear-gradient(90deg,#0000 95%,#ffffff55 95%),
+      #dbe7d1;
+    background-size:40px 40px;
+    border-radius:18px;
+    position:relative;
+    overflow:hidden;
+    border:1px solid #d1d5db;
 }
 
-.map::before,
-.map::after{
-content:"";
-position:absolute;
-background:#fff;
-opacity:.9;
+.road{
+    position:absolute;
+    background:#f8fafc;
+    transform:rotate(-18deg);
+    width:140%;
+    height:34px;
+    top:75px;
+    left:-20%;
+    border-top:3px solid #cbd5e1;
+    border-bottom:3px solid #cbd5e1;
 }
 
-.map::before{
-width:100%;
-height:14px;
-top:75px;
-transform:rotate(-12deg);
+.location-dot{
+    position:absolute;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#2563eb;
+    border:4px solid white;
+    box-shadow:0 2px 7px #0005;
+    top:78px;
+    left:48%;
 }
 
-.map::after{
-height:100%;
-width:14px;
-right:35%;
-transform:rotate(18deg);
+#locationText{
+    position:absolute;
+    bottom:10px;
+    right:10px;
+    left:10px;
+    background:#ffffffdd;
+    padding:8px;
+    border-radius:10px;
+    text-align:center;
+    font-size:12px;
 }
 
-.near{
-position:absolute;
-right:12px;
-top:12px;
-background:white;
-padding:9px 12px;
-border-radius:12px;
-font-size:12px;
-z-index:3;
-box-shadow:0 2px 8px rgba(0,0,0,.1);
-}
-
-.location-info{
-position:absolute;
-left:12px;
-bottom:12px;
-background:white;
-padding:9px 12px;
-border-radius:12px;
-font-size:11px;
-z-index:3;
-box-shadow:0 2px 8px rgba(0,0,0,.1);
-max-width:78%;
-}
-
-.pin{
-position:absolute;
-left:50%;
-top:50%;
-transform:translate(-50%,-50%);
-font-size:42px;
-z-index:4;
-filter:drop-shadow(0 3px 3px rgba(0,0,0,.25));
-}
-
-.pin.active{
-animation:pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-0%{
-transform:translate(-50%,-50%) scale(1);
-}
-50%{
-transform:translate(-50%,-50%) scale(1.18);
-}
-100%{
-transform:translate(-50%,-50%) scale(1);
-}
-}
-
-.list{
-display:flex;
-flex-direction:column;
-gap:10px;
+.providers{
+    margin-top:18px;
+    display:none;
 }
 
 .provider{
-background:white;
-border-radius:16px;
-padding:15px;
-box-shadow:0 3px 10px rgba(0,0,0,.06);
+    background:white;
+    border-radius:16px;
+    padding:15px;
+    margin-bottom:11px;
+    box-shadow:0 3px 10px #00000012;
+    border:1px solid #e5e7eb;
 }
 
 .provider-top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
 }
 
-.provider-name{
-font-weight:bold;
-font-size:16px;
+.provider h3{
+    font-size:16px;
 }
 
-.rating{
-font-size:13px;
-white-space:nowrap;
+.badge{
+    background:#e0f2fe;
+    color:#0369a1;
+    padding:5px 8px;
+    border-radius:8px;
+    font-size:11px;
+    white-space:nowrap;
 }
 
-.provider-meta{
-color:#6b7280;
-font-size:12px;
-margin-top:7px;
+.provider-info{
+    color:#64748b;
+    font-size:13px;
+    margin-top:8px;
+    line-height:1.8;
 }
 
-.call{
-width:100%;
-margin-top:10px;
-border:0;
-border-radius:12px;
-padding:12px;
-background:#111827;
-color:white;
-font-weight:bold;
-font-size:14px;
+.call-btn{
+    width:100%;
+    border:0;
+    background:#16a34a;
+    color:white;
+    padding:12px;
+    border-radius:11px;
+    margin-top:10px;
+    font-size:15px;
+    font-weight:bold;
 }
 
-.row{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:10px;
-}
-
-.back{
-border:0;
-background:#e5e7eb;
-width:36px;
-height:36px;
-border-radius:50%;
-font-size:22px;
-}
-
-.hidden{
-display:none!important;
-}
-
-.modal{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.5);
-display:none;
-align-items:flex-end;
-justify-content:center;
-z-index:50;
-}
-
-.modal.open{
-display:flex;
-}
-
-.sheet{
-background:white;
-width:100%;
-max-width:520px;
-border-radius:24px 24px 0 0;
-padding:22px;
-box-shadow:0 -5px 25px rgba(0,0,0,.2);
-}
-
-.sheet h2{
-margin-top:0;
-font-size:21px;
-}
-
-.muted{
-color:#6b7280;
-font-size:13px;
-margin-bottom:16px;
-}
-
-.sheet button{
-width:100%;
-border:0;
-border-radius:14px;
-padding:15px;
-font-size:15px;
-font-weight:bold;
-margin-top:10px;
-}
-
-.primary{
-background:#111827;
-color:white;
-}
-
-.secondary{
-background:#eef1f4;
-color:#17202a;
-}
-
-input,
-select{
-width:100%;
-padding:14px;
-border:1px solid #d1d5db;
-border-radius:12px;
-font-size:15px;
-margin-top:8px;
-background:white;
-}
-
-.form-group{
-margin-bottom:12px;
-}
-
-.form-group label{
-font-size:13px;
-font-weight:bold;
+.back-btn{
+    width:100%;
+    border:0;
+    background:#e5e7eb;
+    color:#111827;
+    padding:12px;
+    border-radius:11px;
+    margin-bottom:10px;
+    font-size:14px;
 }
 
 .bottom-nav{
-position:fixed;
-bottom:0;
-left:0;
-right:0;
-height:68px;
-background:white;
-border-top:1px solid #e5e7eb;
-display:grid;
-grid-template-columns:repeat(4,1fr);
-z-index:40;
+    position:fixed;
+    bottom:0;
+    right:0;
+    left:0;
+    height:65px;
+    background:white;
+    border-top:1px solid #ddd;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:20;
 }
 
-.nav-btn{
-border:0;
-background:white;
-font-size:11px;
-color:#4b5563;
+.bottom-nav button{
+    border:0;
+    background:none;
+    font-size:12px;
+    color:#475569;
 }
 
-.nav-btn span{
-display:block;
-font-size:22px;
-margin-bottom:2px;
+.bottom-nav span{
+    display:block;
+    font-size:22px;
+    margin-bottom:3px;
+}
+
+.modal-bg{
+    position:fixed;
+    inset:0;
+    background:#0008;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+}
+
+.modal{
+    background:white;
+    width:100%;
+    max-width:550px;
+    border-radius:24px 24px 0 0;
+    padding:22px 17px 28px;
+    max-height:90vh;
+    overflow-y:auto;
+}
+
+.modal h2{
+    font-size:20px;
+    margin-bottom:8px;
+}
+
+.modal p{
+    color:#64748b;
+    font-size:13px;
+    margin-bottom:15px;
+}
+
+.option{
+    width:100%;
+    padding:15px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:13px;
+    margin-bottom:9px;
+    text-align:right;
+    font-size:15px;
+}
+
+.option:active{
+    background:#e2e8f0;
+}
+
+.close{
+    width:100%;
+    border:0;
+    background:#e5e7eb;
+    padding:12px;
+    border-radius:12px;
+    margin-top:7px;
+    font-size:15px;
+}
+
+input,select{
+    width:100%;
+    padding:13px;
+    border:1px solid #cbd5e1;
+    border-radius:11px;
+    margin-top:7px;
+    margin-bottom:12px;
+    font-size:15px;
+}
+
+.primary{
+    width:100%;
+    background:#2563eb;
+    color:white;
+    border:0;
+    padding:13px;
+    border-radius:11px;
+    font-size:15px;
+    font-weight:bold;
 }
 
 .toast{
-position:fixed;
-left:50%;
-bottom:82px;
-transform:translateX(-50%) translateY(20px);
-background:#111827;
-color:white;
-padding:12px 17px;
-border-radius:13px;
-font-size:13px;
-opacity:0;
-pointer-events:none;
-transition:.3s;
-z-index:100;
-max-width:90%;
-text-align:center;
-}
-
-.toast.show{
-opacity:1;
-transform:translateX(-50%) translateY(0);
+    position:fixed;
+    bottom:78px;
+    right:15px;
+    left:15px;
+    background:#111827;
+    color:white;
+    padding:13px;
+    border-radius:12px;
+    text-align:center;
+    display:none;
+    z-index:200;
+    font-size:14px;
 }
 </style>
-
 </head>
 
 <body>
 
 <header>
-<div class="logo">DÉPANNAGE.DZ</div>
-<div class="subtitle">المساعدة على الطريق عندما تحتاجها</div>
+    <button class="sos" onclick="emergencyCall()">🚨</button>
+    <h1>DÉPANNAGE.DZ</h1>
+    <p>مساعدتك عند تعطل مركبتك</p>
 </header>
 
-<main>
+<div class="container">
 
-<button class="sos" onclick="emergencyCall()">
-🚨 اتصل بالطوارئ الآن
-</button>
+    <div class="section-title">الخدمات</div>
 
-<section class="section">
+    <div class="services">
 
-<h2>ماذا تحتاج؟</h2>
+        <div class="card" onclick="openTowOptions()">
+            <div class="icon">🚗</div>
+            <h3>قطر السيارات</h3>
+            <p>مساعدة ونقل السيارة</p>
+        </div>
 
-<div class="services">
+        <div class="card" onclick="openTruckOptions()">
+            <div class="icon">🚛</div>
+            <h3>قطر الشاحنات</h3>
+            <p>أعطال ونجدة الشاحنات</p>
+        </div>
 
-<div class="card service" onclick="openTowOptions()">
-<div class="ico">🚗</div>
-<b>قطر السيارات</b>
-<small>قاطر قريب منك</small>
-</div>
+        <div class="card" onclick="showToast('خدمة الورشة المتنقلة قيد التطوير')">
+            <div class="icon">🔧</div>
+            <h3>ورشة متنقلة</h3>
+            <p>ميكانيكي قريب منك</p>
+        </div>
 
-<div class="card service" onclick="openTruckRequest()">
-<div class="ico">🚛</div>
-<b>قطر الشاحنات</b>
-<small>خدمة للمركبات الثقيلة</small>
-</div>
+        <div class="card" onclick="showToast('خدمة قطع الغيار قيد التطوير')">
+            <div class="icon">⚙️</div>
+            <h3>قطع الغيار</h3>
+            <p>البحث عن قطعة مناسبة</p>
+        </div>
 
-<div class="card service" onclick="showProviders('ورشة متنقلة')">
-<div class="ico">🛠️</div>
-<b>ورشة متنقلة</b>
-<small>مساعدة في مكان العطل</small>
-</div>
+    </div>
 
-<div class="card service" onclick="showProviders('قطع الغيار')">
-<div class="ico">🔩</div>
-<b>قطع الغيار</b>
-<small>محلات قريبة منك</small>
-</div>
+    <div class="section-title">موقعك</div>
 
-</div>
+    <div class="map">
+        <div class="road"></div>
+        <div class="location-dot"></div>
+        <div id="locationText">
+            اضغط على خدمة للعثور على المساعدة القريبة
+        </div>
+    </div>
 
-</section>
-
-<section class="section">
-
-<h2>موقعك</h2>
-
-<div class="map">
-
-<span class="near" id="locationStatus">
-📍 لم يتم تحديد موقعك بعد
-</span>
-
-<div class="pin" id="mapPin">
-📍
-</div>
-
-<div class="location-info" id="locationInfo">
-اضغط «أريد أقرب قاطر إليّ» لتحديد موقعك.
-</div>
+    <div id="providers" class="providers"></div>
 
 </div>
-
-</section>
-
-<section id="providers" class="section hidden">
-
-<div class="row">
-
-<h2 id="providerTitle">
-مقدمو الخدمة
-</h2>
-
-<button class="back" onclick="hideProviders">
-×
-</button>
-
-</div>
-
-<div id="providerList" class="list">
-</div>
-
-</section>
-
-</main>
 
 <div class="bottom-nav">
+    <button onclick="home()">
+        <span>🏠</span>
+        الرئيسية
+    </button>
 
-<button class="nav-btn" onclick="home()">
-<span>🏠</span>
-الرئيسية
-</button>
+    <button onclick="findNearby()">
+        <span>📍</span>
+        القريب مني
+    </button>
 
-<button class="nav-btn" onclick="findNearby()">
-<span>📍</span>
-القريب
-</button>
-
-<button class="nav-btn" onclick="emergencyCall()">
-<span>🚨</span>
-الطوارئ
-</button>
-
-<button class="nav-btn" onclick="showToast('قسم الحساب قيد التطوير')">
-<span>👤</span>
-الحساب
-</button>
-
+    <button onclick="emergencyCall()">
+        <span>🚨</span>
+        طوارئ
+    </button>
 </div>
+
 
 <!-- نافذة قطر السيارات -->
+<div id="towModal" class="modal-bg">
+    <div class="modal">
 
-<div id="towModal" class="modal">
+        <h2>🚗 قطر السيارات</h2>
+        <p>اختر طريقة المساعدة المطلوبة</p>
 
-<div class="sheet">
+        <button class="option" onclick="requestNearestTow()">
+            📍 النقل إلى أقرب ورشة مختصة
+        </button>
 
-<h2>🚗 خدمة قطر السيارات</h2>
+        <button class="option" onclick="chooseTowDestination()">
+            🗺️ النقل إلى وجهة أحددها
+        </button>
 
-<div class="muted">
-كيف تريد الحصول على خدمة القطر؟
+        <button class="close" onclick="closeModal('towModal')">
+            إغلاق
+        </button>
+
+    </div>
 </div>
 
-<button class="primary" onclick="requestNearestTow()">
-🚗 أريد أقرب قاطر إليّ
-</button>
 
-<button class="secondary" onclick="chooseTowDestination()">
-📍 أريد نقل السيارة إلى وجهة أحددها
-</button>
+<!-- نافذة قطر الشاحنات -->
+<div id="truckModal" class="modal-bg">
+    <div class="modal">
 
-<button class="secondary" onclick="closeTowOptions()">
-إلغاء
-</button>
+        <h2>🚛 قطر الشاحنات</h2>
+        <p>
+            اختر نوع العطل، وسنبحث عن قاطرات الشاحنات
+            وورشات إصلاح الشاحنات القريبة منك.
+        </p>
 
+        <button class="option" onclick="selectTruckProblem('عطل في المحرك')">
+            🔧 عطل في المحرك
+        </button>
+
+        <button class="option" onclick="selectTruckProblem('عطل في ناقل الحركة')">
+            ⚙️ عطل في ناقل الحركة
+        </button>
+
+        <button class="option" onclick="selectTruckProblem('عطل كهربائي')">
+            ⚡ عطل كهربائي
+        </button>
+
+        <button class="option" onclick="selectTruckProblem('عطل في الإطارات أو العجلات')">
+            🛞 عطل في الإطارات أو العجلات
+        </button>
+
+        <button class="option" onclick="selectTruckProblem('حادث')">
+            🚨 حادث
+        </button>
+
+        <button class="option" onclick="selectTruckProblem('عطل آخر')">
+            ❓ عطل آخر
+        </button>
+
+        <button class="close" onclick="closeModal('truckModal')">
+            إغلاق
+        </button>
+
+    </div>
 </div>
 
+
+<!-- نافذة تحديد وجهة السيارة -->
+<div id="requestModal" class="modal-bg">
+    <div class="modal">
+
+        <h2>📍 تحديد وجهة النقل</h2>
+        <p>أدخل الولاية والبلدية التي تريد نقل السيارة إليها.</p>
+
+        <label>الولاية</label>
+        <input id="wilaya" type="text" placeholder="مثال: تيارت">
+
+        <label>البلدية</label>
+        <input id="commune" type="text" placeholder="مثال: مهدية">
+
+        <button class="primary" onclick="submitRequest()">
+            تأكيد الوجهة
+        </button>
+
+        <button class="close" onclick="closeModal('requestModal')">
+            إلغاء
+        </button>
+
+    </div>
 </div>
 
-<!-- نافذة الطلب -->
-
-<div id="requestModal" class="modal">
-
-<div class="sheet">
-
-<h2 id="requestTitle">
-طلب خدمة
-</h2>
-
-<div class="muted" id="requestDescription">
-أدخل معلومات الطلب ثم أرسله.
-</div>
-
-<div class="form-group">
-
-<label>
-نوع السيارة
-</label>
-
-<select id="vehicleType">
-
-<option value="سيارة سياحية">
-سيارة سياحية
-</option>
-
-<option value="سيارة نفعية">
-سيارة نفعية
-</option>
-
-<option value="شاحنة">
-شاحنة
-</option>
-
-<option value="دراجة نارية">
-دراجة نارية
-</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>
-المشكلة أو الطلب
-</label>
-
-<input
-id="problem"
-placeholder="اكتب وصفاً مختصراً">
-
-</div>
-
-<div class="form-group">
-
-<label>
-الوجهة
-</label>
-
-<input
-id="destination"
-placeholder="مثلاً: المنزل، الورشة...">
-
-</div>
-
-<button class="primary" onclick="submitRequest()">
-إرسال الطلب
-</button>
-
-<button class="secondary" onclick="closeModal()">
-إلغاء
-</button>
-
-</div>
-
-</div>
 
 <div id="toast" class="toast"></div>
 
+
 <script>
 
-/* =====================================================
-   المتغيرات
-===================================================== */
-
 let currentLocation = null;
+let selectedTruckProblem = null;
 
 
-/* =====================================================
-   بيانات مقدمي الخدمة
-===================================================== */
+/* =========================
+   بيانات تجريبية للشاحنات
+   ========================= */
+
+const truckProviders = [
+
+    {
+        name:"قاطر الشاحنات السريع",
+        type:"قاطرة شاحنات",
+        distance:"3.4 كم",
+        rating:"4.8",
+        phone:"0550000001"
+    },
+
+    {
+        name:"نجدة الشاحنات",
+        type:"قاطرة شاحنات",
+        distance:"5.1 كم",
+        rating:"4.6",
+        phone:"0660000002"
+    },
+
+    {
+        name:"ورشة الشاحنات الثقيلة",
+        type:"ورشة إصلاح شاحنات",
+        distance:"6.2 كم",
+        rating:"4.7",
+        phone:"0550000003"
+    },
+
+    {
+        name:"ميكانيكي الشاحنات المتنقل",
+        type:"إصلاح شاحنات",
+        distance:"7.5 كم",
+        rating:"4.5",
+        phone:"0770000004"
+    }
+
+];
+
+
+/* =========================
+   خدمات السيارات التجريبية
+   ========================= */
 
 const providers = {
 
-"ورشة متنقلة":[
+    nearby:[
+        {
+            name:"خدمة قطر السيارات",
+            type:"قاطرة سيارات",
+            distance:"2.4 كم",
+            rating:"4.8",
+            phone:"0550000010"
+        },
+        {
+            name:"ورشة السيارات السريعة",
+            type:"ورشة إصلاح",
+            distance:"4.1 كم",
+            rating:"4.6",
+            phone:"0660000011"
+        }
+    ],
 
-[
-'ورشة متنقلة السريع',
-'4.8',
-'97',
-'3.1 كم',
-'0551000111'
-],
+    mobile:[
+        {
+            name:"ورشة متنقلة",
+            type:"ميكانيكي متنقل",
+            distance:"3.2 كم",
+            rating:"4.7",
+            phone:"0550000012"
+        }
+    ],
 
-[
-'ميكانيكي الطريق',
-'4.6',
-'61',
-'5.2 كم',
-'0661000222'
-]
-
-],
-
-"قطع الغيار":[
-
-[
-'قطع غيار DZ',
-'4.7',
-'143',
-'2.8 كم',
-'0550000333'
-],
-
-[
-'Auto Parts Blida',
-'4.5',
-'72',
-'6.0 كم',
-'0660000444'
-]
-
-],
-
-"الخدمات القريبة":[
-
-[
-'قاطر المدينة',
-'4.9',
-'126',
-'2.4 كم',
-'0550000000'
-],
-
-[
-'نجدة الطريق',
-'4.7',
-'84',
-'4.1 كم',
-'0660000000'
-]
-
-]
+    parts:[
+        {
+            name:"قطع غيار السيارات",
+            type:"قطع غيار",
+            distance:"5.4 كم",
+            rating:"4.5",
+            phone:"0770000013"
+        }
+    ]
 
 };
 
 
-/* =====================================================
+/* =========================
    الطوارئ
-===================================================== */
+   ========================= */
 
 function emergencyCall(){
 
-showToast(
-'جاري فتح الاتصال بالحماية المدنية...'
-);
-
-setTimeout(function(){
-
-window.location.href='tel:14';
-
-},500);
+    window.location.href="tel:14";
 
 }
 
 
-/* =====================================================
-   فتح خيارات القطر
-===================================================== */
+/* =========================
+   قطر السيارات
+   ========================= */
 
 function openTowOptions(){
 
-const modal =
-document.getElementById('towModal');
-
-if(modal){
-
-modal.classList.add('open');
+    document.getElementById("towModal").style.display="flex";
 
 }
 
-}
-
-
-/* =====================================================
-   إغلاق خيارات القطر
-===================================================== */
-
-function closeTowOptions(){
-
-const modal =
-document.getElementById('towModal');
-
-if(modal){
-
-modal.classList.remove('open');
-
-}
-
-}
-
-
-/* =====================================================
-   طلب أقرب قاطر
-===================================================== */
 
 function requestNearestTow(){
 
-closeTowOptions();
+    closeModal("towModal");
 
-showToast(
-'📍 جاري تحديد موقعك...'
-);
+    getRealLocation(function(){
 
-getRealLocation();
+        showProviders("nearby","الخدمات القريبة");
 
-}
-
-
-/* =====================================================
-   طلب قطر الشاحنات
-===================================================== */
-
-function openTruckRequest(){
-
-const title =
-document.getElementById('requestTitle');
-
-const description =
-document.getElementById('requestDescription');
-
-const vehicle =
-document.getElementById('vehicleType');
-
-const problem =
-document.getElementById('problem');
-
-const destination =
-document.getElementById('destination');
-
-const modal =
-document.getElementById('requestModal');
-
-
-if(title){
-
-title.innerText=
-'🚛 طلب قطر شاحنة';
+    });
 
 }
 
-if(description){
-
-description.innerText=
-'أدخل معلومات الشاحنة ومكان/وجهة القطر لإرسال طلبك.';
-
-}
-
-if(vehicle){
-
-vehicle.value=
-'شاحنة';
-
-}
-
-if(problem){
-
-problem.value='';
-
-problem.placeholder=
-'مثلاً: عطل في المحرك، إطار، حادث...';
-
-}
-
-if(destination){
-
-destination.value='';
-
-destination.placeholder=
-'مثلاً: الورشة أو المكان المطلوب نقل الشاحنة إليه';
-
-}
-
-if(modal){
-
-modal.classList.add('open');
-
-}
-
-}
-
-
-/* =====================================================
-   تحديد الموقع الحقيقي
-===================================================== */
-
-function getRealLocation(){
-
-if(!navigator.geolocation){
-
-showToast(
-'⚠️ هاتفك لا يدعم تحديد الموقع.'
-);
-
-return;
-
-}
-
-
-navigator.geolocation.getCurrentPosition(
-
-function(position){
-
-currentLocation={
-
-lat:position.coords.latitude,
-
-lng:position.coords.longitude,
-
-accuracy:position.coords.accuracy
-
-};
-
-
-updateLocationDisplay();
-
-
-showToast(
-'✅ تم تحديد موقعك بنجاح'
-);
-
-
-setTimeout(function(){
-
-showProviders(
-'الخدمات القريبة'
-);
-
-},800);
-
-},
-
-
-function(error){
-
-let message=
-'⚠️ تعذر تحديد موقعك.';
-
-
-if(error.code===1){
-
-message=
-'⚠️ تم رفض إذن الموقع. فعّل الموقع من إعدادات الهاتف ثم حاول مرة أخرى.';
-
-}
-
-
-else if(error.code===2){
-
-message=
-'📍 الهاتف لم يتمكن من تحديد موقعك حالياً.';
-
-}
-
-
-else if(error.code===3){
-
-message=
-'⏳ انتهت مهلة تحديد الموقع. حاول مرة أخرى.';
-
-}
-
-
-showToast(message);
-
-},
-
-
-{
-
-enableHighAccuracy:true,
-
-timeout:20000,
-
-maximumAge:0
-
-}
-
-);
-
-}
-
-
-/* =====================================================
-   تحديث عرض الموقع
-===================================================== */
-
-function updateLocationDisplay(){
-
-const status =
-document.getElementById(
-'locationStatus'
-);
-
-const info =
-document.getElementById(
-'locationInfo'
-);
-
-const pin =
-document.getElementById(
-'mapPin'
-);
-
-
-if(!currentLocation){
-
-return;
-
-}
-
-
-status.innerText=
-'📍 تم تحديد موقعك';
-
-
-info.innerText=
-'موقعك محدد بدقة تقريبية '+
-Math.round(
-currentLocation.accuracy
-)+
-' متر';
-
-
-if(pin){
-
-pin.classList.add('active');
-
-}
-
-
-console.log(
-'Latitude:',
-currentLocation.lat
-);
-
-console.log(
-'Longitude:',
-currentLocation.lng
-);
-
-console.log(
-'Accuracy:',
-currentLocation.accuracy
-);
-
-}
-
-
-/* =====================================================
-   زر القريب
-===================================================== */
-
-function findNearby(){
-
-if(currentLocation){
-
-showProviders(
-'الخدمات القريبة'
-);
-
-return;
-
-}
-
-showToast(
-'📍 جاري تحديد موقعك...'
-);
-
-getRealLocation();
-
-}
-
-
-/* =====================================================
-   تحديد وجهة القطر
-===================================================== */
 
 function chooseTowDestination(){
 
-closeTowOptions();
+    closeModal("towModal");
 
-openRequest(
-'قطر السيارات'
-);
-
-showToast(
-'📍 حدد وجهة نقل سيارتك في الطلب'
-);
+    document.getElementById("requestModal").style.display="flex";
 
 }
 
 
-/* =====================================================
-   نافذة الطلب العامة
-===================================================== */
+/* =========================
+   قطر الشاحنات
+   ========================= */
 
-function openRequest(type){
+function openTruckOptions(){
 
-const title =
-document.getElementById(
-'requestTitle'
-);
-
-const description =
-document.getElementById(
-'requestDescription'
-);
-
-const vehicle =
-document.getElementById(
-'vehicleType'
-);
-
-const problem =
-document.getElementById(
-'problem'
-);
-
-const destination =
-document.getElementById(
-'destination'
-);
-
-const modal =
-document.getElementById(
-'requestModal'
-);
-
-
-if(title){
-
-title.innerText=
-'طلب '+type;
-
-}
-
-if(description){
-
-description.innerText=
-'أدخل معلومات الطلب ثم أرسله.';
-
-}
-
-if(vehicle){
-
-vehicle.value=
-'سيارة سياحية';
-
-}
-
-if(problem){
-
-problem.value='';
-
-problem.placeholder=
-'اكتب وصفاً مختصراً';
-
-}
-
-if(destination){
-
-destination.value='';
-
-destination.placeholder=
-'مثلاً: المنزل، الورشة...';
-
-}
-
-if(modal){
-
-modal.classList.add('open');
-
-}
+    document.getElementById("truckModal").style.display="flex";
 
 }
 
 
-/* =====================================================
-   إغلاق نافذة الطلب
-===================================================== */
+function selectTruckProblem(problem){
 
-function closeModal(){
+    selectedTruckProblem = problem;
 
-const modal =
-document.getElementById(
-'requestModal'
-);
+    closeModal("truckModal");
 
-if(modal){
+    showToast("جاري تحديد موقعك...");
 
-modal.classList.remove('open');
+    if(currentLocation){
+
+        showTruckProviders();
+
+    }else{
+
+        getRealLocation(function(){
+
+            showTruckProviders();
+
+        });
+
+    }
 
 }
 
+
+/* =========================
+   تحديد الموقع الحقيقي
+   ========================= */
+
+function getRealLocation(callback){
+
+    if(!navigator.geolocation){
+
+        showToast("الموقع الجغرافي غير متاح على هذا الجهاز");
+
+        if(callback){
+            callback();
+        }
+
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            currentLocation = {
+
+                latitude:position.coords.latitude,
+                longitude:position.coords.longitude
+
+            };
+
+            updateLocationDisplay();
+
+            if(callback){
+                callback();
+            }
+
+        },
+
+        function(error){
+
+            console.log(error);
+
+            showToast("تعذر الحصول على الموقع. تأكد من السماح بالموقع.");
+
+            if(callback){
+                callback();
+            }
+
+        },
+
+        {
+            enableHighAccuracy:true,
+            timeout:15000,
+            maximumAge:30000
+        }
+
+    );
+
 }
 
 
-/* =====================================================
-   إرسال الطلب
-===================================================== */
+/* =========================
+   تحديث عرض الموقع
+   ========================= */
+
+function updateLocationDisplay(){
+
+    const text =
+        document.getElementById("locationText");
+
+    if(!currentLocation){
+
+        text.innerText="لم يتم تحديد الموقع";
+
+        return;
+    }
+
+    text.innerText =
+        "📍 تم تحديد موقعك الحالي";
+
+}
+
+
+/* =========================
+   عرض قاطرات وورشات الشاحنات
+   ========================= */
+
+function showTruckProviders(){
+
+    const container =
+        document.getElementById("providers");
+
+    container.innerHTML="";
+
+    container.style.display="block";
+
+    const backButton =
+        document.createElement("button");
+
+    backButton.className="back-btn";
+
+    backButton.innerText="← العودة لاختيار نوع العطل";
+
+    backButton.onclick=function(){
+
+        container.style.display="none";
+
+        document.getElementById("truckModal").style.display="flex";
+
+    };
+
+    container.appendChild(backButton);
+
+
+    const title =
+        document.createElement("div");
+
+    title.className="section-title";
+
+    title.innerText =
+        "🚛 المساعدة القريبة — " +
+        selectedTruckProblem;
+
+    container.appendChild(title);
+
+
+    const info =
+        document.createElement("p");
+
+    info.style.color="#64748b";
+    info.style.fontSize="12px";
+    info.style.marginBottom="12px";
+
+    info.innerText =
+        "النتائج التالية تجريبية حاليًا، وسيتم ربطها ببيانات حقيقية لاحقًا.";
+
+    container.appendChild(info);
+
+
+    truckProviders.forEach(function(provider){
+
+        const item =
+            document.createElement("div");
+
+        item.className="provider";
+
+        item.innerHTML=`
+
+            <div class="provider-top">
+
+                <h3>${provider.name}</h3>
+
+                <span class="badge">
+                    ${provider.type}
+                </span>
+
+            </div>
+
+            <div class="provider-info">
+
+                📍 المسافة التقريبية: ${provider.distance}
+                <br>
+
+                ⭐ التقييم: ${provider.rating}/5
+                <br>
+
+                📞 ${provider.phone}
+
+            </div>
+
+            <button
+                class="call-btn"
+                onclick="callProvider('${provider.phone}')">
+
+                📞 اتصال مباشر
+
+            </button>
+
+        `;
+
+        container.appendChild(item);
+
+    });
+
+
+    window.scrollTo({
+
+        top:document.body.scrollHeight,
+        behavior:"smooth"
+
+    });
+
+}
+
+
+/* =========================
+   الموقع والخدمات القريبة
+   ========================= */
+
+function findNearby(){
+
+    getRealLocation(function(){
+
+        showProviders("nearby","الخدمات القريبة");
+
+    });
+
+}
+
+
+function showProviders(type,titleText){
+
+    const container =
+        document.getElementById("providers");
+
+    container.innerHTML="";
+
+    container.style.display="block";
+
+
+    const title =
+        document.createElement("div");
+
+    title.className="section-title";
+
+    title.innerText=titleText;
+
+    container.appendChild(title);
+
+
+    providers[type].forEach(function(provider){
+
+        const item =
+            document.createElement("div");
+
+        item.className="provider";
+
+        item.innerHTML=`
+
+            <div class="provider-top">
+
+                <h3>${provider.name}</h3>
+
+                <span class="badge">
+                    ${provider.type}
+                </span>
+
+            </div>
+
+            <div class="provider-info">
+
+                📍 المسافة: ${provider.distance}
+                <br>
+
+                ⭐ التقييم: ${provider.rating}/5
+                <br>
+
+                📞 ${provider.phone}
+
+            </div>
+
+            <button
+                class="call-btn"
+                onclick="callProvider('${provider.phone}')">
+
+                📞 اتصال
+
+            </button>
+
+        `;
+
+        container.appendChild(item);
+
+    });
+
+    window.scrollTo({
+
+        top:document.body.scrollHeight,
+        behavior:"smooth"
+
+    });
+
+}
+
+
+/* =========================
+   الاتصال
+   ========================= */
+
+function callProvider(phone){
+
+    window.location.href="tel:"+phone;
+
+}
+
+
+/* =========================
+   تأكيد وجهة قطر السيارة
+   ========================= */
 
 function submitRequest(){
 
-const problem =
-document.getElementById(
-'problem'
-).value.trim();
+    const wilaya =
+        document.getElementById("wilaya").value.trim();
 
-const vehicle =
-document.getElementById(
-'vehicleType'
-).value;
-
-const destination =
-document.getElementById(
-'destination'
-).value.trim();
+    const commune =
+        document.getElementById("commune").value.trim();
 
 
-if(!problem){
+    if(!wilaya || !commune){
 
-showToast(
-'يرجى وصف المشكلة أو الطلب'
-);
+        showToast("الرجاء إدخال الولاية والبلدية");
 
-return;
+        return;
 
-}
+    }
 
 
-closeModal();
+    closeModal("requestModal");
 
-
-if(vehicle==='شاحنة'){
-
-showToast(
-'🚛 تم تجهيز طلب قطر الشاحنة بنجاح'
-);
-
-}else{
-
-showToast(
-'✅ تم تجهيز طلبك بنجاح'
-);
-
-}
+    showToast(
+        "تم تسجيل وجهة النقل: "+
+        wilaya+" - "+commune
+    );
 
 }
 
 
-/* =====================================================
-   عرض مقدمي الخدمة
-===================================================== */
+/* =========================
+   إغلاق النوافذ
+   ========================= */
 
-function showProviders(type){
+function closeModal(id){
 
-const section =
-document.getElementById(
-'providers'
-);
-
-const title =
-document.getElementById(
-'providerTitle'
-);
-
-const list =
-document.getElementById(
-'providerList'
-);
-
-
-if(!section || !title || !list){
-
-return;
+    document.getElementById(id).style.display="none";
 
 }
 
 
-title.innerText=
-type;
-
-
-list.innerHTML='';
-
-
-const data =
-providers[type] ||
-providers['الخدمات القريبة'];
-
-
-data.forEach(function(p){
-
-const item =
-document.createElement(
-'div'
-);
-
-item.className=
-'provider';
-
-
-item.innerHTML=
-
-'<div class="provider-top">'+
-
-'<div class="provider-name">'+
-p[0]+
-'</div>'+
-
-'<div class="rating">'+
-'⭐ '+
-p[1]+
-' ('+
-p[2]+
-')'+
-'</div>'+
-
-'</div>'+
-
-'<div class="provider-meta">'+
-'📍 المسافة الحالية: '+
-p[3]+
-'</div>'+
-
-'<button class="call" onclick="callProvider(\''+
-p[4]+
-'\')">'+
-
-'📞 اتصال بالمزود'+
-
-'</button>';
-
-
-list.appendChild(item);
-
-});
-
-
-section.classList.remove(
-'hidden'
-);
-
-
-section.scrollIntoView({
-
-behavior:'smooth'
-
-});
-
-}
-
-
-/* =====================================================
-   إخفاء مقدمي الخدمة
-===================================================== */
-
-function hideProviders(){
-
-const section =
-document.getElementById(
-'providers'
-);
-
-if(section){
-
-section.classList.add(
-'hidden'
-);
-
-}
-
-}
-
-
-/* =====================================================
-   الاتصال بالمزود
-===================================================== */
-
-function callProvider(number){
-
-window.location.href=
-'tel:'+number;
-
-}
-
-
-/* =====================================================
-   العودة للرئيسية
-===================================================== */
+/* =========================
+   الصفحة الرئيسية
+   ========================= */
 
 function home(){
 
-hideProviders();
+    document.getElementById("providers").style.display="none";
 
-window.scrollTo({
+    window.scrollTo({
 
-top:0,
+        top:0,
+        behavior:"smooth"
 
-behavior:'smooth'
-
-});
+    });
 
 }
 
 
-/* =====================================================
-   الرسائل المنبثقة
-===================================================== */
-
-let toastTimer;
-
+/* =========================
+   Toast
+   ========================= */
 
 function showToast(message){
 
-const toast =
-document.getElementById(
-'toast'
-);
+    const toast =
+        document.getElementById("toast");
 
+    toast.innerText=message;
 
-if(!toast){
+    toast.style.display="block";
 
-return;
+    setTimeout(function(){
 
-}
+        toast.style.display="none";
 
-
-toast.innerText=
-message;
-
-
-toast.classList.add(
-'show'
-);
-
-
-clearTimeout(
-toastTimer
-);
-
-
-toastTimer=
-setTimeout(function(){
-
-toast.classList.remove(
-'show'
-);
-
-},4000);
+    },3000);
 
 }
 
 
-/* =====================================================
-   Service Worker
-===================================================== */
+/* =========================
+   إغلاق النافذة عند الضغط خارجها
+   ========================= */
 
-if(
-'serviceWorker' in navigator
-){
+document.querySelectorAll(".modal-bg").forEach(function(modal){
 
-navigator.serviceWorker
-.register('sw.js')
-.catch(function(error){
+    modal.addEventListener("click",function(event){
 
-console.log(
-'Service Worker error:',
-error
-);
+        if(event.target===modal){
+
+            modal.style.display="none";
+
+        }
+
+    });
 
 });
+
+
+/* =========================
+   Service Worker
+   ========================= */
+
+if("serviceWorker" in navigator){
+
+    window.addEventListener("load",function(){
+
+        navigator.serviceWorker.register("./sw.js")
+        .catch(function(error){
+
+            console.log("Service Worker:",error);
+
+        });
+
+    });
 
 }
 
