@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
@@ -76,7 +77,12 @@ background:var(--accent);
 color:#111827;
 font-weight:900;
 font-size:18px;
-box-shadow:0 10px 25px #0003
+box-shadow:0 10px 25px #0003;
+cursor:pointer
+}
+
+.sos:active{
+transform:scale(.98)
 }
 
 .section{padding:18px}
@@ -104,7 +110,12 @@ box-shadow:0 5px 18px #10182808
 min-height:120px;
 display:flex;
 flex-direction:column;
-justify-content:space-between
+justify-content:space-between;
+cursor:pointer
+}
+
+.service:active{
+transform:scale(.98)
 }
 
 .ico{font-size:30px}
@@ -200,7 +211,12 @@ background:#e9f9f1;
 color:#087443;
 border-radius:12px;
 padding:10px 13px;
-font-weight:800
+font-weight:800;
+cursor:pointer
+}
+
+.call:active{
+transform:scale(.96)
 }
 
 .nav{
@@ -226,7 +242,8 @@ font-size:11px;
 display:flex;
 flex-direction:column;
 gap:4px;
-align-items:center
+align-items:center;
+cursor:pointer
 }
 
 .nav .active{
@@ -274,7 +291,8 @@ border:0;
 border-radius:14px;
 background:#0b1324;
 color:#fff;
-font-weight:900
+font-weight:900;
+cursor:pointer
 }
 
 .secondary{
@@ -285,7 +303,8 @@ border-radius:14px;
 background:#eef2f7;
 color:#101828;
 font-weight:800;
-margin-top:8px
+margin-top:8px;
+cursor:pointer
 }
 
 .toast{
@@ -319,11 +338,13 @@ color:#475467
 .back{
 border:0;
 background:none;
-font-size:22px
+font-size:22px;
+cursor:pointer
 }
 
 .hidden{display:none}
 </style>
+
 </head>
 
 <body>
@@ -345,12 +366,13 @@ DÉPANNAGE<span>.DZ</span>
 نوصلك بمن يستطيع مساعدتك.
 </div>
 
-<button class="sos" onclick="openRequest()">
-🚨 اطلب النجدة الآن
+<!-- زر الطوارئ أصبح يعمل فعليًا -->
+
+<button class="sos" onclick="emergencyCall()">
+🚨 اتصل بالطوارئ الآن
 </button>
 
 </header>
-
 
 <section class="section">
 
@@ -385,7 +407,6 @@ DÉPANNAGE<span>.DZ</span>
 </div>
 </section>
 
-
 <section class="section">
 
 <h2>مقدمو الخدمة حولك</h2>
@@ -403,7 +424,6 @@ DÉPANNAGE<span>.DZ</span>
 </div>
 
 </section>
-
 
 <section class="section">
 
@@ -446,7 +466,6 @@ DÉPANNAGE<span>.DZ</span>
 
 </div>
 
-
 <div class="card">
 
 <div class="row">
@@ -486,7 +505,6 @@ DÉPANNAGE<span>.DZ</span>
 
 </section>
 
-
 <section id="providers" class="section hidden">
 
 <div class="row">
@@ -505,7 +523,6 @@ DÉPANNAGE<span>.DZ</span>
 
 </section>
 
-
 <nav class="nav">
 
 <button class="active" onclick="home()">
@@ -518,9 +535,11 @@ DÉPANNAGE<span>.DZ</span>
 <span>قريب مني</span>
 </button>
 
-<button onclick="openRequest()">
+<!-- زر النجدة السفلي أصبح اتصالًا حقيقيًا -->
+
+<button onclick="emergencyCall()">
 🚨
-<span>نجدة</span>
+<span>طوارئ</span>
 </button>
 
 <button onclick="showToast('صفحة الحساب قيد التجهيز')">
@@ -531,7 +550,6 @@ DÉPANNAGE<span>.DZ</span>
 </nav>
 
 </main>
-
 
 <div id="modal" class="modal">
 
@@ -583,31 +601,51 @@ placeholder="النوع والموديل، مثلاً Golf 5 1.9 TDI">
 
 </div>
 
-
 <div id="toast" class="toast"></div>
-
 
 <script>
 
 const providers={
 
 "ورشة متنقلة":[
-['ورشة متنقلة السريع','4.8','97','3.1 كم','📱 0551 000 111'],
-['ميكانيكي الطريق','4.6','61','5.2 كم','📱 0661 000 222']
+['ورشة متنقلة السريع','4.8','97','3.1 كم','0551000111'],
+['ميكانيكي الطريق','4.6','61','5.2 كم','0661000222']
 ],
 
 "قطع الغيار":[
-['قطع غيار DZ','4.7','143','2.8 كم','📱 0550 000 333'],
-['Auto Parts Blida','4.5','72','6.0 كم','📱 0660 000 444']
+['قطع غيار DZ','4.7','143','2.8 كم','0550000333'],
+['Auto Parts Blida','4.5','72','6.0 كم','0660000444']
 ],
 
 "الخدمات القريبة":[
-['قاطر المدينة','4.9','126','2.4 كم','📱 0550 000 000'],
-['نجدة الطريق','4.7','84','4.1 كم','📱 0660 000 000']
+['قاطر المدينة','4.9','126','2.4 كم','0550000000'],
+['نجدة الطريق','4.7','84','4.1 كم','0660000000']
 ]
 
 };
 
+
+/* =========================================
+   الطوارئ الجزائرية
+   14 = الحماية المدنية
+   ========================================= */
+
+function emergencyCall(){
+
+showToast('جاري فتح الاتصال بالحماية المدنية...');
+
+setTimeout(function(){
+
+window.location.href='tel:14';
+
+},500);
+
+}
+
+
+/* =========================================
+   طلب النجدة الخاص بالتطبيق
+   ========================================= */
 
 function openRequest(type){
 
@@ -619,12 +657,20 @@ document.getElementById('service').value=type;
 }
 
 
+/* =========================================
+   إغلاق نافذة الطلب
+   ========================================= */
+
 function closeModal(){
 
 document.getElementById('modal').classList.remove('open');
 
 }
 
+
+/* =========================================
+   إرسال طلب النجدة
+   ========================================= */
 
 function submitRequest(){
 
@@ -641,6 +687,10 @@ setTimeout(
 
 }
 
+
+/* =========================================
+   عرض مقدمي الخدمة
+   ========================================= */
 
 function showProviders(type){
 
@@ -688,7 +738,7 @@ ${p[1]} · ${p[2]} تقييم
 </div>
 
 <div class="muted">
-${p[3]} · ${p[4]}
+${p[3]} · 📱 ${p[4]}
 </div>
 
 </div>
@@ -697,7 +747,7 @@ ${p[3]} · ${p[4]}
 
 <button
 class="call"
-onclick="showToast('سيتم فتح الاتصال')">
+onclick="call('${p[4]}')">
 
 اتصال
 
@@ -716,6 +766,10 @@ behavior:'smooth'
 }
 
 
+/* =========================================
+   إخفاء مقدمي الخدمة
+   ========================================= */
+
 function hideProviders(){
 
 document
@@ -725,6 +779,10 @@ document
 
 }
 
+
+/* =========================================
+   العودة للرئيسية
+   ========================================= */
 
 function home(){
 
@@ -738,12 +796,23 @@ behavior:'smooth'
 }
 
 
+/* =========================================
+   الاتصال بمقدم الخدمة
+   ========================================= */
+
 function call(n){
 
-location.href='tel:'+n;
+if(!n)
+return;
+
+window.location.href='tel:'+n;
 
 }
 
+
+/* =========================================
+   الرسائل الصغيرة
+   ========================================= */
 
 function showToast(t){
 
@@ -763,8 +832,20 @@ window.tt=setTimeout(
 }
 
 
-if('serviceWorker' in navigator)
-navigator.serviceWorker.register('sw.js');
+/* =========================================
+   تسجيل Service Worker
+   ========================================= */
+
+if('serviceWorker' in navigator){
+
+navigator.serviceWorker.register('sw.js')
+.catch(function(error){
+
+console.log('Service Worker error:',error);
+
+});
+
+}
 
 </script>
 
