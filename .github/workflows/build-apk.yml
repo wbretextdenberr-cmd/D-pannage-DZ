@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build DÉPANNAGE.DZ HTML APK
 
 on:
   workflow_dispatch:
@@ -11,36 +11,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Extract APK project
-        run: |
-          mkdir -p project
-          unzip -o "DEPANNAGE_DZ_APK_READY.zip" -d project
-
-      - name: Find Android Gradle project
-        run: |
-          echo "Searching for Android Gradle project..."
-
-          PROJECT_DIR=""
-
-          while IFS= read -r SETTINGS; do
-            DIR=$(dirname "$SETTINGS")
-
-            if [ -f "$DIR/app/build.gradle" ] || [ -f "$DIR/app/build.gradle.kts" ]; then
-              PROJECT_DIR="$DIR"
-              break
-            fi
-          done < <(find project -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \))
-
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "ERROR: Android Gradle project not found."
-            echo "Extracted files:"
-            find project -maxdepth 6 -type f | sort
-            exit 1
-          fi
-
-          echo "Android project found at: $PROJECT_DIR"
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
@@ -52,14 +22,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Check project
+        run: |
+          echo "Checking DÉPANNAGE.DZ project..."
+          find html-app -maxdepth 8 -type f | sort
+
       - name: Build Debug APK
-        working-directory: ${{ env.PROJECT_DIR }}
+        working-directory: html-app
         run: |
           gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: D-pannage-DZ-APK
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
+          name: D-pannage-DZ-HTML-APK
+          path: html-app/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
