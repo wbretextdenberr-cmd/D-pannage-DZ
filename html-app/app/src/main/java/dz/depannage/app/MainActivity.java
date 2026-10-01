@@ -1,5 +1,6 @@
 package dz.depannage.app;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,11 +9,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.webkit.WebSettingsCompat;
-import androidx.webkit.WebViewFeature;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private WebView webView;
 
@@ -57,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean handleUrl(String url) {
 
         if (url.startsWith("tel:")) {
-
             try {
                 Intent intent =
                         new Intent(Intent.ACTION_DIAL, Uri.parse(url));
