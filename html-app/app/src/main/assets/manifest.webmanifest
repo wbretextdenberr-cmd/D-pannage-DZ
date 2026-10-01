@@ -1,0 +1,10 @@
+{
+  "name": "DÉPANNAGE.DZ",
+  "short_name": "DÉPANNAGE.DZ",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0b1324",
+  "lang": "ar",
+  "dir": "rtl"
+}
