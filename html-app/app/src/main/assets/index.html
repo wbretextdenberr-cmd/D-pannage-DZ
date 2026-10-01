@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1324">
+<link rel="manifest" href="manifest.webmanifest">
+<title>DÉPANNAGE.DZ</title>
+
+<style>
+:root{
+--bg:#f4f7fb;
+--ink:#101828;
+--muted:#667085;
+--card:#fff;
+--brand:#0b1324;
+--accent:#ffb21c;
+--green:#12b76a;
+--line:#e7ebf0
+}
+
+*{box-sizing:border-box}
+
+body{
+margin:0;
+background:var(--bg);
+font-family:Arial,"Noto Sans Arabic",sans-serif;
+color:var(--ink)
+}
+
+button,input{font:inherit}
+
+.app{
+max-width:520px;
+margin:auto;
+min-height:100vh;
+background:var(--bg);
+padding-bottom:84px
+}
+
+.top{
+background:linear-gradient(145deg,#0b1324,#162642);
+color:#fff;
+padding:24px 18px 26px;
+border-radius:0 0 28px 28px
+}
+
+.brand{
+font-weight:900;
+font-size:24px;
+letter-spacing:.5px
+}
+
+.brand span{color:var(--accent)}
+
+.hello{
+margin-top:24px;
+font-size:14px;
+color:#cbd5e1
+}
+
+.hero{
+margin-top:8px;
+font-size:26px;
+font-weight:900;
+line-height:1.25
+}
+
+.sos{
+margin:18px 0 0;
+width:100%;
+border:0;
+border-radius:18px;
+padding:17px;
+background:var(--accent);
+color:#111827;
+font-weight:900;
+font-size:18px;
+box-shadow:0 10px 25px #0003
+}
+
+.section{padding:18px}
+
+.section h2{
+font-size:18px;
+margin:0 0 12px
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px
+}
+
+.card{
+background:var(--card);
+border:1px solid var(--line);
+border-radius:18px;
+padding:16px;
+box-shadow:0 5px 18px #10182808
+}
+
+.service{
+min-height:120px;
+display:flex;
+flex-direction:column;
+justify-content:space-between
+}
+
+.ico{font-size:30px}
+
+.service b{font-size:15px}
+
+.service small{
+color:var(--muted);
+margin-top:4px
+}
+
+.map{
+height:230px;
+border-radius:20px;
+background:linear-gradient(145deg,#dfe9df,#f7f4e9);
+position:relative;
+overflow:hidden;
+border:1px solid var(--line)
+}
+
+.map:before,.map:after{
+content:"";
+position:absolute;
+background:#fff8;
+width:150%;
+height:12px;
+transform:rotate(-28deg);
+top:95px;
+left:-20%
+}
+
+.map:after{
+transform:rotate(26deg);
+top:155px;
+background:#fff9
+}
+
+.pin{
+position:absolute;
+right:46%;
+top:43%;
+font-size:38px;
+filter:drop-shadow(0 5px 5px #0003)
+}
+
+.near{
+position:absolute;
+left:14px;
+top:14px;
+background:#fff;
+padding:9px 12px;
+border-radius:999px;
+font-size:12px;
+font-weight:700
+}
+
+.provider{
+display:flex;
+align-items:center;
+gap:12px
+}
+
+.avatar{
+width:46px;
+height:46px;
+border-radius:50%;
+background:#e9eef6;
+display:grid;
+place-items:center;
+font-size:23px
+}
+
+.stars{
+color:#f59e0b;
+font-size:13px
+}
+
+.muted{
+color:var(--muted);
+font-size:12px
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px
+}
+
+.call{
+border:0;
+background:#e9f9f1;
+color:#087443;
+border-radius:12px;
+padding:10px 13px;
+font-weight:800
+}
+
+.nav{
+position:fixed;
+bottom:0;
+left:50%;
+transform:translateX(-50%);
+width:min(520px,100%);
+height:72px;
+background:#fff;
+border-top:1px solid var(--line);
+display:flex;
+justify-content:space-around;
+align-items:center;
+z-index:5
+}
+
+.nav button{
+border:0;
+background:none;
+color:#667085;
+font-size:11px;
+display:flex;
+flex-direction:column;
+gap:4px;
+align-items:center
+}
+
+.nav .active{
+color:#0b1324;
+font-weight:900
+}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:#0008;
+z-index:20;
+align-items:end
+}
+
+.modal.open{display:flex}
+
+.sheet{
+background:#fff;
+width:100%;
+max-width:520px;
+margin:auto;
+border-radius:26px 26px 0 0;
+padding:22px;
+max-height:88vh;
+overflow:auto
+}
+
+.sheet h2{margin:0 0 8px}
+
+.input{
+width:100%;
+padding:14px;
+border:1px solid #d0d5dd;
+border-radius:13px;
+margin:7px 0 12px;
+outline:none
+}
+
+.primary{
+width:100%;
+padding:15px;
+border:0;
+border-radius:14px;
+background:#0b1324;
+color:#fff;
+font-weight:900
+}
+
+.secondary{
+width:100%;
+padding:13px;
+border:0;
+border-radius:14px;
+background:#eef2f7;
+color:#101828;
+font-weight:800;
+margin-top:8px
+}
+
+.toast{
+position:fixed;
+bottom:84px;
+left:50%;
+transform:translateX(-50%);
+background:#101828;
+color:#fff;
+padding:12px 18px;
+border-radius:999px;
+display:none;
+z-index:30;
+font-size:13px
+}
+
+.list{
+display:flex;
+flex-direction:column;
+gap:10px
+}
+
+.badge{
+font-size:11px;
+background:#eef2f7;
+padding:5px 8px;
+border-radius:999px;
+color:#475467
+}
+
+.back{
+border:0;
+background:none;
+font-size:22px
+}
+
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<main class="app">
+
+<header class="top">
+
+<div class="brand">
+DÉPANNAGE<span>.DZ</span>
+</div>
+
+<div class="hello">
+خدمة النجدة على الطريق
+</div>
+
+<div class="hero">
+تعطلت سيارتك؟<br>
+نوصلك بمن يستطيع مساعدتك.
+</div>
+
+<button class="sos" onclick="openRequest()">
+🚨 اطلب النجدة الآن
+</button>
+
+</header>
+
+
+<section class="section">
+
+<h2>الخدمات</h2>
+
+<div class="grid">
+
+<div class="card service" onclick="openRequest('قطر السيارات')">
+<div class="ico">🚗</div>
+<b>قطر السيارات</b>
+<small>قاطر قريب منك</small>
+</div>
+
+<div class="card service" onclick="openRequest('قطر الشاحنات')">
+<div class="ico">🚛</div>
+<b>قطر الشاحنات</b>
+<small>خدمة للمركبات الثقيلة</small>
+</div>
+
+<div class="card service" onclick="showProviders('ورشة متنقلة')">
+<div class="ico">🛠️</div>
+<b>ورشة متنقلة</b>
+<small>مساعدة في مكان العطل</small>
+</div>
+
+<div class="card service" onclick="showProviders('قطع الغيار')">
+<div class="ico">🔩</div>
+<b>قطع الغيار</b>
+<small>محلات قريبة منك</small>
+</div>
+
+</div>
+</section>
+
+
+<section class="section">
+
+<h2>مقدمو الخدمة حولك</h2>
+
+<div class="map">
+
+<span class="near">
+📍 موقعك الحالي
+</span>
+
+<div class="pin">
+📍
+</div>
+
+</div>
+
+</section>
+
+
+<section class="section">
+
+<h2>قاطرون موصى بهم</h2>
+
+<div class="list">
+
+<div class="card">
+
+<div class="row">
+
+<div class="provider">
+
+<div class="avatar">
+🚛
+</div>
+
+<div>
+
+<b>قاطر المدينة</b>
+
+<div class="stars">
+★★★★★
+<span class="muted">4.9 · 126 تقييم</span>
+</div>
+
+<div class="muted">
+يبعد 2.4 كم · سيارات وشاحنات
+</div>
+
+</div>
+
+</div>
+
+<button class="call" onclick="call('0550000000')">
+اتصال
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="row">
+
+<div class="provider">
+
+<div class="avatar">
+🛻
+</div>
+
+<div>
+
+<b>نجدة الطريق</b>
+
+<div class="stars">
+★★★★★
+<span class="muted">4.7 · 84 تقييم</span>
+</div>
+
+<div class="muted">
+يبعد 4.1 كم · سيارات
+</div>
+
+</div>
+
+</div>
+
+<button class="call" onclick="call('0660000000')">
+اتصال
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="providers" class="section hidden">
+
+<div class="row">
+
+<h2 id="providerTitle">
+مقدمو الخدمة
+</h2>
+
+<button class="back" onclick="hideProviders()">
+×
+</button>
+
+</div>
+
+<div id="providerList" class="list"></div>
+
+</section>
+
+
+<nav class="nav">
+
+<button class="active" onclick="home()">
+⌂
+<span>الرئيسية</span>
+</button>
+
+<button onclick="showProviders('الخدمات القريبة')">
+📍
+<span>قريب مني</span>
+</button>
+
+<button onclick="openRequest()">
+🚨
+<span>نجدة</span>
+</button>
+
+<button onclick="showToast('صفحة الحساب قيد التجهيز')">
+👤
+<span>حسابي</span>
+</button>
+
+</nav>
+
+</main>
+
+
+<div id="modal" class="modal">
+
+<div class="sheet">
+
+<h2>
+طلب النجدة
+</h2>
+
+<div class="muted">
+سيتم استخدام موقعك لإيجاد أقرب مقدم خدمة.
+</div>
+
+<label>نوع الخدمة</label>
+
+<select id="service" class="input">
+
+<option>قطر السيارات</option>
+<option>قطر الشاحنات</option>
+<option>ورشة متنقلة</option>
+
+</select>
+
+<label>وصف المشكلة</label>
+
+<textarea
+id="problem"
+class="input"
+rows="3"
+placeholder="مثلاً: المحرك لا يعمل...">
+</textarea>
+
+<label>تفاصيل المركبة</label>
+
+<input
+id="vehicle"
+class="input"
+placeholder="النوع والموديل، مثلاً Golf 5 1.9 TDI">
+
+<button class="primary" onclick="submitRequest()">
+إرسال طلب النجدة
+</button>
+
+<button class="secondary" onclick="closeModal()">
+إلغاء
+</button>
+
+</div>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script>
+
+const providers={
+
+"ورشة متنقلة":[
+['ورشة متنقلة السريع','4.8','97','3.1 كم','📱 0551 000 111'],
+['ميكانيكي الطريق','4.6','61','5.2 كم','📱 0661 000 222']
+],
+
+"قطع الغيار":[
+['قطع غيار DZ','4.7','143','2.8 كم','📱 0550 000 333'],
+['Auto Parts Blida','4.5','72','6.0 كم','📱 0660 000 444']
+],
+
+"الخدمات القريبة":[
+['قاطر المدينة','4.9','126','2.4 كم','📱 0550 000 000'],
+['نجدة الطريق','4.7','84','4.1 كم','📱 0660 000 000']
+]
+
+};
+
+
+function openRequest(type){
+
+document.getElementById('modal').classList.add('open');
+
+if(type)
+document.getElementById('service').value=type;
+
+}
+
+
+function closeModal(){
+
+document.getElementById('modal').classList.remove('open');
+
+}
+
+
+function submitRequest(){
+
+closeModal();
+
+showToast(
+'تم تجهيز طلبك — جاري البحث عن أقرب مقدم خدمة'
+);
+
+setTimeout(
+()=>showProviders('الخدمات القريبة'),
+700
+);
+
+}
+
+
+function showProviders(type){
+
+const s=document.getElementById('providers');
+
+s.classList.remove('hidden');
+
+document.getElementById('providerTitle').textContent=type;
+
+const arr=
+providers[type]||
+providers['الخدمات القريبة'];
+
+document.getElementById('providerList').innerHTML=
+
+arr.map(p=>`
+
+<div class="card">
+
+<div class="row">
+
+<div class="provider">
+
+<div class="avatar">
+
+${
+type.includes('قطع')
+?'🔩'
+:type.includes('ورشة')
+?'🛠️'
+:'🚛'
+}
+
+</div>
+
+<div>
+
+<b>${p[0]}</b>
+
+<div class="stars">
+★★★★★
+<span class="muted">
+${p[1]} · ${p[2]} تقييم
+</span>
+</div>
+
+<div class="muted">
+${p[3]} · ${p[4]}
+</div>
+
+</div>
+
+</div>
+
+<button
+class="call"
+onclick="showToast('سيتم فتح الاتصال')">
+
+اتصال
+
+</button>
+
+</div>
+
+</div>
+
+`).join('');
+
+s.scrollIntoView({
+behavior:'smooth'
+});
+
+}
+
+
+function hideProviders(){
+
+document
+.getElementById('providers')
+.classList
+.add('hidden');
+
+}
+
+
+function home(){
+
+hideProviders();
+
+scrollTo({
+top:0,
+behavior:'smooth'
+});
+
+}
+
+
+function call(n){
+
+location.href='tel:'+n;
+
+}
+
+
+function showToast(t){
+
+const x=document.getElementById('toast');
+
+x.textContent=t;
+
+x.style.display='block';
+
+clearTimeout(window.tt);
+
+window.tt=setTimeout(
+()=>x.style.display='none',
+2600
+);
+
+}
+
+
+if('serviceWorker' in navigator)
+navigator.serviceWorker.register('sw.js');
+
+</script>
+
+</body>
+</html>
