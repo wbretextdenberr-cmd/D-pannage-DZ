@@ -1,12 +1,15 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
 <title>DÉPANNAGE.DZ</title>
 
-<!-- الخريطة الحقيقية -->
+<!-- Leaflet -->
 <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -89,6 +92,7 @@ header p{
     flex-direction:column;
     align-items:center;
     justify-content:center;
+    cursor:pointer;
 }
 
 .card:active{
@@ -112,7 +116,7 @@ header p{
 
 
 /* =========================
-   الخريطة الحقيقية
+   الخريطة
 ========================= */
 
 .map{
@@ -129,6 +133,13 @@ header p{
 #realMap{
     width:100%;
     height:100%;
+    min-height:260px;
+}
+
+.leaflet-container{
+    width:100%;
+    height:100%;
+    font-family:Arial,Tahoma,sans-serif;
 }
 
 .map-status{
@@ -244,6 +255,7 @@ header p{
     background:none;
     font-size:12px;
     color:#475569;
+    cursor:pointer;
 }
 
 .bottom-nav span{
@@ -292,6 +304,7 @@ header p{
     margin-bottom:9px;
     text-align:right;
     font-size:15px;
+    cursor:pointer;
 }
 
 .option:active{
@@ -306,6 +319,7 @@ header p{
     border-radius:12px;
     margin-top:7px;
     font-size:15px;
+    cursor:pointer;
 }
 
 input,select{
@@ -335,6 +349,7 @@ label{
     border-radius:11px;
     font-size:15px;
     font-weight:bold;
+    cursor:pointer;
 }
 
 .step-title{
@@ -365,6 +380,7 @@ label{
 </style>
 </head>
 
+
 <body>
 
 <header>
@@ -393,9 +409,7 @@ label{
 
         <div class="card" onclick="openTowOptions()">
 
-            <div class="icon">
-                🚗
-            </div>
+            <div class="icon">🚗</div>
 
             <h3>
                 قطر السيارات
@@ -410,9 +424,7 @@ label{
 
         <div class="card" onclick="openTruckOptions()">
 
-            <div class="icon">
-                🚛
-            </div>
+            <div class="icon">🚛</div>
 
             <h3>
                 قطر الشاحنات
@@ -427,9 +439,7 @@ label{
 
         <div class="card" onclick="openMobileWorkshop()">
 
-            <div class="icon">
-                🔧
-            </div>
+            <div class="icon">🔧</div>
 
             <h3>
                 ورشة متنقلة
@@ -444,9 +454,7 @@ label{
 
         <div class="card" onclick="openPartsOptions()">
 
-            <div class="icon">
-                ⚙️
-            </div>
+            <div class="icon">⚙️</div>
 
             <h3>
                 قطع الغيار
@@ -514,24 +522,31 @@ label{
 
     <div class="modal">
 
-        <h2>
-            🚗 قطر السيارات
-        </h2>
+        <h2>🚗 قطر السيارات</h2>
 
         <p>
             اختر طريقة المساعدة المطلوبة
         </p>
 
-        <button class="option" onclick="requestNearestTow()">
+        <button class="option"
+                onclick="requestNearestTow()">
+
             📍 النقل إلى أقرب ورشة مختصة
+
         </button>
 
-        <button class="option" onclick="chooseTowDestination()">
+        <button class="option"
+                onclick="chooseTowDestination()">
+
             🗺️ النقل إلى وجهة أحددها
+
         </button>
 
-        <button class="close" onclick="closeModal('towModal')">
+        <button class="close"
+                onclick="closeModal('towModal')">
+
             إغلاق
+
         </button>
 
     </div>
@@ -547,41 +562,60 @@ label{
 
     <div class="modal">
 
-        <h2>
-            🚛 قطر الشاحنات
-        </h2>
+        <h2>🚛 قطر الشاحنات</h2>
 
         <p>
             اختر نوع العطل، وسنبحث عن قاطرات الشاحنات
             وورشات إصلاح الشاحنات القريبة منك.
         </p>
 
-        <button class="option" onclick="selectTruckProblem('عطل في المحرك')">
+        <button class="option"
+                onclick="selectTruckProblem('عطل في المحرك')">
+
             🔧 عطل في المحرك
+
         </button>
 
-        <button class="option" onclick="selectTruckProblem('عطل في ناقل الحركة')">
+        <button class="option"
+                onclick="selectTruckProblem('عطل في ناقل الحركة')">
+
             ⚙️ عطل في ناقل الحركة
+
         </button>
 
-        <button class="option" onclick="selectTruckProblem('عطل كهربائي')">
+        <button class="option"
+                onclick="selectTruckProblem('عطل كهربائي')">
+
             ⚡ عطل كهربائي
+
         </button>
 
-        <button class="option" onclick="selectTruckProblem('عطل في الإطارات أو العجلات')">
+        <button class="option"
+                onclick="selectTruckProblem('عطل في الإطارات أو العجلات')">
+
             🛞 عطل في الإطارات أو العجلات
+
         </button>
 
-        <button class="option" onclick="selectTruckProblem('حادث')">
+        <button class="option"
+                onclick="selectTruckProblem('حادث')">
+
             🚨 حادث
+
         </button>
 
-        <button class="option" onclick="selectTruckProblem('عطل آخر')">
+        <button class="option"
+                onclick="selectTruckProblem('عطل آخر')">
+
             ❓ عطل آخر
+
         </button>
 
-        <button class="close" onclick="closeModal('truckModal')">
+        <button class="close"
+                onclick="closeModal('truckModal')">
+
             إغلاق
+
         </button>
 
     </div>
@@ -597,9 +631,7 @@ label{
 
     <div class="modal">
 
-        <h2>
-            🔧 الورشة المتنقلة
-        </h2>
+        <h2>🔧 الورشة المتنقلة</h2>
 
         <p>
             أولاً اختر نوع المركبة
@@ -609,20 +641,32 @@ label{
             1️⃣ نوع المركبة
         </div>
 
-        <button class="option" onclick="selectMobileVehicle('سيارة')">
+        <button class="option"
+                onclick="selectMobileVehicle('سيارة')">
+
             🚗 سيارة
+
         </button>
 
-        <button class="option" onclick="selectMobileVehicle('شاحنة')">
+        <button class="option"
+                onclick="selectMobileVehicle('شاحنة')">
+
             🚛 شاحنة
+
         </button>
 
-        <button class="option" onclick="selectMobileVehicle('دراجة نارية')">
+        <button class="option"
+                onclick="selectMobileVehicle('دراجة نارية')">
+
             🏍️ دراجة نارية
+
         </button>
 
-        <button class="close" onclick="closeModal('mobileModal')">
+        <button class="close"
+                onclick="closeModal('mobileModal')">
+
             إغلاق
+
         </button>
 
     </div>
@@ -638,9 +682,7 @@ label{
 
     <div class="modal">
 
-        <h2>
-            🔧 معلومات المركبة
-        </h2>
+        <h2>🔧 معلومات المركبة</h2>
 
         <p>
             هذه المعلومات تساعد التطبيق على توجيهك
@@ -722,20 +764,32 @@ label{
             3️⃣ نوع العطل
         </div>
 
-        <button class="option" onclick="selectMobileProblem('عطل ميكانيكي')">
+        <button class="option"
+                onclick="selectMobileProblem('عطل ميكانيكي')">
+
             🔧 عطل ميكانيكي
+
         </button>
 
-        <button class="option" onclick="selectMobileProblem('عطل كهربائي')">
+        <button class="option"
+                onclick="selectMobileProblem('عطل كهربائي')">
+
             ⚡ عطل كهربائي
+
         </button>
 
-        <button class="option" onclick="selectMobileProblem('تصليح عجلات')">
+        <button class="option"
+                onclick="selectMobileProblem('تصليح عجلات')">
+
             🛞 تصليح عجلات
+
         </button>
 
-        <button class="close" onclick="backToMobileVehicle()">
+        <button class="close"
+                onclick="backToMobileVehicle()">
+
             ← العودة
+
         </button>
 
     </div>
@@ -764,20 +818,32 @@ label{
             1️⃣ نوع المركبة
         </div>
 
-        <button class="option" onclick="selectPartsVehicle('سيارة')">
+        <button class="option"
+                onclick="selectPartsVehicle('سيارة')">
+
             🚗 سيارة
+
         </button>
 
-        <button class="option" onclick="selectPartsVehicle('شاحنة')">
+        <button class="option"
+                onclick="selectPartsVehicle('شاحنة')">
+
             🚛 شاحنة
+
         </button>
 
-        <button class="option" onclick="selectPartsVehicle('دراجة نارية')">
+        <button class="option"
+                onclick="selectPartsVehicle('دراجة نارية')">
+
             🏍️ دراجة نارية
+
         </button>
 
-        <button class="close" onclick="closeModal('partsModal')">
+        <button class="close"
+                onclick="closeModal('partsModal')">
+
             إغلاق
+
         </button>
 
     </div>
@@ -857,25 +923,25 @@ label{
             3️⃣ نوع محل قطع الغيار
         </div>
 
-        <button
-            class="option"
-            onclick="selectPartsType('هيكل ميكانيك وكهرباء')">
+        <button class="option"
+                onclick="selectPartsType('هيكل ميكانيك وكهرباء')">
 
             🔧 هيكل ميكانيك وكهرباء
 
         </button>
 
-        <button
-            class="option"
-            onclick="selectPartsType('كهرباء وحدها')">
+        <button class="option"
+                onclick="selectPartsType('كهرباء وحدها')">
 
             ⚡ كهرباء وحدها
 
         </button>
 
+        <button class="close"
+                onclick="backToPartsVehicle()">
 
-        <button class="close" onclick="backToPartsVehicle()">
             ← العودة
+
         </button>
 
     </div>
@@ -919,12 +985,18 @@ label{
             placeholder="مثال: مهدية"
         >
 
-        <button class="primary" onclick="submitRequest()">
+        <button class="primary"
+                onclick="submitRequest()">
+
             تأكيد الوجهة
+
         </button>
 
-        <button class="close" onclick="closeModal('requestModal')">
+        <button class="close"
+                onclick="closeModal('requestModal')">
+
             إلغاء
+
         </button>
 
     </div>
@@ -935,11 +1007,17 @@ label{
 <div id="toast" class="toast"></div>
 
 
-<!-- مكتبة الخريطة -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet JavaScript -->
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
 
 
 <script>
+
+/* =====================================================
+   المتغيرات
+===================================================== */
 
 let currentLocation = null;
 
@@ -952,11 +1030,6 @@ let selectedMobileProblem = null;
 let selectedPartsVehicle = null;
 
 let selectedPartsType = null;
-
-
-/* =====================================================
-   متغيرات الخريطة
-===================================================== */
 
 let mapInstance = null;
 
@@ -971,35 +1044,94 @@ let accuracyCircle = null;
 
 function initializeMap(){
 
-    if(typeof L === "undefined"){
+    const locationText =
+        document.getElementById("locationText");
 
-        document.getElementById("locationText").innerText =
-            "تعذر تحميل الخريطة";
+    const mapElement =
+        document.getElementById("realMap");
+
+
+    if(!mapElement){
 
         return;
 
     }
 
 
-    mapInstance = L.map("realMap",{
+    if(typeof L === "undefined"){
 
-        zoomControl:true,
+        locationText.innerText =
+            "⚠️ تعذر تحميل الخريطة";
 
-        attributionControl:true
+        return;
 
-    }).setView(
-        [28.0339,1.6596],
-        5
-    );
+    }
 
 
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            maxZoom:19,
-            attribution:"© OpenStreetMap contributors"
-        }
-    ).addTo(mapInstance);
+    if(mapInstance){
+
+        setTimeout(function(){
+
+            mapInstance.invalidateSize();
+
+        },300);
+
+        return;
+
+    }
+
+
+    try{
+
+        mapInstance =
+            L.map("realMap",{
+
+                zoomControl:true,
+
+                attributionControl:true
+
+            }).setView(
+                [28.0339,1.6596],
+                5
+            );
+
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+
+                maxZoom:19,
+
+                attribution:
+                    "© OpenStreetMap contributors"
+
+            }
+
+        ).addTo(mapInstance);
+
+
+        setTimeout(function(){
+
+            if(mapInstance){
+
+                mapInstance.invalidateSize();
+
+            }
+
+        },500);
+
+
+    }catch(error){
+
+        console.error(
+            "Map error:",
+            error
+        );
+
+        locationText.innerText =
+            "⚠️ تعذر تشغيل الخريطة";
+
+    }
 
 }
 
@@ -1029,12 +1161,16 @@ function updateMapLocation(){
 
     if(userMarker){
 
-        userMarker.setLatLng([lat,lng]);
+        userMarker.setLatLng(
+            [lat,lng]
+        );
 
     }else{
 
         userMarker =
-            L.marker([lat,lng])
+            L.marker(
+                [lat,lng]
+            )
             .addTo(mapInstance)
             .bindPopup(
                 "📍 موقعك الحالي"
@@ -1045,11 +1181,12 @@ function updateMapLocation(){
 
     if(accuracyCircle){
 
-        accuracyCircle.setLatLng([lat,lng]);
+        accuracyCircle.setLatLng(
+            [lat,lng]
+        );
 
-        if(
-            currentLocation.accuracy
-        ){
+
+        if(currentLocation.accuracy){
 
             accuracyCircle.setRadius(
                 currentLocation.accuracy
@@ -1063,6 +1200,7 @@ function updateMapLocation(){
             L.circle(
                 [lat,lng],
                 {
+
                     radius:
                         currentLocation.accuracy || 30,
 
@@ -1071,8 +1209,10 @@ function updateMapLocation(){
                     fillColor:"#60a5fa",
 
                     fillOpacity:0.18
+
                 }
-            ).addTo(mapInstance);
+            )
+            .addTo(mapInstance);
 
     }
 
@@ -1096,7 +1236,7 @@ function updateMapLocation(){
 
 
 /* =====================================================
-   بيانات قطر الشاحنات - تجريبية
+   بيانات قطر الشاحنات
 ===================================================== */
 
 const truckProviders = [
@@ -1265,9 +1405,7 @@ const mobileProviders = [
             "Scania",
             "Isuzu"
         ],
-        energy:[
-            "ديزل"
-        ],
+        energy:["ديزل"],
         distance:"6.4 كم",
         rating:"4.7",
         phone:"0661000006"
@@ -1284,9 +1422,7 @@ const mobileProviders = [
             "Scania",
             "Isuzu"
         ],
-        energy:[
-            "ديزل"
-        ],
+        energy:["ديزل"],
         distance:"7.2 كم",
         rating:"4.6",
         phone:"0551000007"
@@ -1303,9 +1439,7 @@ const mobileProviders = [
             "Scania",
             "Isuzu"
         ],
-        energy:[
-            "ديزل"
-        ],
+        energy:["ديزل"],
         distance:"5.8 كم",
         rating:"4.8",
         phone:"0771000008"
@@ -1320,9 +1454,7 @@ const mobileProviders = [
             "Honda",
             "Suzuki"
         ],
-        energy:[
-            "بنزين"
-        ],
+        energy:["بنزين"],
         distance:"3.7 كم",
         rating:"4.9",
         phone:"0551000009"
@@ -1368,7 +1500,7 @@ const mobileProviders = [
 
 
 /* =====================================================
-   بيانات قطع الغيار - تجريبية
+   بيانات قطع الغيار
 ===================================================== */
 
 const partsProviders = [
@@ -1567,7 +1699,8 @@ function emergencyCall(){
 
 function openTowOptions(){
 
-    document.getElementById("towModal").style.display="flex";
+    document.getElementById("towModal")
+        .style.display="flex";
 
 }
 
@@ -1592,7 +1725,8 @@ function chooseTowDestination(){
 
     closeModal("towModal");
 
-    document.getElementById("requestModal").style.display="flex";
+    document.getElementById("requestModal")
+        .style.display="flex";
 
 }
 
@@ -1603,7 +1737,8 @@ function chooseTowDestination(){
 
 function openTruckOptions(){
 
-    document.getElementById("truckModal").style.display="flex";
+    document.getElementById("truckModal")
+        .style.display="flex";
 
 }
 
@@ -1656,7 +1791,8 @@ function showTruckProviders(){
 
         container.style.display="none";
 
-        document.getElementById("truckModal").style.display="flex";
+        document.getElementById("truckModal")
+            .style.display="flex";
 
     };
 
@@ -1739,6 +1875,7 @@ function showTruckProviders(){
     window.scrollTo({
 
         top:document.body.scrollHeight,
+
         behavior:"smooth"
 
     });
@@ -1752,7 +1889,8 @@ function showTruckProviders(){
 
 function openMobileWorkshop(){
 
-    document.getElementById("mobileModal").style.display="flex";
+    document.getElementById("mobileModal")
+        .style.display="flex";
 
 }
 
@@ -1769,7 +1907,8 @@ function selectMobileVehicle(vehicle){
 
     document.getElementById("vehicleEnergy").value="";
 
-    document.getElementById("mobileDetailsModal").style.display="flex";
+    document.getElementById("mobileDetailsModal")
+        .style.display="flex";
 
 }
 
@@ -1778,7 +1917,8 @@ function backToMobileVehicle(){
 
     closeModal("mobileDetailsModal");
 
-    document.getElementById("mobileModal").style.display="flex";
+    document.getElementById("mobileModal")
+        .style.display="flex";
 
 }
 
@@ -1789,15 +1929,18 @@ function selectMobileProblem(problem){
 
 
     const brand =
-        document.getElementById("vehicleBrand").value;
+        document.getElementById("vehicleBrand")
+        .value;
 
 
     const model =
-        document.getElementById("vehicleModel").value.trim();
+        document.getElementById("vehicleModel")
+        .value.trim();
 
 
     const energy =
-        document.getElementById("vehicleEnergy").value;
+        document.getElementById("vehicleEnergy")
+        .value;
 
 
     if(!energy){
@@ -1877,7 +2020,8 @@ function showMobileProviders(
 
         container.style.display="none";
 
-        document.getElementById("mobileDetailsModal").style.display="flex";
+        document.getElementById("mobileDetailsModal")
+            .style.display="flex";
 
     };
 
@@ -1911,7 +2055,6 @@ function showMobileProviders(
     summary.style.lineHeight="1.9";
 
     summary.innerHTML =
-
         "🚘 المركبة: <b>"+vehicle+"</b>" +
         "<br>⚙️ الطاقة: <b>"+energy+"</b>" +
         "<br>🔧 العطل: <b>"+problem+"</b>" +
@@ -2079,6 +2222,7 @@ function showMobileProviders(
     window.scrollTo({
 
         top:document.body.scrollHeight,
+
         behavior:"smooth"
 
     });
@@ -2092,7 +2236,20 @@ function showMobileProviders(
 
 function openPartsOptions(){
 
-    document.getElementById("partsModal").style.display="flex";
+    const modal =
+        document.getElementById("partsModal");
+
+    if(!modal){
+
+        showToast(
+            "تعذر فتح قسم قطع الغيار"
+        );
+
+        return;
+
+    }
+
+    modal.style.display="flex";
 
 }
 
@@ -2107,7 +2264,8 @@ function selectPartsVehicle(vehicle){
 
     document.getElementById("partsModel").value="";
 
-    document.getElementById("partsDetailsModal").style.display="flex";
+    document.getElementById("partsDetailsModal")
+        .style.display="flex";
 
 }
 
@@ -2116,7 +2274,8 @@ function backToPartsVehicle(){
 
     closeModal("partsDetailsModal");
 
-    document.getElementById("partsModal").style.display="flex";
+    document.getElementById("partsModal")
+        .style.display="flex";
 
 }
 
@@ -2127,11 +2286,13 @@ function selectPartsType(type){
 
 
     const brand =
-        document.getElementById("partsBrand").value;
+        document.getElementById("partsBrand")
+        .value;
 
 
     const model =
-        document.getElementById("partsModel").value.trim();
+        document.getElementById("partsModel")
+        .value.trim();
 
 
     if(!brand){
@@ -2208,7 +2369,8 @@ function showPartsProviders(
 
         container.style.display="none";
 
-        document.getElementById("partsDetailsModal").style.display="flex";
+        document.getElementById("partsDetailsModal")
+            .style.display="flex";
 
     };
 
@@ -2242,7 +2404,6 @@ function showPartsProviders(
     summary.style.lineHeight="1.9";
 
     summary.innerHTML =
-
         "🚘 المركبة: <b>"+vehicle+"</b>" +
         "<br>🏷️ العلامة: <b>"+brand+"</b>" +
         (model ?
@@ -2357,16 +2518,24 @@ function showPartsProviders(
 
             <div class="provider-info">
 
-                🚘 المركبة: ${provider.vehicles.join("، ")}
+                🚘 المركبة:
+                ${provider.vehicles.join("، ")}
+
                 <br>
 
-                🏷️ العلامات: ${provider.brands.join("، ")}
+                🏷️ العلامات:
+                ${provider.brands.join("، ")}
+
                 <br>
 
-                📍 المسافة التقريبية: ${provider.distance}
+                📍 المسافة التقريبية:
+                ${provider.distance}
+
                 <br>
 
-                ⭐ التقييم: ${provider.rating}/5
+                ⭐ التقييم:
+                ${provider.rating}/5
+
                 <br>
 
                 📞 ${provider.phone}
@@ -2456,7 +2625,10 @@ function getRealLocation(callback){
 
         function(error){
 
-            console.log(error);
+            console.log(
+                "Geolocation:",
+                error
+            );
 
 
             showToast(
@@ -2554,7 +2726,8 @@ function showProviders(
 
     title.className="section-title";
 
-    title.innerText=titleText;
+    title.innerText =
+        titleText;
 
     container.appendChild(title);
 
@@ -2595,10 +2768,14 @@ function showProviders(
 
             <div class="provider-info">
 
-                📍 المسافة التقريبية: ${provider.distance}
+                📍 المسافة التقريبية:
+                ${provider.distance}
+
                 <br>
 
-                ⭐ التقييم: ${provider.rating}/5
+                ⭐ التقييم:
+                ${provider.rating}/5
+
                 <br>
 
                 📞 ${provider.phone}
@@ -2689,8 +2866,14 @@ function submitRequest(){
 
 function closeModal(id){
 
-    document.getElementById(id)
-        .style.display="none";
+    const modal =
+        document.getElementById(id);
+
+    if(modal){
+
+        modal.style.display="none";
+
+    }
 
 }
 
@@ -2736,14 +2919,24 @@ function showToast(message){
     const toast =
         document.getElementById("toast");
 
-    toast.innerText=message;
+    if(!toast){
 
-    toast.style.display="block";
+        return;
+
+    }
+
+
+    toast.innerText =
+        message;
+
+    toast.style.display =
+        "block";
 
 
     setTimeout(function(){
 
-        toast.style.display="none";
+        toast.style.display =
+            "none";
 
     },3000);
 
@@ -2764,7 +2957,8 @@ document
 
             if(event.target === modal){
 
-                modal.style.display="none";
+                modal.style.display =
+                    "none";
 
             }
 
@@ -2782,38 +2976,25 @@ window.addEventListener(
     "load",
     function(){
 
-        initializeMap();
+        setTimeout(function(){
+
+            initializeMap();
+
+        },100);
 
     }
 );
 
 
 /* =====================================================
-   Service Worker
+   لا Service Worker في هذه المرحلة
 ===================================================== */
 
-if("serviceWorker" in navigator){
-
-    window.addEventListener(
-        "load",
-        function(){
-
-            navigator.serviceWorker
-            .register("./sw.js")
-            .catch(function(error){
-
-                console.log(
-                    "Service Worker:",
-                    error
-                );
-
-            });
-
-        }
-
-    );
-
-}
+/*
+   تم إيقاف Service Worker مؤقتًا أثناء مرحلة
+   اختبار الخريطة والواجهة، حتى لا يحتفظ الهاتف
+   بنسخة قديمة من التطبيق.
+*/
 
 </script>
 
