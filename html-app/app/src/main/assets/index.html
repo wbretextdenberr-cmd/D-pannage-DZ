@@ -49,6 +49,29 @@ header p{
     font-size:13px;
 }
 
+/* =========================
+   زر الحساب
+========================= */
+
+.account-btn{
+    position:absolute;
+    right:12px;
+    top:13px;
+    background:#2563eb;
+    color:white;
+    border:0;
+    border-radius:50%;
+    width:48px;
+    height:48px;
+    font-size:21px;
+    box-shadow:0 3px 8px #0004;
+    cursor:pointer;
+}
+
+.account-btn:active{
+    transform:scale(.95);
+}
+
 .sos{
     position:absolute;
     left:12px;
@@ -121,7 +144,7 @@ header p{
 
 .map{
     margin-top:18px;
-    height:260px;
+    height:320px;
     background:#dbe7d1;
     border-radius:18px;
     position:relative;
@@ -133,7 +156,7 @@ header p{
 #realMap{
     width:100%;
     height:100%;
-    min-height:260px;
+    min-height:320px;
 }
 
 .leaflet-container{
@@ -377,6 +400,81 @@ label{
     font-size:14px;
 }
 
+
+/* =========================
+   حساب المستخدم
+========================= */
+
+.account-profile{
+    background:#eff6ff;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:15px;
+    border:1px solid #dbeafe;
+}
+
+.account-profile .avatar{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    background:#2563eb;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:27px;
+    margin:0 auto 10px;
+}
+
+.account-profile h3{
+    text-align:center;
+    font-size:18px;
+    margin-bottom:5px;
+}
+
+.account-profile p{
+    text-align:center;
+    margin:3px 0;
+    color:#475569;
+}
+
+.logout-btn{
+    width:100%;
+    border:0;
+    background:#dc2626;
+    color:white;
+    padding:13px;
+    border-radius:11px;
+    margin-top:8px;
+    font-size:15px;
+    font-weight:bold;
+}
+
+.account-choice{
+    width:100%;
+    padding:16px;
+    border:1px solid #e2e8f0;
+    background:#f8fafc;
+    border-radius:13px;
+    margin-bottom:10px;
+    text-align:right;
+    font-size:15px;
+}
+
+.account-choice:active{
+    background:#e2e8f0;
+}
+
+.account-role{
+    background:#e0f2fe;
+    color:#0369a1;
+    padding:5px 9px;
+    border-radius:8px;
+    display:inline-block;
+    font-size:12px;
+    margin-top:5px;
+}
+
 </style>
 </head>
 
@@ -387,6 +485,12 @@ label{
 
     <button class="sos" onclick="emergencyCall()">
         🚨
+    </button>
+
+    <button class="account-btn"
+            onclick="openAccount()"
+            title="حسابي">
+        👤
     </button>
 
     <h1>DÉPANNAGE.DZ</h1>
@@ -483,7 +587,7 @@ label{
         </div>
 
         <div id="locationText">
-            اضغط على خدمة أو «القريب مني» لتحديد موقعك
+            جاري محاولة تحديد موقعك...
         </div>
 
     </div>
@@ -506,10 +610,257 @@ label{
         القريب مني
     </button>
 
+    <button onclick="openAccount()">
+        <span>👤</span>
+        حسابي
+    </button>
+
     <button onclick="emergencyCall()">
         <span>🚨</span>
         طوارئ
     </button>
+
+</div>
+
+
+<!-- =========================
+     حساب المستخدم
+========================= -->
+
+<div id="accountModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>
+            👤 حسابي
+        </h2>
+
+        <p>
+            أنشئ حسابًا للاستفادة من خدمات DÉPANNAGE.DZ.
+        </p>
+
+        <div id="accountContent"></div>
+
+        <button class="close"
+                onclick="closeModal('accountModal')">
+
+            إغلاق
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     إنشاء حساب
+========================= -->
+
+<div id="registerModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>
+            📝 إنشاء حساب
+        </h2>
+
+        <p>
+            اختر نوع الحساب ثم أدخل معلوماتك.
+        </p>
+
+        <div class="step-title">
+            1️⃣ نوع الحساب
+        </div>
+
+        <label for="registerRole">
+            نوع الحساب
+        </label>
+
+        <select id="registerRole">
+
+            <option value="">
+                اختر نوع الحساب
+            </option>
+
+            <option value="سائق">
+                👤 سائق
+            </option>
+
+            <option value="ورشة">
+                🔧 ورشة
+            </option>
+
+            <option value="قاطر">
+                🚛 قاطر
+            </option>
+
+        </select>
+
+
+        <div class="step-title">
+            2️⃣ المعلومات الأساسية
+        </div>
+
+        <label for="registerName">
+            الاسم
+        </label>
+
+        <input
+            id="registerName"
+            type="text"
+            placeholder="أدخل الاسم"
+        >
+
+
+        <label for="registerPhone">
+            رقم الهاتف
+        </label>
+
+        <input
+            id="registerPhone"
+            type="tel"
+            placeholder="مثال: 0550000000"
+        >
+
+
+        <label for="registerPassword">
+            كلمة المرور
+        </label>
+
+        <input
+            id="registerPassword"
+            type="password"
+            placeholder="أنشئ كلمة مرور"
+        >
+
+
+        <div id="providerRegistrationFields"
+             style="display:none">
+
+            <div class="step-title">
+                3️⃣ معلومات مقدم الخدمة
+            </div>
+
+            <label for="providerName">
+                اسم الورشة / اسم القاطر
+            </label>
+
+            <input
+                id="providerName"
+                type="text"
+                placeholder="مثال: ورشة الأمل"
+            >
+
+            <label for="providerWilaya">
+                الولاية
+            </label>
+
+            <input
+                id="providerWilaya"
+                type="text"
+                placeholder="مثال: البليدة"
+            >
+
+            <label for="providerCommune">
+                البلدية
+            </label>
+
+            <input
+                id="providerCommune"
+                type="text"
+                placeholder="مثال: بوفاريك"
+            >
+
+        </div>
+
+
+        <button class="primary"
+                onclick="createAccount()">
+
+            إنشاء الحساب
+
+        </button>
+
+        <button class="close"
+                onclick="switchToLogin()">
+
+            لدي حساب بالفعل — تسجيل الدخول
+
+        </button>
+
+        <button class="close"
+                onclick="closeModal('registerModal')">
+
+            إلغاء
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     تسجيل الدخول
+========================= -->
+
+<div id="loginModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>
+            🔑 تسجيل الدخول
+        </h2>
+
+        <p>
+            أدخل رقم الهاتف وكلمة المرور.
+        </p>
+
+        <label for="loginPhone">
+            رقم الهاتف
+        </label>
+
+        <input
+            id="loginPhone"
+            type="tel"
+            placeholder="مثال: 0550000000"
+        >
+
+
+        <label for="loginPassword">
+            كلمة المرور
+        </label>
+
+        <input
+            id="loginPassword"
+            type="password"
+            placeholder="كلمة المرور"
+        >
+
+
+        <button class="primary"
+                onclick="loginAccount()">
+
+            تسجيل الدخول
+
+        </button>
+
+        <button class="close"
+                onclick="switchToRegister()">
+
+            إنشاء حساب جديد
+
+        </button>
+
+        <button class="close"
+                onclick="closeModal('loginModal')">
+
+            إلغاء
+
+        </button>
+
+    </div>
 
 </div>
 
@@ -1037,6 +1388,657 @@ let userMarker = null;
 
 let accuracyCircle = null;
 
+let providerMarkersLayer = null;
+
+
+/* =====================================================
+   نظام الحسابات
+   المرحلة الحالية: حساب محلي تجريبي
+===================================================== */
+
+let currentUser = null;
+
+
+/* =====================================================
+   فتح الحساب
+===================================================== */
+
+function openAccount(){
+
+    renderAccountContent();
+
+    document.getElementById("accountModal")
+        .style.display="flex";
+
+}
+
+
+/* =====================================================
+   عرض محتوى الحساب
+===================================================== */
+
+function renderAccountContent(){
+
+    const container =
+        document.getElementById("accountContent");
+
+    if(!container){
+
+        return;
+
+    }
+
+
+    const savedUser =
+        localStorage.getItem("depannageUser");
+
+
+    if(savedUser){
+
+        try{
+
+            currentUser =
+                JSON.parse(savedUser);
+
+        }catch(error){
+
+            currentUser = null;
+
+        }
+
+    }
+
+
+    if(currentUser){
+
+        let roleIcon = "👤";
+
+
+        if(currentUser.role === "ورشة"){
+
+            roleIcon = "🔧";
+
+        }else if(currentUser.role === "قاطر"){
+
+            roleIcon = "🚛";
+
+        }
+
+
+        container.innerHTML = `
+
+            <div class="account-profile">
+
+                <div class="avatar">
+                    ${roleIcon}
+                </div>
+
+                <h3>
+                    ${escapeHtml(currentUser.name)}
+                </h3>
+
+                <p>
+                    📱 ${escapeHtml(currentUser.phone)}
+                </p>
+
+                <div style="text-align:center">
+
+                    <span class="account-role">
+                        ${roleIcon} ${escapeHtml(currentUser.role)}
+                    </span>
+
+                </div>
+
+                ${
+                    currentUser.providerName
+                    ?
+                    `
+                    <p style="margin-top:10px">
+                        🏢 ${escapeHtml(currentUser.providerName)}
+                    </p>
+                    `
+                    :
+                    ""
+                }
+
+                ${
+                    currentUser.wilaya
+                    ?
+                    `
+                    <p>
+                        📍 ${escapeHtml(currentUser.wilaya)}
+                        ${
+                            currentUser.commune
+                            ?
+                            " - " + escapeHtml(currentUser.commune)
+                            :
+                            ""
+                        }
+                    </p>
+                    `
+                    :
+                    ""
+                }
+
+            </div>
+
+
+            <button class="option"
+                    onclick="showToast('سيتم تطوير تعديل البيانات في مرحلة لاحقة')">
+
+                ⚙️ تعديل بيانات الحساب
+
+            </button>
+
+
+            ${
+                currentUser.role === "ورشة"
+                ||
+                currentUser.role === "قاطر"
+                ?
+                `
+                <button class="option"
+                        onclick="showToast('سيتم ربط موقع مقدم الخدمة بالخريطة في المرحلة القادمة')">
+
+                    📍 إعداد موقع مقدم الخدمة
+
+                </button>
+                `
+                :
+                ""
+            }
+
+
+            <button class="logout-btn"
+                    onclick="logoutAccount()">
+
+                🚪 تسجيل الخروج
+
+            </button>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div class="account-profile">
+
+            <div class="avatar">
+                👤
+            </div>
+
+            <h3>
+                مرحبًا بك في DÉPANNAGE.DZ
+            </h3>
+
+            <p>
+                سجّل حسابك للاستفادة من خدمات التطبيق.
+            </p>
+
+        </div>
+
+
+        <button class="primary"
+                onclick="openRegister()">
+
+            📝 إنشاء حساب جديد
+
+        </button>
+
+
+        <button class="option"
+                style="margin-top:10px"
+                onclick="openLogin()">
+
+            🔑 لدي حساب — تسجيل الدخول
+
+        </button>
+
+    `;
+
+}
+
+
+/* =====================================================
+   فتح التسجيل
+===================================================== */
+
+function openRegister(){
+
+    closeModal("accountModal");
+
+    resetRegisterForm();
+
+    document.getElementById("registerModal")
+        .style.display="flex";
+
+}
+
+
+/* =====================================================
+   فتح تسجيل الدخول
+===================================================== */
+
+function openLogin(){
+
+    closeModal("accountModal");
+
+    document.getElementById("loginPhone").value="";
+    document.getElementById("loginPassword").value="";
+
+    document.getElementById("loginModal")
+        .style.display="flex";
+
+}
+
+
+/* =====================================================
+   الانتقال بين التسجيل والدخول
+===================================================== */
+
+function switchToLogin(){
+
+    closeModal("registerModal");
+
+    openLogin();
+
+}
+
+
+function switchToRegister(){
+
+    closeModal("loginModal");
+
+    openRegister();
+
+}
+
+
+/* =====================================================
+   إظهار معلومات مقدم الخدمة
+===================================================== */
+
+document.addEventListener(
+    "change",
+    function(event){
+
+        if(event.target &&
+           event.target.id === "registerRole"){
+
+            const role =
+                event.target.value;
+
+            const fields =
+                document.getElementById(
+                    "providerRegistrationFields"
+                );
+
+            if(!fields){
+
+                return;
+
+            }
+
+
+            if(
+                role === "ورشة" ||
+                role === "قاطر"
+            ){
+
+                fields.style.display="block";
+
+            }else{
+
+                fields.style.display="none";
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   إنشاء الحساب
+===================================================== */
+
+function createAccount(){
+
+    const role =
+        document.getElementById("registerRole")
+        .value;
+
+
+    const name =
+        document.getElementById("registerName")
+        .value.trim();
+
+
+    const phone =
+        document.getElementById("registerPhone")
+        .value.trim();
+
+
+    const password =
+        document.getElementById("registerPassword")
+        .value;
+
+
+    if(!role){
+
+        showToast(
+            "اختر نوع الحساب أولاً"
+        );
+
+        return;
+
+    }
+
+
+    if(!name){
+
+        showToast(
+            "أدخل الاسم"
+        );
+
+        return;
+
+    }
+
+
+    if(!phone){
+
+        showToast(
+            "أدخل رقم الهاتف"
+        );
+
+        return;
+
+    }
+
+
+    if(!password || password.length < 4){
+
+        showToast(
+            "كلمة المرور يجب أن تحتوي على 4 أحرف أو أرقام على الأقل"
+        );
+
+        return;
+
+    }
+
+
+    const providerName =
+        document.getElementById("providerName")
+        .value.trim();
+
+
+    const wilaya =
+        document.getElementById("providerWilaya")
+        .value.trim();
+
+
+    const commune =
+        document.getElementById("providerCommune")
+        .value.trim();
+
+
+    if(
+        (role === "ورشة" || role === "قاطر") &&
+        !providerName
+    ){
+
+        showToast(
+            "أدخل اسم الورشة أو اسم القاطر"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        (role === "ورشة" || role === "قاطر") &&
+        !wilaya
+    ){
+
+        showToast(
+            "أدخل الولاية"
+        );
+
+        return;
+
+    }
+
+
+    /*
+       الحساب المحلي.
+       كلمة المرور محفوظة فقط لأغراض النموذج التجريبي.
+       في النظام النهائي سنستخدم خادمًا وقاعدة بيانات
+       ونظام مصادقة آمن.
+    */
+
+    const user = {
+
+        name:name,
+
+        phone:phone,
+
+        password:password,
+
+        role:role,
+
+        providerName:providerName,
+
+        wilaya:wilaya,
+
+        commune:commune,
+
+        createdAt:
+            new Date().toISOString()
+
+    };
+
+
+    localStorage.setItem(
+        "depannageUser",
+        JSON.stringify(user)
+    );
+
+
+    currentUser = user;
+
+
+    closeModal("registerModal");
+
+
+    showToast(
+        "🎉 تم إنشاء حسابك بنجاح"
+    );
+
+
+    setTimeout(function(){
+
+        openAccount();
+
+    },700);
+
+}
+
+
+/* =====================================================
+   تسجيل الدخول
+===================================================== */
+
+function loginAccount(){
+
+    const phone =
+        document.getElementById("loginPhone")
+        .value.trim();
+
+
+    const password =
+        document.getElementById("loginPassword")
+        .value;
+
+
+    if(!phone || !password){
+
+        showToast(
+            "أدخل رقم الهاتف وكلمة المرور"
+        );
+
+        return;
+
+    }
+
+
+    const savedUser =
+        localStorage.getItem("depannageUser");
+
+
+    if(!savedUser){
+
+        showToast(
+            "لا يوجد حساب محفوظ. أنشئ حسابًا أولاً."
+        );
+
+        return;
+
+    }
+
+
+    let user;
+
+
+    try{
+
+        user =
+            JSON.parse(savedUser);
+
+    }catch(error){
+
+        showToast(
+            "تعذر قراءة بيانات الحساب"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        user.phone !== phone ||
+        user.password !== password
+    ){
+
+        showToast(
+            "رقم الهاتف أو كلمة المرور غير صحيحة"
+        );
+
+        return;
+
+    }
+
+
+    currentUser = user;
+
+
+    closeModal("loginModal");
+
+
+    showToast(
+        "👋 مرحبًا بك من جديد " +
+        user.name
+    );
+
+
+    setTimeout(function(){
+
+        openAccount();
+
+    },700);
+
+}
+
+
+/* =====================================================
+   تسجيل الخروج
+===================================================== */
+
+function logoutAccount(){
+
+    localStorage.removeItem(
+        "depannageUser"
+    );
+
+    currentUser = null;
+
+
+    closeModal("accountModal");
+
+
+    showToast(
+        "تم تسجيل الخروج"
+    );
+
+}
+
+
+/* =====================================================
+   إعادة نموذج التسجيل
+===================================================== */
+
+function resetRegisterForm(){
+
+    document.getElementById("registerRole").value="";
+
+    document.getElementById("registerName").value="";
+
+    document.getElementById("registerPhone").value="";
+
+    document.getElementById("registerPassword").value="";
+
+    document.getElementById("providerName").value="";
+
+    document.getElementById("providerWilaya").value="";
+
+    document.getElementById("providerCommune").value="";
+
+    document.getElementById(
+        "providerRegistrationFields"
+    ).style.display="none";
+
+}
+
+
+/* =====================================================
+   حماية عرض النصوص
+===================================================== */
+
+function escapeHtml(text){
+
+    if(text === null || text === undefined){
+
+        return "";
+
+    }
+
+
+    return String(text)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
 
 /* =====================================================
    تهيئة الخريطة
@@ -1110,6 +2112,10 @@ function initializeMap(){
         ).addTo(mapInstance);
 
 
+        providerMarkersLayer =
+            L.layerGroup().addTo(mapInstance);
+
+
         setTimeout(function(){
 
             if(mapInstance){
@@ -1119,6 +2125,13 @@ function initializeMap(){
             }
 
         },500);
+
+
+        setTimeout(function(){
+
+            getRealLocation();
+
+        },800);
 
 
     }catch(error){
@@ -1173,7 +2186,7 @@ function updateMapLocation(){
             )
             .addTo(mapInstance)
             .bindPopup(
-                "📍 موقعك الحالي"
+                "<b>📍 موقعك الحالي</b>"
             );
 
     }
@@ -1231,6 +2244,139 @@ function updateMapLocation(){
         mapInstance.invalidateSize();
 
     },300);
+
+}
+
+
+/* =====================================================
+   إضافة علامات مقدمي الخدمة
+===================================================== */
+
+function clearProviderMarkers(){
+
+    if(
+        providerMarkersLayer &&
+        typeof providerMarkersLayer.clearLayers === "function"
+    ){
+
+        providerMarkersLayer.clearLayers();
+
+    }
+
+}
+
+
+function addProviderMarkers(list){
+
+    if(
+        !mapInstance ||
+        !currentLocation ||
+        !providerMarkersLayer ||
+        !Array.isArray(list)
+    ){
+
+        return;
+
+    }
+
+
+    clearProviderMarkers();
+
+
+    const baseLat =
+        currentLocation.latitude;
+
+    const baseLng =
+        currentLocation.longitude;
+
+
+    list.forEach(function(provider,index){
+
+        let lat = provider.latitude;
+        let lng = provider.longitude;
+
+        let isRealLocation = true;
+
+
+        if(
+            typeof lat !== "number" ||
+            typeof lng !== "number"
+        ){
+
+            const angle =
+                (index * 70) *
+                Math.PI / 180;
+
+            const distance =
+                0.008 +
+                (index * 0.003);
+
+
+            lat =
+                baseLat +
+                Math.sin(angle) * distance;
+
+
+            lng =
+                baseLng +
+                Math.cos(angle) * distance;
+
+
+            isRealLocation = false;
+
+        }
+
+
+        const marker =
+            L.marker(
+                [lat,lng]
+            );
+
+
+        const locationLabel =
+            isRealLocation
+                ? "📍 موقع مقدم الخدمة"
+                : "📌 موقع تجريبي تقريبي";
+
+
+        marker.bindPopup(`
+
+            <div style="text-align:right;min-width:180px">
+
+                <b>
+                    ${provider.name || "مقدم خدمة"}
+                </b>
+
+                <br>
+
+                <span>
+                    ${provider.type || ""}
+                </span>
+
+                <br>
+
+                <span>
+                    ${locationLabel}
+                </span>
+
+                ${
+                    provider.phone
+                    ?
+                    "<br>📞 " + provider.phone
+                    :
+                    ""
+                }
+
+            </div>
+
+        `);
+
+
+        marker.addTo(
+            providerMarkersLayer
+        );
+
+    });
 
 }
 
@@ -1791,6 +2937,8 @@ function showTruckProviders(){
 
         container.style.display="none";
 
+        clearProviderMarkers();
+
         document.getElementById("truckModal")
             .style.display="flex";
 
@@ -1824,6 +2972,9 @@ function showTruckProviders(){
         "النتائج التالية تجريبية حاليًا، وسيتم ربطها ببيانات حقيقية لاحقًا.";
 
     container.appendChild(info);
+
+
+    addProviderMarkers(truckProviders);
 
 
     truckProviders.forEach(function(provider){
@@ -2020,6 +3171,8 @@ function showMobileProviders(
 
         container.style.display="none";
 
+        clearProviderMarkers();
+
         document.getElementById("mobileDetailsModal")
             .style.display="flex";
 
@@ -2165,6 +3318,9 @@ function showMobileProviders(
         container.appendChild(empty);
 
     }
+
+
+    addProviderMarkers(matches);
 
 
     matches.forEach(function(provider){
@@ -2369,6 +3525,8 @@ function showPartsProviders(
 
         container.style.display="none";
 
+        clearProviderMarkers();
+
         document.getElementById("partsDetailsModal")
             .style.display="flex";
 
@@ -2497,6 +3655,9 @@ function showPartsProviders(
     }
 
 
+    addProviderMarkers(matches);
+
+
     matches.forEach(function(provider){
 
         const item =
@@ -2576,8 +3737,8 @@ function getRealLocation(callback){
 
     if(!navigator.geolocation){
 
-        showToast(
-            "الموقع الجغرافي غير متاح على هذا الجهاز"
+        updateLocationError(
+            "الموقع الجغرافي غير متاح على هذا الجهاز."
         );
 
         if(callback){
@@ -2587,6 +3748,18 @@ function getRealLocation(callback){
         }
 
         return;
+
+    }
+
+
+    const locationText =
+        document.getElementById("locationText");
+
+
+    if(locationText){
+
+        locationText.innerText =
+            "📍 جاري تحديد موقعك الحقيقي...";
 
     }
 
@@ -2626,14 +3799,34 @@ function getRealLocation(callback){
         function(error){
 
             console.log(
-                "Geolocation:",
+                "Geolocation error:",
                 error
             );
 
 
-            showToast(
-                "تعذر الحصول على الموقع. تأكد من السماح بالموقع."
-            );
+            let message =
+                "تعذر تحديد موقعك.";
+
+
+            if(error.code === 1){
+
+                message =
+                    "⚠️ تم رفض إذن الموقع. فعّل الموقع من إعدادات المتصفح.";
+
+            }else if(error.code === 2){
+
+                message =
+                    "⚠️ لا يمكن تحديد الموقع حاليًا. تأكد من تشغيل GPS.";
+
+            }else if(error.code === 3){
+
+                message =
+                    "⚠️ انتهى وقت تحديد الموقع. حاول مرة أخرى.";
+
+            }
+
+
+            updateLocationError(message);
 
 
             if(callback){
@@ -2649,13 +3842,37 @@ function getRealLocation(callback){
 
             enableHighAccuracy:true,
 
-            timeout:15000,
+            timeout:20000,
 
-            maximumAge:30000
+            maximumAge:0
 
         }
 
     );
+
+}
+
+
+/* =====================================================
+   خطأ تحديد الموقع
+===================================================== */
+
+function updateLocationError(message){
+
+    const text =
+        document.getElementById("locationText");
+
+
+    if(text){
+
+        text.innerText =
+            message +
+            " اضغط «القريب مني» لإعادة المحاولة.";
+
+    }
+
+
+    showToast(message);
 
 }
 
@@ -2670,6 +3887,13 @@ function updateLocationDisplay(){
         document.getElementById("locationText");
 
 
+    if(!text){
+
+        return;
+
+    }
+
+
     if(!currentLocation){
 
         text.innerText =
@@ -2680,8 +3904,24 @@ function updateLocationDisplay(){
     }
 
 
+    let accuracyText = "";
+
+
+    if(currentLocation.accuracy){
+
+        accuracyText =
+            " — دقة تقريبية: " +
+            Math.round(
+                currentLocation.accuracy
+            ) +
+            "م";
+
+    }
+
+
     text.innerText =
-        "📍 تم تحديد موقعك الحالي على الخريطة";
+        "📍 تم تحديد موقعك الحالي على الخريطة" +
+        accuracyText;
 
 }
 
@@ -2691,6 +3931,11 @@ function updateLocationDisplay(){
 ===================================================== */
 
 function findNearby(){
+
+    showToast(
+        "جاري تحديد موقعك..."
+    );
+
 
     getRealLocation(function(){
 
@@ -2745,6 +3990,11 @@ function showProviders(
         "موقعك على الخريطة حقيقي، أما بيانات مقدمي الخدمة فهي تجريبية في هذه المرحلة.";
 
     container.appendChild(info);
+
+
+    addProviderMarkers(
+        providers[type]
+    );
 
 
     providers[type].forEach(function(provider){
@@ -2888,6 +4138,9 @@ function home(){
         .style.display="none";
 
 
+    clearProviderMarkers();
+
+
     window.scrollTo({
 
         top:0,
@@ -2938,7 +4191,7 @@ function showToast(message){
         toast.style.display =
             "none";
 
-    },3000);
+    },4000);
 
 }
 
@@ -2969,12 +4222,32 @@ document
 
 
 /* =====================================================
-   بدء التطبيق
+   استرجاع الحساب عند تشغيل التطبيق
 ===================================================== */
 
 window.addEventListener(
     "load",
     function(){
+
+        const savedUser =
+            localStorage.getItem("depannageUser");
+
+
+        if(savedUser){
+
+            try{
+
+                currentUser =
+                    JSON.parse(savedUser);
+
+            }catch(error){
+
+                currentUser = null;
+
+            }
+
+        }
+
 
         setTimeout(function(){
 
