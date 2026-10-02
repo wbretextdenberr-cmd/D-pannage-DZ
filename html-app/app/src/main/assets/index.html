@@ -387,10 +387,10 @@ label{
             <p>مصلح قريب منك</p>
         </div>
 
-        <div class="card" onclick="showToast('خدمة قطع الغيار قيد التطوير')">
+        <div class="card" onclick="openPartsOptions()">
             <div class="icon">⚙️</div>
             <h3>قطع الغيار</h3>
-            <p>البحث عن قطعة مناسبة</p>
+            <p>محلات قطع الغيار القريبة</p>
         </div>
 
     </div>
@@ -660,6 +660,142 @@ label{
 
 
 <!-- =========================
+     قطع الغيار
+========================= -->
+
+<div id="partsModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>⚙️ قطع الغيار</h2>
+
+        <p>
+            اختر نوع المركبة ثم أدخل علامتها.
+            عند الاتصال بالمحل يمكنك تحديد القطعة التي تحتاجها.
+        </p>
+
+        <div class="step-title">
+            1️⃣ نوع المركبة
+        </div>
+
+        <button class="option" onclick="selectPartsVehicle('سيارة')">
+            🚗 سيارة
+        </button>
+
+        <button class="option" onclick="selectPartsVehicle('شاحنة')">
+            🚛 شاحنة
+        </button>
+
+        <button class="option" onclick="selectPartsVehicle('دراجة نارية')">
+            🏍️ دراجة نارية
+        </button>
+
+        <button class="close" onclick="closeModal('partsModal')">
+            إغلاق
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     معلومات قطع الغيار
+========================= -->
+
+<div id="partsDetailsModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>⚙️ معلومات المركبة</h2>
+
+        <p>
+            العلامة تساعدنا على تصنيف محلات قطع الغيار المناسبة.
+            الموديل اختياري.
+        </p>
+
+        <div class="step-title">
+            2️⃣ العلامة والموديل
+        </div>
+
+        <label for="partsBrand">
+            العلامة
+        </label>
+
+        <select id="partsBrand">
+
+            <option value="">
+                اختر العلامة
+            </option>
+
+            <option>Renault</option>
+            <option>Peugeot</option>
+            <option>Citroën</option>
+            <option>Volkswagen</option>
+            <option>Fiat</option>
+            <option>Hyundai</option>
+            <option>Toyota</option>
+            <option>Kia</option>
+            <option>Dacia</option>
+            <option>Mercedes-Benz</option>
+            <option>BMW</option>
+            <option>Ford</option>
+            <option>Opel</option>
+            <option>Nissan</option>
+            <option>Isuzu</option>
+            <option>MAN</option>
+            <option>Volvo</option>
+            <option>Scania</option>
+            <option>Yamaha</option>
+            <option>Honda</option>
+            <option>Suzuki</option>
+            <option>Autre</option>
+
+        </select>
+
+
+        <label for="partsModel">
+            الموديل - اختياري
+        </label>
+
+        <input
+            id="partsModel"
+            type="text"
+            placeholder="مثال: Clio 4 أو Golf 5"
+        >
+
+
+        <div class="step-title">
+            3️⃣ نوع محل قطع الغيار
+        </div>
+
+        <button
+            class="option"
+            onclick="selectPartsType('هيكل وميكانيك وكهرباء')">
+
+            🔧 هيكل وميكانيك وكهرباء
+
+        </button>
+
+        <button
+            class="option"
+            onclick="selectPartsType('كهرباء فقط')">
+
+            ⚡ كهرباء فقط
+
+        </button>
+
+
+        <button class="close" onclick="backToPartsVehicle()">
+            ← العودة
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
      قطر السيارة إلى وجهة
 ========================= -->
 
@@ -718,6 +854,10 @@ let selectedTruckProblem = null;
 let selectedMobileVehicle = null;
 
 let selectedMobileProblem = null;
+
+let selectedPartsVehicle = null;
+
+let selectedPartsType = null;
 
 
 /* =====================================================
@@ -886,6 +1026,142 @@ const mobileProviders = [
         distance:"2.9 كم",
         rating:"4.8",
         phone:"0551000011"
+    }
+
+];
+
+
+/* =====================================================
+   بيانات قطع الغيار - تجريبية
+===================================================== */
+
+const partsProviders = [
+
+    {
+        name:"محل قطع الغيار المتكامل",
+        type:"هيكل وميكانيك وكهرباء",
+        vehicles:["سيارة"],
+        brands:[
+            "Renault",
+            "Peugeot",
+            "Citroën",
+            "Volkswagen",
+            "Fiat",
+            "Dacia"
+        ],
+        distance:"2.7 كم",
+        rating:"4.8",
+        phone:"0552000001"
+    },
+
+    {
+        name:"قطع غيار السيارات الأوروبية",
+        type:"هيكل وميكانيك وكهرباء",
+        vehicles:["سيارة"],
+        brands:[
+            "Renault",
+            "Peugeot",
+            "Volkswagen",
+            "Citroën",
+            "Fiat"
+        ],
+        distance:"4.3 كم",
+        rating:"4.7",
+        phone:"0662000002"
+    },
+
+    {
+        name:"كهرباء وقطع غيار السيارات",
+        type:"كهرباء فقط",
+        vehicles:["سيارة"],
+        brands:[
+            "Renault",
+            "Peugeot",
+            "Volkswagen",
+            "Fiat",
+            "Dacia",
+            "Citroën"
+        ],
+        distance:"3.1 كم",
+        rating:"4.9",
+        phone:"0552000003"
+    },
+
+    {
+        name:"كهرباء السيارات الحديثة",
+        type:"كهرباء فقط",
+        vehicles:["سيارة"],
+        brands:[
+            "Toyota",
+            "Hyundai",
+            "Kia",
+            "BMW",
+            "Mercedes-Benz",
+            "Ford"
+        ],
+        distance:"5.2 كم",
+        rating:"4.7",
+        phone:"0772000004"
+    },
+
+    {
+        name:"قطع غيار الشاحنات",
+        type:"هيكل وميكانيك وكهرباء",
+        vehicles:["شاحنة"],
+        brands:[
+            "Mercedes-Benz",
+            "MAN",
+            "Volvo",
+            "Scania",
+            "Isuzu"
+        ],
+        distance:"6.1 كم",
+        rating:"4.6",
+        phone:"0662000005"
+    },
+
+    {
+        name:"كهرباء شاحنات",
+        type:"كهرباء فقط",
+        vehicles:["شاحنة"],
+        brands:[
+            "Mercedes-Benz",
+            "MAN",
+            "Volvo",
+            "Scania",
+            "Isuzu"
+        ],
+        distance:"7.0 كم",
+        rating:"4.8",
+        phone:"0552000006"
+    },
+
+    {
+        name:"قطع غيار الدراجات النارية",
+        type:"هيكل وميكانيك وكهرباء",
+        vehicles:["دراجة نارية"],
+        brands:[
+            "Yamaha",
+            "Honda",
+            "Suzuki"
+        ],
+        distance:"3.5 كم",
+        rating:"4.8",
+        phone:"0772000007"
+    },
+
+    {
+        name:"كهرباء الدراجات النارية",
+        type:"كهرباء فقط",
+        vehicles:["دراجة نارية"],
+        brands:[
+            "Yamaha",
+            "Honda",
+            "Suzuki"
+        ],
+        distance:"4.4 كم",
+        rating:"4.7",
+        phone:"0552000008"
     }
 
 ];
@@ -1140,8 +1416,6 @@ function openMobileWorkshop(){
 }
 
 
-/* اختيار نوع المركبة */
-
 function selectMobileVehicle(vehicle){
 
     selectedMobileVehicle = vehicle;
@@ -1159,8 +1433,6 @@ function selectMobileVehicle(vehicle){
 }
 
 
-/* العودة إلى اختيار نوع المركبة */
-
 function backToMobileVehicle(){
 
     closeModal("mobileDetailsModal");
@@ -1169,8 +1441,6 @@ function backToMobileVehicle(){
 
 }
 
-
-/* اختيار نوع العطل */
 
 function selectMobileProblem(problem){
 
@@ -1230,7 +1500,7 @@ function selectMobileProblem(problem){
 
 
 /* =====================================================
-   البحث في التصنيف المسبق
+   البحث في تصنيف الورشة المتنقلة
 ===================================================== */
 
 function showMobileProviders(
@@ -1319,13 +1589,6 @@ function showMobileProviders(
     container.appendChild(info);
 
 
-    /*
-       المرحلة الحالية:
-       المطابقة الأساسية حسب نوع المركبة + نوع العطل.
-       العلامة والطاقة تستخدمان لتضييق التصنيف
-       عندما تكون بيانات مقدم الخدمة متوافقة.
-    */
-
     let matches =
         mobileProviders.filter(function(provider){
 
@@ -1367,12 +1630,6 @@ function showMobileProviders(
 
         });
 
-
-    /*
-       إذا لم توجد مطابقة دقيقة للعلامة،
-       نعرض المتخصصين حسب المركبة والعطل
-       بدل أن نترك المستخدم بدون نتيجة.
-    */
 
     if(matches.length === 0 && brand){
 
@@ -1467,6 +1724,319 @@ function showMobileProviders(
     window.scrollTo({
 
         top:document.body.scrollHeight,
+        behavior:"smooth"
+
+    });
+
+}
+
+
+/* =====================================================
+   قطع الغيار
+===================================================== */
+
+function openPartsOptions(){
+
+    document.getElementById("partsModal").style.display="flex";
+
+}
+
+
+function selectPartsVehicle(vehicle){
+
+    selectedPartsVehicle = vehicle;
+
+    closeModal("partsModal");
+
+    document.getElementById("partsBrand").value="";
+
+    document.getElementById("partsModel").value="";
+
+    document.getElementById("partsDetailsModal").style.display="flex";
+
+}
+
+
+function backToPartsVehicle(){
+
+    closeModal("partsDetailsModal");
+
+    document.getElementById("partsModal").style.display="flex";
+
+}
+
+
+function selectPartsType(type){
+
+    selectedPartsType = type;
+
+    const brand =
+        document.getElementById("partsBrand").value;
+
+    const model =
+        document.getElementById("partsModel").value.trim();
+
+
+    if(!brand){
+
+        showToast("اختر علامة المركبة أولاً");
+
+        return;
+
+    }
+
+
+    closeModal("partsDetailsModal");
+
+    showToast("جاري تحديد موقعك...");
+
+
+    if(currentLocation){
+
+        showPartsProviders(
+            selectedPartsVehicle,
+            selectedPartsType,
+            brand,
+            model
+        );
+
+    }else{
+
+        getRealLocation(function(){
+
+            showPartsProviders(
+                selectedPartsVehicle,
+                selectedPartsType,
+                brand,
+                model
+            );
+
+        });
+
+    }
+
+}
+
+
+/* =====================================================
+   البحث عن محلات قطع الغيار
+===================================================== */
+
+function showPartsProviders(
+    vehicle,
+    type,
+    brand,
+    model
+){
+
+    const container =
+        document.getElementById("providers");
+
+    container.innerHTML="";
+
+    container.style.display="block";
+
+
+    const backButton =
+        document.createElement("button");
+
+    backButton.className="back-btn";
+
+    backButton.innerText="← تعديل بيانات قطع الغيار";
+
+    backButton.onclick=function(){
+
+        container.style.display="none";
+
+        document.getElementById("partsDetailsModal").style.display="flex";
+
+    };
+
+    container.appendChild(backButton);
+
+
+    const title =
+        document.createElement("div");
+
+    title.className="section-title";
+
+    title.innerText =
+        "⚙️ محلات قطع الغيار القريبة";
+
+    container.appendChild(title);
+
+
+    const summary =
+        document.createElement("div");
+
+    summary.style.background="#eff6ff";
+
+    summary.style.color="#1e40af";
+
+    summary.style.padding="12px";
+
+    summary.style.borderRadius="12px";
+
+    summary.style.fontSize="13px";
+
+    summary.style.lineHeight="1.9";
+
+    summary.innerHTML =
+
+        "🚘 المركبة: <b>"+vehicle+"</b>" +
+        "<br>🏷️ العلامة: <b>"+brand+"</b>" +
+        (model ? "<br>🚘 الموديل: <b>"+model+"</b>" : "") +
+        "<br>🔧 نوع المحل: <b>"+type+"</b>";
+
+    container.appendChild(summary);
+
+
+    const info =
+        document.createElement("p");
+
+    info.style.color="#64748b";
+
+    info.style.fontSize="12px";
+
+    info.style.margin="12px 0";
+
+    info.innerText =
+        "النتائج تجريبية حاليًا. عند الاتصال بالمحل يمكنك تحديد القطعة التي تحتاجها.";
+
+    container.appendChild(info);
+
+
+    /*
+       المطابقة الأساسية:
+       نوع المركبة + نوع المحل + العلامة.
+    */
+
+    let matches =
+        partsProviders.filter(function(provider){
+
+            if(!provider.vehicles.includes(vehicle)){
+
+                return false;
+
+            }
+
+            if(provider.type !== type){
+
+                return false;
+
+            }
+
+            if(!provider.brands.includes(brand)){
+
+                return false;
+
+            }
+
+            return true;
+
+        });
+
+
+    /*
+       إذا لم توجد نتيجة للعلامة بشكل دقيق،
+       نعرض محلات نفس نوع المركبة ونفس التخصص
+       حتى لا يخرج المستخدم بدون نتيجة.
+    */
+
+    if(matches.length === 0){
+
+        matches =
+            partsProviders.filter(function(provider){
+
+                return (
+                    provider.vehicles.includes(vehicle) &&
+                    provider.type === type
+                );
+
+            });
+
+    }
+
+
+    if(matches.length === 0){
+
+        const empty =
+            document.createElement("div");
+
+        empty.className="provider";
+
+        empty.innerHTML=`
+
+            <h3>لم نجد محلًا مطابقًا حاليًا</h3>
+
+            <div class="provider-info">
+                لا توجد بيانات تجريبية لهذا التصنيف حاليًا.
+                سيتم لاحقًا ربط التطبيق بمحلات حقيقية وقاعدة بيانات حقيقية.
+            </div>
+
+        `;
+
+        container.appendChild(empty);
+
+    }
+
+
+    matches.forEach(function(provider){
+
+        const item =
+            document.createElement("div");
+
+        item.className="provider";
+
+        item.innerHTML=`
+
+            <div class="provider-top">
+
+                <h3>${provider.name}</h3>
+
+                <span class="badge">
+                    ${provider.type}
+                </span>
+
+            </div>
+
+            <div class="provider-info">
+
+                🚘 المركبة: ${provider.vehicles.join("، ")}
+                <br>
+
+                🏷️ العلامات: ${provider.brands.join("، ")}
+                <br>
+
+                📍 المسافة: ${provider.distance}
+                <br>
+
+                ⭐ التقييم: ${provider.rating}/5
+                <br>
+
+                📞 ${provider.phone}
+
+            </div>
+
+            <button
+                class="call-btn"
+                onclick="callProvider('${provider.phone}')">
+
+                📞 اتصال بالمحل
+
+            </button>
+
+        `;
+
+        container.appendChild(item);
+
+    });
+
+
+    window.scrollTo({
+
+        top:document.body.scrollHeight,
+
         behavior:"smooth"
 
     });
@@ -1830,6 +2400,7 @@ if("serviceWorker" in navigator){
             });
 
         }
+
     );
 
 }
