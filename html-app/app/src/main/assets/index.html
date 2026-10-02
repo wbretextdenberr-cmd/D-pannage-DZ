@@ -307,6 +307,14 @@ input,select{
     margin-top:7px;
     margin-bottom:12px;
     font-size:15px;
+    background:white;
+}
+
+label{
+    display:block;
+    font-size:13px;
+    font-weight:bold;
+    color:#334155;
 }
 
 .primary{
@@ -317,6 +325,16 @@ input,select{
     padding:13px;
     border-radius:11px;
     font-size:15px;
+    font-weight:bold;
+}
+
+.step-title{
+    background:#eff6ff;
+    color:#1d4ed8;
+    padding:10px;
+    border-radius:10px;
+    margin:10px 0 14px;
+    font-size:13px;
     font-weight:bold;
 }
 
@@ -363,10 +381,10 @@ input,select{
             <p>أعطال ونجدة الشاحنات</p>
         </div>
 
-        <div class="card" onclick="showToast('خدمة الورشة المتنقلة قيد التطوير')">
+        <div class="card" onclick="openMobileWorkshop()">
             <div class="icon">🔧</div>
             <h3>ورشة متنقلة</h3>
-            <p>ميكانيكي قريب منك</p>
+            <p>مصلح قريب منك</p>
         </div>
 
         <div class="card" onclick="showToast('خدمة قطع الغيار قيد التطوير')">
@@ -391,7 +409,9 @@ input,select{
 
 </div>
 
+
 <div class="bottom-nav">
+
     <button onclick="home()">
         <span>🏠</span>
         الرئيسية
@@ -406,15 +426,23 @@ input,select{
         <span>🚨</span>
         طوارئ
     </button>
+
 </div>
 
 
-<!-- نافذة قطر السيارات -->
+<!-- =========================
+     قطر السيارات
+========================= -->
+
 <div id="towModal" class="modal-bg">
+
     <div class="modal">
 
         <h2>🚗 قطر السيارات</h2>
-        <p>اختر طريقة المساعدة المطلوبة</p>
+
+        <p>
+            اختر طريقة المساعدة المطلوبة
+        </p>
 
         <button class="option" onclick="requestNearestTow()">
             📍 النقل إلى أقرب ورشة مختصة
@@ -429,14 +457,20 @@ input,select{
         </button>
 
     </div>
+
 </div>
 
 
-<!-- نافذة قطر الشاحنات -->
+<!-- =========================
+     قطر الشاحنات
+========================= -->
+
 <div id="truckModal" class="modal-bg">
+
     <div class="modal">
 
         <h2>🚛 قطر الشاحنات</h2>
+
         <p>
             اختر نوع العطل، وسنبحث عن قاطرات الشاحنات
             وورشات إصلاح الشاحنات القريبة منك.
@@ -471,21 +505,193 @@ input,select{
         </button>
 
     </div>
+
 </div>
 
 
-<!-- نافذة تحديد وجهة السيارة -->
+<!-- =========================
+     الورشة المتنقلة
+========================= -->
+
+<div id="mobileModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>🔧 الورشة المتنقلة</h2>
+
+        <p>
+            أولاً اختر نوع المركبة
+        </p>
+
+        <div class="step-title">
+            1️⃣ نوع المركبة
+        </div>
+
+        <button class="option" onclick="selectMobileVehicle('سيارة')">
+            🚗 سيارة
+        </button>
+
+        <button class="option" onclick="selectMobileVehicle('شاحنة')">
+            🚛 شاحنة
+        </button>
+
+        <button class="option" onclick="selectMobileVehicle('دراجة نارية')">
+            🏍️ دراجة نارية
+        </button>
+
+        <button class="close" onclick="closeModal('mobileModal')">
+            إغلاق
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     معلومات المركبة والعطل
+========================= -->
+
+<div id="mobileDetailsModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>🔧 معلومات المركبة</h2>
+
+        <p>
+            هذه المعلومات تساعد التطبيق على توجيهك
+            إلى مقدم الخدمة المناسب.
+        </p>
+
+        <div class="step-title">
+            2️⃣ العلامة والموديل والطاقة
+        </div>
+
+        <label for="vehicleBrand">
+            العلامة
+        </label>
+
+        <select id="vehicleBrand">
+
+            <option value="">
+                اختر العلامة - اختياري
+            </option>
+
+            <option>Renault</option>
+            <option>Peugeot</option>
+            <option>Citroën</option>
+            <option>Volkswagen</option>
+            <option>Fiat</option>
+            <option>Hyundai</option>
+            <option>Toyota</option>
+            <option>Kia</option>
+            <option>Dacia</option>
+            <option>Mercedes-Benz</option>
+            <option>BMW</option>
+            <option>Ford</option>
+            <option>Opel</option>
+            <option>Nissan</option>
+            <option>Isuzu</option>
+            <option>MAN</option>
+            <option>Volvo</option>
+            <option>Scania</option>
+            <option>Yamaha</option>
+            <option>Honda</option>
+            <option>Suzuki</option>
+            <option>Autre</option>
+
+        </select>
+
+
+        <label for="vehicleModel">
+            الموديل
+        </label>
+
+        <input
+            id="vehicleModel"
+            type="text"
+            placeholder="مثال: Clio 4 أو Golf 5"
+        >
+
+
+        <label for="vehicleEnergy">
+            الطاقة
+        </label>
+
+        <select id="vehicleEnergy">
+
+            <option value="">
+                اختر الطاقة
+            </option>
+
+            <option>بنزين</option>
+            <option>ديزل</option>
+            <option>GPL</option>
+            <option>كهربائية</option>
+            <option>هجينة</option>
+            <option>أخرى</option>
+
+        </select>
+
+
+        <div class="step-title">
+            3️⃣ نوع العطل
+        </div>
+
+        <button class="option" onclick="selectMobileProblem('عطل ميكانيكي')">
+            🔧 عطل ميكانيكي
+        </button>
+
+        <button class="option" onclick="selectMobileProblem('عطل كهربائي')">
+            ⚡ عطل كهربائي
+        </button>
+
+        <button class="option" onclick="selectMobileProblem('تصليح عجلات')">
+            🛞 تصليح عجلات
+        </button>
+
+        <button class="close" onclick="backToMobileVehicle()">
+            ← العودة
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     قطر السيارة إلى وجهة
+========================= -->
+
 <div id="requestModal" class="modal-bg">
+
     <div class="modal">
 
         <h2>📍 تحديد وجهة النقل</h2>
-        <p>أدخل الولاية والبلدية التي تريد نقل السيارة إليها.</p>
 
-        <label>الولاية</label>
-        <input id="wilaya" type="text" placeholder="مثال: تيارت">
+        <p>
+            أدخل الولاية والبلدية التي تريد نقل السيارة إليها.
+        </p>
 
-        <label>البلدية</label>
-        <input id="commune" type="text" placeholder="مثال: مهدية">
+        <label>
+            الولاية
+        </label>
+
+        <input
+            id="wilaya"
+            type="text"
+            placeholder="مثال: تيارت"
+        >
+
+        <label>
+            البلدية
+        </label>
+
+        <input
+            id="commune"
+            type="text"
+            placeholder="مثال: مهدية"
+        >
 
         <button class="primary" onclick="submitRequest()">
             تأكيد الوجهة
@@ -496,6 +702,7 @@ input,select{
         </button>
 
     </div>
+
 </div>
 
 
@@ -505,12 +712,17 @@ input,select{
 <script>
 
 let currentLocation = null;
+
 let selectedTruckProblem = null;
 
+let selectedMobileVehicle = null;
 
-/* =========================
-   بيانات تجريبية للشاحنات
-   ========================= */
+let selectedMobileProblem = null;
+
+
+/* =====================================================
+   بيانات قطر الشاحنات - تجريبية
+===================================================== */
 
 const truckProviders = [
 
@@ -549,9 +761,139 @@ const truckProviders = [
 ];
 
 
-/* =========================
-   خدمات السيارات التجريبية
-   ========================= */
+/* =====================================================
+   بيانات الورشة المتنقلة - تصنيف مسبق
+===================================================== */
+
+const mobileProviders = [
+
+    {
+        name:"ميكانيكي السيارات المتنقل",
+        vehicle:"سيارة",
+        problem:"عطل ميكانيكي",
+        brands:["Renault","Peugeot","Citroën","Volkswagen","Fiat","Dacia"],
+        energy:["بنزين","ديزل","GPL"],
+        distance:"2.8 كم",
+        rating:"4.9",
+        phone:"0551000001"
+    },
+
+    {
+        name:"ورشة ميكانيكا السيارات المتنقلة",
+        vehicle:"سيارة",
+        problem:"عطل ميكانيكي",
+        brands:["Toyota","Hyundai","Kia","Ford","Nissan"],
+        energy:["بنزين","ديزل","هجينة"],
+        distance:"4.2 كم",
+        rating:"4.7",
+        phone:"0661000002"
+    },
+
+    {
+        name:"كهربائي السيارات المتنقل",
+        vehicle:"سيارة",
+        problem:"عطل كهربائي",
+        brands:["Renault","Peugeot","Volkswagen","Fiat","Dacia","Citroën"],
+        energy:["بنزين","ديزل","GPL"],
+        distance:"3.1 كم",
+        rating:"4.8",
+        phone:"0551000003"
+    },
+
+    {
+        name:"كهربائي السيارات الحديثة",
+        vehicle:"سيارة",
+        problem:"عطل كهربائي",
+        brands:["Toyota","Hyundai","Kia","BMW","Mercedes-Benz"],
+        energy:["بنزين","ديزل","كهربائية","هجينة"],
+        distance:"5.3 كم",
+        rating:"4.6",
+        phone:"0771000004"
+    },
+
+    {
+        name:"خدمة العجلات المتنقلة",
+        vehicle:"سيارة",
+        problem:"تصليح عجلات",
+        brands:["Renault","Peugeot","Volkswagen","Fiat","Dacia","Toyota","Hyundai"],
+        energy:["بنزين","ديزل","GPL","كهربائية","هجينة"],
+        distance:"2.5 كم",
+        rating:"4.8",
+        phone:"0551000005"
+    },
+
+    {
+        name:"ميكانيكي الشاحنات المتنقل",
+        vehicle:"شاحنة",
+        problem:"عطل ميكانيكي",
+        brands:["Mercedes-Benz","MAN","Volvo","Scania","Isuzu"],
+        energy:["ديزل"],
+        distance:"6.4 كم",
+        rating:"4.7",
+        phone:"0661000006"
+    },
+
+    {
+        name:"كهربائي الشاحنات المتنقل",
+        vehicle:"شاحنة",
+        problem:"عطل كهربائي",
+        brands:["Mercedes-Benz","MAN","Volvo","Scania","Isuzu"],
+        energy:["ديزل"],
+        distance:"7.2 كم",
+        rating:"4.6",
+        phone:"0551000007"
+    },
+
+    {
+        name:"عجلات الشاحنات المتنقلة",
+        vehicle:"شاحنة",
+        problem:"تصليح عجلات",
+        brands:["Mercedes-Benz","MAN","Volvo","Scania","Isuzu"],
+        energy:["ديزل"],
+        distance:"5.8 كم",
+        rating:"4.8",
+        phone:"0771000008"
+    },
+
+    {
+        name:"ميكانيكي الدراجات المتنقل",
+        vehicle:"دراجة نارية",
+        problem:"عطل ميكانيكي",
+        brands:["Yamaha","Honda","Suzuki"],
+        energy:["بنزين"],
+        distance:"3.7 كم",
+        rating:"4.9",
+        phone:"0551000009"
+    },
+
+    {
+        name:"كهربائي الدراجات النارية",
+        vehicle:"دراجة نارية",
+        problem:"عطل كهربائي",
+        brands:["Yamaha","Honda","Suzuki"],
+        energy:["بنزين","كهربائية"],
+        distance:"4.6 كم",
+        rating:"4.7",
+        phone:"0661000010"
+    },
+
+    {
+        name:"خدمة عجلات الدراجات",
+        vehicle:"دراجة نارية",
+        problem:"تصليح عجلات",
+        brands:["Yamaha","Honda","Suzuki"],
+        energy:["بنزين","كهربائية"],
+        distance:"2.9 كم",
+        rating:"4.8",
+        phone:"0551000011"
+    }
+
+];
+
+
+/* =====================================================
+   بيانات الخدمات العامة
+===================================================== */
 
 const providers = {
 
@@ -563,6 +905,7 @@ const providers = {
             rating:"4.8",
             phone:"0550000010"
         },
+
         {
             name:"ورشة السيارات السريعة",
             type:"ورشة إصلاح",
@@ -595,9 +938,9 @@ const providers = {
 };
 
 
-/* =========================
+/* =====================================================
    الطوارئ
-   ========================= */
+===================================================== */
 
 function emergencyCall(){
 
@@ -606,9 +949,9 @@ function emergencyCall(){
 }
 
 
-/* =========================
+/* =====================================================
    قطر السيارات
-   ========================= */
+===================================================== */
 
 function openTowOptions(){
 
@@ -639,9 +982,9 @@ function chooseTowDestination(){
 }
 
 
-/* =========================
+/* =====================================================
    قطر الشاحنات
-   ========================= */
+===================================================== */
 
 function openTruckOptions(){
 
@@ -675,91 +1018,6 @@ function selectTruckProblem(problem){
 }
 
 
-/* =========================
-   تحديد الموقع الحقيقي
-   ========================= */
-
-function getRealLocation(callback){
-
-    if(!navigator.geolocation){
-
-        showToast("الموقع الجغرافي غير متاح على هذا الجهاز");
-
-        if(callback){
-            callback();
-        }
-
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-
-        function(position){
-
-            currentLocation = {
-
-                latitude:position.coords.latitude,
-                longitude:position.coords.longitude
-
-            };
-
-            updateLocationDisplay();
-
-            if(callback){
-                callback();
-            }
-
-        },
-
-        function(error){
-
-            console.log(error);
-
-            showToast("تعذر الحصول على الموقع. تأكد من السماح بالموقع.");
-
-            if(callback){
-                callback();
-            }
-
-        },
-
-        {
-            enableHighAccuracy:true,
-            timeout:15000,
-            maximumAge:30000
-        }
-
-    );
-
-}
-
-
-/* =========================
-   تحديث عرض الموقع
-   ========================= */
-
-function updateLocationDisplay(){
-
-    const text =
-        document.getElementById("locationText");
-
-    if(!currentLocation){
-
-        text.innerText="لم يتم تحديد الموقع";
-
-        return;
-    }
-
-    text.innerText =
-        "📍 تم تحديد موقعك الحالي";
-
-}
-
-
-/* =========================
-   عرض قاطرات وورشات الشاحنات
-   ========================= */
-
 function showTruckProviders(){
 
     const container =
@@ -768,6 +1026,7 @@ function showTruckProviders(){
     container.innerHTML="";
 
     container.style.display="block";
+
 
     const backButton =
         document.createElement("button");
@@ -803,7 +1062,9 @@ function showTruckProviders(){
         document.createElement("p");
 
     info.style.color="#64748b";
+
     info.style.fontSize="12px";
+
     info.style.marginBottom="12px";
 
     info.innerText =
@@ -868,20 +1129,477 @@ function showTruckProviders(){
 }
 
 
-/* =========================
-   الموقع والخدمات القريبة
-   ========================= */
+/* =====================================================
+   الورشة المتنقلة
+===================================================== */
 
-function findNearby(){
+function openMobileWorkshop(){
 
-    getRealLocation(function(){
+    document.getElementById("mobileModal").style.display="flex";
 
-        showProviders("nearby","الخدمات القريبة");
+}
+
+
+/* اختيار نوع المركبة */
+
+function selectMobileVehicle(vehicle){
+
+    selectedMobileVehicle = vehicle;
+
+    closeModal("mobileModal");
+
+    document.getElementById("vehicleBrand").value="";
+
+    document.getElementById("vehicleModel").value="";
+
+    document.getElementById("vehicleEnergy").value="";
+
+    document.getElementById("mobileDetailsModal").style.display="flex";
+
+}
+
+
+/* العودة إلى اختيار نوع المركبة */
+
+function backToMobileVehicle(){
+
+    closeModal("mobileDetailsModal");
+
+    document.getElementById("mobileModal").style.display="flex";
+
+}
+
+
+/* اختيار نوع العطل */
+
+function selectMobileProblem(problem){
+
+    selectedMobileProblem = problem;
+
+    const brand =
+        document.getElementById("vehicleBrand").value;
+
+    const model =
+        document.getElementById("vehicleModel").value.trim();
+
+    const energy =
+        document.getElementById("vehicleEnergy").value;
+
+
+    if(!energy){
+
+        showToast("اختر نوع الطاقة أولاً");
+
+        return;
+
+    }
+
+
+    closeModal("mobileDetailsModal");
+
+    showToast("جاري تحديد موقعك...");
+
+
+    if(currentLocation){
+
+        showMobileProviders(
+            selectedMobileVehicle,
+            selectedMobileProblem,
+            brand,
+            model,
+            energy
+        );
+
+    }else{
+
+        getRealLocation(function(){
+
+            showMobileProviders(
+                selectedMobileVehicle,
+                selectedMobileProblem,
+                brand,
+                model,
+                energy
+            );
+
+        });
+
+    }
+
+}
+
+
+/* =====================================================
+   البحث في التصنيف المسبق
+===================================================== */
+
+function showMobileProviders(
+    vehicle,
+    problem,
+    brand,
+    model,
+    energy
+){
+
+    const container =
+        document.getElementById("providers");
+
+    container.innerHTML="";
+
+    container.style.display="block";
+
+
+    const backButton =
+        document.createElement("button");
+
+    backButton.className="back-btn";
+
+    backButton.innerText="← تعديل بيانات المركبة والعطل";
+
+    backButton.onclick=function(){
+
+        container.style.display="none";
+
+        document.getElementById("mobileDetailsModal").style.display="flex";
+
+    };
+
+    container.appendChild(backButton);
+
+
+    const title =
+        document.createElement("div");
+
+    title.className="section-title";
+
+    title.innerText =
+        "🔧 الورشة المتنقلة المناسبة";
+
+    container.appendChild(title);
+
+
+    const summary =
+        document.createElement("div");
+
+    summary.style.background="#eff6ff";
+
+    summary.style.color="#1e40af";
+
+    summary.style.padding="12px";
+
+    summary.style.borderRadius="12px";
+
+    summary.style.fontSize="13px";
+
+    summary.style.lineHeight="1.9";
+
+    summary.innerHTML =
+
+        "🚘 المركبة: <b>"+vehicle+"</b>" +
+        "<br>⚙️ الطاقة: <b>"+energy+"</b>" +
+        "<br>🔧 العطل: <b>"+problem+"</b>" +
+        (brand ? "<br>🏷️ العلامة: <b>"+brand+"</b>" : "") +
+        (model ? "<br>🚘 الموديل: <b>"+model+"</b>" : "");
+
+    container.appendChild(summary);
+
+
+    const info =
+        document.createElement("p");
+
+    info.style.color="#64748b";
+
+    info.style.fontSize="12px";
+
+    info.style.margin="12px 0";
+
+    info.innerText =
+        "تم البحث حسب التصنيف المسبق. البيانات تجريبية حاليًا.";
+
+    container.appendChild(info);
+
+
+    /*
+       المرحلة الحالية:
+       المطابقة الأساسية حسب نوع المركبة + نوع العطل.
+       العلامة والطاقة تستخدمان لتضييق التصنيف
+       عندما تكون بيانات مقدم الخدمة متوافقة.
+    */
+
+    let matches =
+        mobileProviders.filter(function(provider){
+
+            if(provider.vehicle !== vehicle){
+
+                return false;
+
+            }
+
+            if(provider.problem !== problem){
+
+                return false;
+
+            }
+
+            if(
+                energy &&
+                provider.energy &&
+                provider.energy.length > 0 &&
+                !provider.energy.includes(energy)
+            ){
+
+                return false;
+
+            }
+
+            if(
+                brand &&
+                provider.brands &&
+                provider.brands.length > 0 &&
+                !provider.brands.includes(brand)
+            ){
+
+                return false;
+
+            }
+
+            return true;
+
+        });
+
+
+    /*
+       إذا لم توجد مطابقة دقيقة للعلامة،
+       نعرض المتخصصين حسب المركبة والعطل
+       بدل أن نترك المستخدم بدون نتيجة.
+    */
+
+    if(matches.length === 0 && brand){
+
+        matches =
+            mobileProviders.filter(function(provider){
+
+                return (
+                    provider.vehicle === vehicle &&
+                    provider.problem === problem
+                );
+
+            });
+
+    }
+
+
+    if(matches.length === 0){
+
+        const empty =
+            document.createElement("div");
+
+        empty.className="provider";
+
+        empty.innerHTML=`
+
+            <h3>لم نجد مقدم خدمة مطابقًا حاليًا</h3>
+
+            <div class="provider-info">
+                لا توجد بيانات تجريبية لهذا التصنيف حاليًا.
+                سيتم لاحقًا ربط التطبيق بقاعدة بيانات حقيقية.
+            </div>
+
+        `;
+
+        container.appendChild(empty);
+
+    }
+
+
+    matches.forEach(function(provider){
+
+        const item =
+            document.createElement("div");
+
+        item.className="provider";
+
+        item.innerHTML=`
+
+            <div class="provider-top">
+
+                <h3>${provider.name}</h3>
+
+                <span class="badge">
+                    ${provider.problem}
+                </span>
+
+            </div>
+
+            <div class="provider-info">
+
+                🚘 المركبة: ${provider.vehicle}
+                <br>
+
+                🏷️ التخصص: ${provider.brands.join("، ")}
+                <br>
+
+                📍 المسافة: ${provider.distance}
+                <br>
+
+                ⭐ التقييم: ${provider.rating}/5
+                <br>
+
+                📞 ${provider.phone}
+
+            </div>
+
+            <button
+                class="call-btn"
+                onclick="callProvider('${provider.phone}')">
+
+                📞 اتصال مباشر
+
+            </button>
+
+        `;
+
+        container.appendChild(item);
+
+    });
+
+
+    window.scrollTo({
+
+        top:document.body.scrollHeight,
+        behavior:"smooth"
 
     });
 
 }
 
+
+/* =====================================================
+   تحديد الموقع الحقيقي
+===================================================== */
+
+function getRealLocation(callback){
+
+    if(!navigator.geolocation){
+
+        showToast(
+            "الموقع الجغرافي غير متاح على هذا الجهاز"
+        );
+
+        if(callback){
+
+            callback();
+
+        }
+
+        return;
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            currentLocation = {
+
+                latitude:
+                    position.coords.latitude,
+
+                longitude:
+                    position.coords.longitude
+
+            };
+
+            updateLocationDisplay();
+
+
+            if(callback){
+
+                callback();
+
+            }
+
+        },
+
+        function(error){
+
+            console.log(error);
+
+            showToast(
+                "تعذر الحصول على الموقع. تأكد من السماح بالموقع."
+            );
+
+
+            if(callback){
+
+                callback();
+
+            }
+
+        },
+
+        {
+
+            enableHighAccuracy:true,
+
+            timeout:15000,
+
+            maximumAge:30000
+
+        }
+
+    );
+
+}
+
+
+/* =====================================================
+   عرض الموقع
+===================================================== */
+
+function updateLocationDisplay(){
+
+    const text =
+        document.getElementById("locationText");
+
+
+    if(!currentLocation){
+
+        text.innerText =
+            "لم يتم تحديد الموقع";
+
+        return;
+
+    }
+
+
+    text.innerText =
+        "📍 تم تحديد موقعك الحالي";
+
+}
+
+
+/* =====================================================
+   القريب مني
+===================================================== */
+
+function findNearby(){
+
+    getRealLocation(function(){
+
+        showProviders(
+            "nearby",
+            "الخدمات القريبة"
+        );
+
+    });
+
+}
+
+
+/* =====================================================
+   عرض الخدمات العامة
+===================================================== */
 
 function showProviders(type,titleText){
 
@@ -948,9 +1666,11 @@ function showProviders(type,titleText){
 
     });
 
+
     window.scrollTo({
 
         top:document.body.scrollHeight,
+
         behavior:"smooth"
 
     });
@@ -958,33 +1678,38 @@ function showProviders(type,titleText){
 }
 
 
-/* =========================
+/* =====================================================
    الاتصال
-   ========================= */
+===================================================== */
 
 function callProvider(phone){
 
-    window.location.href="tel:"+phone;
+    window.location.href =
+        "tel:"+phone;
 
 }
 
 
-/* =========================
-   تأكيد وجهة قطر السيارة
-   ========================= */
+/* =====================================================
+   وجهة قطر السيارة
+===================================================== */
 
 function submitRequest(){
 
     const wilaya =
-        document.getElementById("wilaya").value.trim();
+        document.getElementById("wilaya")
+        .value.trim();
 
     const commune =
-        document.getElementById("commune").value.trim();
+        document.getElementById("commune")
+        .value.trim();
 
 
     if(!wilaya || !commune){
 
-        showToast("الرجاء إدخال الولاية والبلدية");
+        showToast(
+            "الرجاء إدخال الولاية والبلدية"
+        );
 
         return;
 
@@ -993,36 +1718,42 @@ function submitRequest(){
 
     closeModal("requestModal");
 
+
     showToast(
-        "تم تسجيل وجهة النقل: "+
-        wilaya+" - "+commune
+        "تم تسجيل وجهة النقل: " +
+        wilaya +
+        " - " +
+        commune
     );
 
 }
 
 
-/* =========================
+/* =====================================================
    إغلاق النوافذ
-   ========================= */
+===================================================== */
 
 function closeModal(id){
 
-    document.getElementById(id).style.display="none";
+    document.getElementById(id)
+        .style.display="none";
 
 }
 
 
-/* =========================
+/* =====================================================
    الصفحة الرئيسية
-   ========================= */
+===================================================== */
 
 function home(){
 
-    document.getElementById("providers").style.display="none";
+    document.getElementById("providers")
+        .style.display="none";
 
     window.scrollTo({
 
         top:0,
+
         behavior:"smooth"
 
     });
@@ -1030,9 +1761,9 @@ function home(){
 }
 
 
-/* =========================
-   Toast
-   ========================= */
+/* =====================================================
+   الرسائل
+===================================================== */
 
 function showToast(message){
 
@@ -1043,6 +1774,7 @@ function showToast(message){
 
     toast.style.display="block";
 
+
     setTimeout(function(){
 
         toast.style.display="none";
@@ -1052,41 +1784,53 @@ function showToast(message){
 }
 
 
-/* =========================
-   إغلاق النافذة عند الضغط خارجها
-   ========================= */
+/* =====================================================
+   إغلاق النوافذ عند الضغط خارجها
+===================================================== */
 
-document.querySelectorAll(".modal-bg").forEach(function(modal){
+document
+.querySelectorAll(".modal-bg")
+.forEach(function(modal){
 
-    modal.addEventListener("click",function(event){
+    modal.addEventListener(
+        "click",
+        function(event){
 
-        if(event.target===modal){
+            if(event.target === modal){
 
-            modal.style.display="none";
+                modal.style.display="none";
+
+            }
 
         }
-
-    });
+    );
 
 });
 
 
-/* =========================
+/* =====================================================
    Service Worker
-   ========================= */
+===================================================== */
 
 if("serviceWorker" in navigator){
 
-    window.addEventListener("load",function(){
+    window.addEventListener(
+        "load",
+        function(){
 
-        navigator.serviceWorker.register("./sw.js")
-        .catch(function(error){
+            navigator.serviceWorker
+            .register("./sw.js")
+            .catch(function(error){
 
-            console.log("Service Worker:",error);
+                console.log(
+                    "Service Worker:",
+                    error
+                );
 
-        });
+            });
 
-    });
+        }
+    );
 
 }
 
