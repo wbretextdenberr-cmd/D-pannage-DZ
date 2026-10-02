@@ -361,7 +361,7 @@ header p{
     cursor:pointer;
 }
 
-input,select{
+input,select,textarea{
     width:100%;
     padding:13px;
     border:1px solid #cbd5e1;
@@ -370,6 +370,11 @@ input,select{
     margin-bottom:12px;
     font-size:15px;
     background:white;
+}
+
+textarea{
+    min-height:100px;
+    resize:vertical;
 }
 
 label{
@@ -567,6 +572,177 @@ label{
     border:1px solid #e5e7eb;
 }
 
+/* =====================================================
+   بوابة السائق الإلزامية
+===================================================== */
+
+.driver-gate{
+    position:fixed;
+    inset:0;
+    background:#111827;
+    z-index:5000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    overflow-y:auto;
+}
+
+.driver-gate-box{
+    width:100%;
+    max-width:550px;
+    background:white;
+    border-radius:24px;
+    padding:24px 18px 25px;
+    box-shadow:0 10px 40px #0008;
+    max-height:95vh;
+    overflow-y:auto;
+}
+
+.driver-gate-logo{
+    text-align:center;
+    font-size:48px;
+    margin-bottom:8px;
+}
+
+.driver-gate-box h2{
+    text-align:center;
+    font-size:23px;
+    margin-bottom:8px;
+    color:#111827;
+}
+
+.driver-gate-subtitle{
+    text-align:center;
+    color:#64748b;
+    font-size:13px;
+    line-height:1.8;
+    margin-bottom:18px;
+}
+
+.driver-warning{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    border-radius:13px;
+    padding:13px;
+    margin-bottom:15px;
+    color:#9a3412;
+    font-size:12px;
+    line-height:1.9;
+}
+
+.driver-warning strong{
+    color:#7c2d12;
+}
+
+.driver-privacy{
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    border-radius:13px;
+    padding:13px;
+    margin-bottom:15px;
+    color:#1e40af;
+    font-size:12px;
+    line-height:1.9;
+}
+
+.driver-location-status{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:12px;
+    margin:8px 0 13px;
+    font-size:12px;
+    color:#64748b;
+    line-height:1.8;
+    text-align:center;
+}
+
+.driver-location-status.success{
+    background:#f0fdf4;
+    border-color:#bbf7d0;
+    color:#15803d;
+}
+
+.driver-location-status.error{
+    background:#fff1f2;
+    border-color:#fecdd3;
+    color:#be123c;
+}
+
+.driver-checkbox{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    margin:8px 0 15px;
+    font-size:12px;
+    line-height:1.8;
+    color:#334155;
+}
+
+.driver-checkbox input{
+    width:20px;
+    height:20px;
+    min-width:20px;
+    margin:2px 0 0;
+}
+
+.driver-emergency{
+    width:100%;
+    background:#dc2626;
+    color:white;
+    border:0;
+    padding:13px;
+    border-radius:11px;
+    font-size:15px;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.provider-map-icon{
+    background:white;
+    border-radius:50%;
+    width:40px !important;
+    height:40px !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:25px;
+    box-shadow:0 2px 8px #0005;
+    border:2px solid white;
+}
+
+.request-active{
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    border-radius:15px;
+    padding:14px;
+    margin-bottom:14px;
+}
+
+.request-active h3{
+    color:#1e40af;
+    margin-bottom:7px;
+    font-size:16px;
+}
+
+.request-active p{
+    margin:4px 0;
+    color:#475569;
+    font-size:12px;
+}
+
+.cancel-request-btn{
+    width:100%;
+    border:0;
+    background:#dc2626;
+    color:white;
+    padding:12px;
+    border-radius:11px;
+    margin-top:10px;
+    font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -673,6 +849,140 @@ label{
         <span>🚨</span>
         طوارئ
     </button>
+
+</div>
+
+
+<!-- =====================================================
+     بوابة السائق
+===================================================== -->
+
+<div id="driverGate" class="driver-gate">
+
+    <div class="driver-gate-box">
+
+        <div class="driver-gate-logo">
+            🚗
+        </div>
+
+        <h2>
+            مرحبًا بك في DÉPANNAGE.DZ
+        </h2>
+
+        <div class="driver-gate-subtitle">
+
+            قبل استعمال خدمات التطبيق، يجب تحديد موقع مركبتك
+            وإدخال رقم هاتفك.
+
+            <br>
+
+            لا تحتاج إلى إنشاء حساب.
+
+        </div>
+
+
+        <div class="driver-warning">
+
+            <strong>⚠️ تنبيه مهم</strong>
+
+            <br>
+
+            يستخدم رقم الهاتف للتعرف على صاحب الطلب
+            ومكافحة الطلبات الوهمية والتلاعب بالخدمة.
+
+            <br>
+
+            في حال ثبوت التلاعب أو إساءة استعمال الخدمة،
+            يمكن حظر رقم الهاتف ومنع استعمال التطبيق
+            بهذا الرقم لاحقًا.
+
+            <br>
+
+            السائق مسؤول عن صحة الطلبات التي يرسلها
+            وعن أي عملية إلغاء يقوم بها.
+
+        </div>
+
+
+        <div class="driver-privacy">
+
+            🔒 <strong>خصوصية السائق:</strong>
+
+            <br>
+
+            رقم هاتف السائق وموقعه لا يظهران ضمن قائمة
+            الورشات أو القاطرات ولا يتم عرض السائق
+            كمقدم خدمة.
+
+            <br>
+
+            الموقع يستخدم لتوجيه الخدمة إلى موقع مركبتك.
+
+        </div>
+
+
+        <label for="driverPhoneGate">
+            📱 رقم هاتف السائق
+        </label>
+
+        <input
+            id="driverPhoneGate"
+            type="tel"
+            inputmode="tel"
+            placeholder="مثال: 0550000000"
+        >
+
+
+        <div id="driverLocationStatus"
+             class="driver-location-status">
+
+            📍 يجب تحديد موقعك الحقيقي للمتابعة.
+
+        </div>
+
+
+        <button class="location-btn"
+                onclick="requestDriverLocation()">
+
+            📍 تحديد موقعي الحقيقي
+
+        </button>
+
+
+        <label class="driver-checkbox">
+
+            <input
+                id="driverAgreement"
+                type="checkbox"
+            >
+
+            <span>
+
+                أؤكد أن رقم الهاتف صحيح، وأنني أستخدم الخدمة
+                لطلب مساعدة حقيقية، وأتحمل مسؤولية الطلب
+                وأي إلغاء أقوم به.
+
+            </span>
+
+        </label>
+
+
+        <button class="primary"
+                onclick="completeDriverGate()">
+
+            ✅ الدخول إلى التطبيق
+
+        </button>
+
+
+        <button class="driver-emergency"
+                onclick="emergencyCall()">
+
+            🚨 اتصال بالطوارئ 14
+
+        </button>
+
+    </div>
 
 </div>
 
@@ -1360,6 +1670,46 @@ label{
 </div>
 
 
+<!-- إلغاء الطلب -->
+
+<div id="cancelRequestModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h2>❌ إلغاء الطلب</h2>
+
+        <p>
+            يجب ذكر سبب الإلغاء قبل تأكيده.
+        </p>
+
+        <label for="cancelReason">
+            سبب الإلغاء
+        </label>
+
+        <textarea
+            id="cancelReason"
+            placeholder="اكتب سبب إلغاء الطلب..."
+        ></textarea>
+
+        <button class="primary"
+                onclick="confirmCancelRequest()">
+
+            تأكيد الإلغاء
+
+        </button>
+
+        <button class="close"
+                onclick="closeModal('cancelRequestModal')">
+
+            العودة
+
+        </button>
+
+    </div>
+
+</div>
+
+
 <div id="toast" class="toast"></div>
 
 
@@ -1397,6 +1747,187 @@ let providerMarkersLayer = null;
 let currentUser = null;
 
 let providerRegistrationLocation = null;
+
+let driverPhone = null;
+
+let driverLocationConfirmed = false;
+
+let driverGateCompleted = false;
+
+let currentRequest = null;
+
+
+/* =====================================================
+   أدوات الإحداثيات
+===================================================== */
+
+function toNumberCoordinate(value){
+
+    const number =
+        Number(value);
+
+    return Number.isFinite(number)
+        ? number
+        : null;
+
+}
+
+
+function normalizeProviderCoordinates(provider){
+
+    if(!provider){
+
+        return null;
+
+    }
+
+    const latitude =
+        toNumberCoordinate(
+            provider.latitude
+        );
+
+    const longitude =
+        toNumberCoordinate(
+            provider.longitude
+        );
+
+    if(
+        latitude === null ||
+        longitude === null
+    ){
+
+        return null;
+
+    }
+
+    return {
+
+        latitude:latitude,
+
+        longitude:longitude
+
+    };
+
+}
+
+
+/* =====================================================
+   رقم الهاتف
+===================================================== */
+
+function normalizePhone(phone){
+
+    let value =
+        String(phone || "")
+        .trim()
+        .replace(/\s+/g,"");
+
+    if(value.indexOf("+213") === 0){
+
+        value =
+            "0" +
+            value.substring(4);
+
+    }
+
+    return value;
+
+}
+
+
+function isValidAlgerianPhone(phone){
+
+    const value =
+        normalizePhone(phone);
+
+    return /^0[5-7][0-9]{8}$/.test(value);
+
+}
+
+
+/* =====================================================
+   الهواتف المحظورة
+===================================================== */
+
+function getBlockedPhones(){
+
+    const saved =
+        localStorage.getItem(
+            "depannageBlockedPhones"
+        );
+
+    if(!saved){
+
+        return [];
+
+    }
+
+    try{
+
+        const list =
+            JSON.parse(saved);
+
+        return Array.isArray(list)
+            ? list
+            : [];
+
+    }catch(error){
+
+        return [];
+
+    }
+
+}
+
+
+function isPhoneBlocked(phone){
+
+    const normalized =
+        normalizePhone(phone);
+
+    return getBlockedPhones()
+        .includes(normalized);
+
+}
+
+
+/*
+   هذه الدالة مخصصة لمرحلة الإدارة المستقبلية.
+   لا يوجد زر للمستخدم العادي لحظر الأرقام.
+*/
+
+function blockPhone(phone,reason){
+
+    const normalized =
+        normalizePhone(phone);
+
+    if(!normalized){
+
+        return;
+
+    }
+
+    const list =
+        getBlockedPhones();
+
+    if(!list.includes(normalized)){
+
+        list.push(normalized);
+
+    }
+
+    localStorage.setItem(
+        "depannageBlockedPhones",
+        JSON.stringify(list)
+    );
+
+    console.log(
+        "Phone blocked:",
+        normalized,
+        reason || ""
+    );
+
+}
 
 
 /* =====================================================
@@ -1443,10 +1974,14 @@ function calculateDistanceKm(
 
 function getProviderDistance(provider){
 
+    const coordinates =
+        normalizeProviderCoordinates(
+            provider
+        );
+
     if(
         !currentLocation ||
-        typeof provider.latitude !== "number" ||
-        typeof provider.longitude !== "number"
+        !coordinates
     ){
 
         return null;
@@ -1456,8 +1991,8 @@ function getProviderDistance(provider){
     return calculateDistanceKm(
         currentLocation.latitude,
         currentLocation.longitude,
-        provider.latitude,
-        provider.longitude
+        coordinates.latitude,
+        coordinates.longitude
     );
 
 }
@@ -1539,9 +2074,13 @@ function getSavedProviders(){
         const list =
             JSON.parse(saved);
 
-        return Array.isArray(list)
-            ? list
-            : [];
+        if(!Array.isArray(list)){
+
+            return [];
+
+        }
+
+        return list;
 
     }catch(error){
 
@@ -1551,6 +2090,10 @@ function getSavedProviders(){
 
 }
 
+
+/* =====================================================
+   حفظ مقدم الخدمة
+===================================================== */
 
 function saveProviderRecord(user){
 
@@ -1566,9 +2109,21 @@ function saveProviderRecord(user){
 
     }
 
+
+    const latitude =
+        toNumberCoordinate(
+            user.latitude
+        );
+
+    const longitude =
+        toNumberCoordinate(
+            user.longitude
+        );
+
+
     if(
-        typeof user.latitude !== "number" ||
-        typeof user.longitude !== "number"
+        latitude === null ||
+        longitude === null
     ){
 
         return;
@@ -1607,10 +2162,10 @@ function saveProviderRecord(user){
             user.commune,
 
         latitude:
-            user.latitude,
+            latitude,
 
         longitude:
-            user.longitude,
+            longitude,
 
         accuracy:
             user.locationAccuracy || null,
@@ -1628,7 +2183,10 @@ function saveProviderRecord(user){
     const index =
         list.findIndex(function(item){
 
-            return item.phone === user.phone;
+            return (
+                item.phone === user.phone ||
+                item.id === user.phone
+            );
 
         });
 
@@ -1655,18 +2213,96 @@ function saveProviderRecord(user){
 function getRegisteredProviders(){
 
     return getSavedProviders()
+        .map(function(provider){
+
+            const coordinates =
+                normalizeProviderCoordinates(
+                    provider
+                );
+
+            if(!coordinates){
+
+                return null;
+
+            }
+
+            return Object.assign(
+                {},
+                provider,
+                coordinates
+            );
+
+        })
         .filter(function(provider){
 
             return (
+                provider &&
                 (
                     provider.role === "ورشة" ||
                     provider.role === "قاطر"
-                ) &&
-                typeof provider.latitude === "number" &&
-                typeof provider.longitude === "number"
+                )
             );
 
         });
+
+}
+
+
+/* =====================================================
+   مزامنة مقدم الخدمة الحالي
+   وخاصة الورشة الثابتة
+===================================================== */
+
+function syncCurrentProviderRecord(){
+
+    if(!currentUser){
+
+        return;
+
+    }
+
+    if(
+        currentUser.role !== "ورشة" &&
+        currentUser.role !== "قاطر"
+    ){
+
+        return;
+
+    }
+
+    const latitude =
+        toNumberCoordinate(
+            currentUser.latitude
+        );
+
+    const longitude =
+        toNumberCoordinate(
+            currentUser.longitude
+        );
+
+    if(
+        latitude === null ||
+        longitude === null
+    ){
+
+        return;
+
+    }
+
+    currentUser.latitude =
+        latitude;
+
+    currentUser.longitude =
+        longitude;
+
+    localStorage.setItem(
+        "depannageUser",
+        JSON.stringify(currentUser)
+    );
+
+    saveProviderRecord(
+        currentUser
+    );
 
 }
 
@@ -1766,7 +2402,8 @@ function renderAccountContent(){
                 }
 
                 ${
-                    currentUser.latitude !== undefined
+                    toNumberCoordinate(currentUser.latitude) !== null &&
+                    toNumberCoordinate(currentUser.longitude) !== null
                     ?
                     `
                     <p>
@@ -1865,7 +2502,7 @@ function renderAccountContent(){
 
                     📍
                     ${
-                        currentUser.latitude !== undefined
+                        toNumberCoordinate(currentUser.latitude) !== null
                         ?
                         "تحديث موقع مقدم الخدمة"
                         :
@@ -1966,7 +2603,11 @@ function renderAccountContent(){
             </h3>
 
             <p>
-                سجّل حسابك للاستفادة من خدمات التطبيق.
+                لا يحتاج السائق إلى إنشاء حساب لاستخدام الخدمة.
+            </p>
+
+            <p style="font-size:12px">
+                يكفي رقم الهاتف وتحديد الموقع عند فتح التطبيق.
             </p>
 
         </div>
@@ -1975,7 +2616,7 @@ function renderAccountContent(){
         <button class="primary"
                 onclick="openRegister()">
 
-            📝 إنشاء حساب جديد
+            📝 إنشاء حساب مقدم خدمة
 
         </button>
 
@@ -2372,9 +3013,11 @@ function createAccount(){
 
 
     const phone =
-        document.getElementById(
-            "registerPhone"
-        ).value.trim();
+        normalizePhone(
+            document.getElementById(
+                "registerPhone"
+            ).value
+        );
 
 
     const password =
@@ -2409,6 +3052,19 @@ function createAccount(){
 
         showToast(
             "أدخل رقم الهاتف"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !isValidAlgerianPhone(phone)
+    ){
+
+        showToast(
+            "أدخل رقم هاتف جزائري صحيح"
         );
 
         return;
@@ -2605,9 +3261,11 @@ function createAccount(){
 function loginAccount(){
 
     const phone =
-        document.getElementById(
-            "loginPhone"
-        ).value.trim();
+        normalizePhone(
+            document.getElementById(
+                "loginPhone"
+            ).value
+        );
 
 
     const password =
@@ -2688,7 +3346,7 @@ function loginAccount(){
         user.role === "قاطر"
     ){
 
-        saveProviderRecord(user);
+        syncCurrentProviderRecord();
 
     }
 
@@ -3011,6 +3669,12 @@ function initializeMap(){
             .addTo(mapInstance);
 
 
+        /*
+           مهم:
+           لا نطلب موقع السائق هنا بطريقة مستقلة.
+           بوابة السائق هي التي تتحكم في الموقع الإجباري.
+        */
+
         setTimeout(function(){
 
             if(mapInstance){
@@ -3019,14 +3683,9 @@ function initializeMap(){
 
             }
 
+            refreshProviderMarkers();
+
         },500);
-
-
-        setTimeout(function(){
-
-            getRealLocation();
-
-        },800);
 
 
     }catch(error){
@@ -3040,6 +3699,32 @@ function initializeMap(){
             "⚠️ تعذر تشغيل الخريطة";
 
     }
+
+}
+
+
+/* =====================================================
+   أيقونات مقدمي الخدمة
+===================================================== */
+
+function createProviderIcon(icon){
+
+    return L.divIcon({
+
+        className:"",
+
+        html:
+            '<div class="provider-map-icon">' +
+            escapeHtml(icon) +
+            '</div>',
+
+        iconSize:[40,40],
+
+        iconAnchor:[20,20],
+
+        popupAnchor:[0,-20]
+
+    });
 
 }
 
@@ -3217,10 +3902,13 @@ function addRegisteredProviderMarkers(
 
     list.forEach(function(provider){
 
-        if(
-            typeof provider.latitude !== "number" ||
-            typeof provider.longitude !== "number"
-        ){
+        const coordinates =
+            normalizeProviderCoordinates(
+                provider
+            );
+
+
+        if(!coordinates){
 
             return;
 
@@ -3246,15 +3934,28 @@ function addRegisteredProviderMarkers(
 
             icon = "🏢";
 
+        }else if(
+            provider.role === "ورشة" &&
+            provider.workshopType === "متنقلة"
+        ){
+
+            icon = "🔧";
+
         }
 
 
         const marker =
             L.marker(
                 [
-                    provider.latitude,
-                    provider.longitude
-                ]
+                    coordinates.latitude,
+                    coordinates.longitude
+                ],
+                {
+                    icon:
+                        createProviderIcon(
+                            icon
+                        )
+                }
             );
 
 
@@ -3412,10 +4113,13 @@ function addProviderMarkers(
 
     list.forEach(function(provider){
 
-        if(
-            typeof provider.latitude !== "number" ||
-            typeof provider.longitude !== "number"
-        ){
+        const coordinates =
+            normalizeProviderCoordinates(
+                provider
+            );
+
+
+        if(!coordinates){
 
             return;
 
@@ -3425,8 +4129,8 @@ function addProviderMarkers(
         const marker =
             L.marker(
                 [
-                    provider.latitude,
-                    provider.longitude
+                    coordinates.latitude,
+                    coordinates.longitude
                 ]
             );
 
@@ -3481,6 +4185,14 @@ function refreshProviderMarkers(
         return;
 
     }
+
+
+    /*
+       مزامنة الورشة الثابتة الحالية قبل رسم العلامات.
+       هذا هو الجزء المهم لإصلاح مشكلة ظهور موقعها.
+    */
+
+    syncCurrentProviderRecord();
 
 
     clearProviderMarkers();
@@ -3849,10 +4561,494 @@ function emergencyCall(){
 
 
 /* =====================================================
+   بوابة السائق
+===================================================== */
+
+function showDriverGate(){
+
+    const gate =
+        document.getElementById(
+            "driverGate"
+        );
+
+    if(!gate){
+
+        return;
+
+    }
+
+    gate.style.display="flex";
+
+    driverGateCompleted = false;
+
+    const savedPhone =
+        localStorage.getItem(
+            "depannageDriverPhone"
+        );
+
+    const phoneInput =
+        document.getElementById(
+            "driverPhoneGate"
+        );
+
+    if(savedPhone && phoneInput){
+
+        phoneInput.value =
+            savedPhone;
+
+    }
+
+    const agreement =
+        document.getElementById(
+            "driverAgreement"
+        );
+
+    if(agreement){
+
+        agreement.checked = false;
+
+    }
+
+
+    if(
+        currentLocation &&
+        driverLocationConfirmed
+    ){
+
+        updateDriverLocationStatus(
+            "success",
+            "✅ تم تحديد موقعك سابقًا. يمكنك المتابعة."
+        );
+
+    }else{
+
+        updateDriverLocationStatus(
+            "",
+            "📍 يجب تحديد موقعك الحقيقي للمتابعة."
+        );
+
+    }
+
+}
+
+
+function hideDriverGate(){
+
+    const gate =
+        document.getElementById(
+            "driverGate"
+        );
+
+    if(gate){
+
+        gate.style.display="none";
+
+    }
+
+    driverGateCompleted = true;
+
+}
+
+
+function updateDriverLocationStatus(
+    type,
+    message
+){
+
+    const status =
+        document.getElementById(
+            "driverLocationStatus"
+        );
+
+    if(!status){
+
+        return;
+
+    }
+
+    status.className =
+        "driver-location-status";
+
+    if(type){
+
+        status.classList.add(type);
+
+    }
+
+    status.innerText =
+        message;
+
+}
+
+
+/* =====================================================
+   تحديد موقع السائق إجباريًا
+===================================================== */
+
+function requestDriverLocation(){
+
+    if(!navigator.geolocation){
+
+        updateDriverLocationStatus(
+            "error",
+            "⚠️ الموقع الجغرافي غير متاح على هذا الجهاز."
+        );
+
+        return;
+
+    }
+
+
+    updateDriverLocationStatus(
+        "",
+        "📍 جاري تحديد موقعك الحقيقي..."
+    );
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            currentLocation = {
+
+                latitude:
+                    position.coords.latitude,
+
+                longitude:
+                    position.coords.longitude,
+
+                accuracy:
+                    position.coords.accuracy
+
+            };
+
+
+            driverLocationConfirmed = true;
+
+
+            localStorage.setItem(
+                "depannageDriverLocation",
+                JSON.stringify(
+                    currentLocation
+                )
+            );
+
+
+            updateDriverLocationStatus(
+                "success",
+                "✅ تم تحديد موقعك الحقيقي بنجاح. يمكنك الآن الدخول إلى التطبيق."
+            );
+
+
+            updateLocationDisplay();
+
+            updateMapLocation();
+
+
+            showToast(
+                "✅ تم تحديد موقعك بنجاح"
+            );
+
+        },
+
+
+        function(error){
+
+            driverLocationConfirmed = false;
+
+            let message =
+                "⚠️ تعذر تحديد موقعك.";
+
+
+            if(error.code === 1){
+
+                message =
+                    "⚠️ تم رفض إذن الموقع. اسمح للمتصفح بالوصول إلى الموقع ثم حاول مرة أخرى.";
+
+            }else if(error.code === 2){
+
+                message =
+                    "⚠️ لا يمكن تحديد موقعك حاليًا. تأكد من تشغيل GPS.";
+
+            }else if(error.code === 3){
+
+                message =
+                    "⚠️ انتهى وقت تحديد الموقع. اضغط الزر وحاول مرة أخرى.";
+
+            }
+
+
+            updateDriverLocationStatus(
+                "error",
+                message
+            );
+
+        },
+
+
+        {
+
+            enableHighAccuracy:true,
+
+            timeout:20000,
+
+            maximumAge:0
+
+        }
+
+    );
+
+}
+
+
+/* =====================================================
+   دخول السائق إلى التطبيق
+===================================================== */
+
+function completeDriverGate(){
+
+    const phoneInput =
+        document.getElementById(
+            "driverPhoneGate"
+        );
+
+
+    const agreement =
+        document.getElementById(
+            "driverAgreement"
+        );
+
+
+    const phone =
+        normalizePhone(
+            phoneInput
+            ?
+            phoneInput.value
+            :
+            ""
+        );
+
+
+    if(!phone){
+
+        showToast(
+            "📱 أدخل رقم هاتفك أولاً"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !isValidAlgerianPhone(phone)
+    ){
+
+        showToast(
+            "📱 أدخل رقم هاتف جزائري صحيح"
+        );
+
+        return;
+
+    }
+
+
+    if(isPhoneBlocked(phone)){
+
+        updateDriverLocationStatus(
+            "error",
+            "🚫 هذا الرقم محظور من استخدام الخدمة بسبب مخالفة مثبتة."
+        );
+
+        showToast(
+            "🚫 لا يمكن استعمال الخدمة بهذا الرقم"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !currentLocation ||
+        !driverLocationConfirmed
+    ){
+
+        showToast(
+            "📍 يجب تحديد موقعك الحقيقي قبل الدخول"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !agreement ||
+        !agreement.checked
+    ){
+
+        showToast(
+            "⚠️ يجب تأكيد مسؤوليتك عن الطلبات قبل المتابعة"
+        );
+
+        return;
+
+    }
+
+
+    driverPhone =
+        phone;
+
+
+    localStorage.setItem(
+        "depannageDriverPhone",
+        phone
+    );
+
+
+    localStorage.setItem(
+        "depannageDriverLocation",
+        JSON.stringify(
+            currentLocation
+        )
+    );
+
+
+    localStorage.setItem(
+        "depannageDriverLocationConfirmed",
+        "true"
+    );
+
+
+    driverGateCompleted = true;
+
+
+    hideDriverGate();
+
+
+    updateLocationDisplay();
+
+    updateMapLocation();
+
+
+    showToast(
+        "✅ مرحبًا بك في DÉPANNAGE.DZ"
+    );
+
+}
+
+
+/* =====================================================
+   استرجاع جلسة السائق
+===================================================== */
+
+function restoreDriverSession(){
+
+    const savedPhone =
+        localStorage.getItem(
+            "depannageDriverPhone"
+        );
+
+
+    const savedLocation =
+        localStorage.getItem(
+            "depannageDriverLocation"
+        );
+
+
+    const confirmed =
+        localStorage.getItem(
+            "depannageDriverLocationConfirmed"
+        );
+
+
+    if(savedPhone){
+
+        driverPhone =
+            normalizePhone(
+                savedPhone
+            );
+
+    }
+
+
+    if(savedLocation){
+
+        try{
+
+            const location =
+                JSON.parse(
+                    savedLocation
+                );
+
+
+            const lat =
+                toNumberCoordinate(
+                    location.latitude
+                );
+
+            const lng =
+                toNumberCoordinate(
+                    location.longitude
+                );
+
+
+            if(
+                lat !== null &&
+                lng !== null
+            ){
+
+                currentLocation = {
+
+                    latitude:lat,
+
+                    longitude:lng,
+
+                    accuracy:
+                        Number(location.accuracy) || null
+
+                };
+
+            }
+
+        }catch(error){
+
+            currentLocation = null;
+
+        }
+
+    }
+
+
+    driverLocationConfirmed =
+        confirmed === "true" &&
+        !!currentLocation;
+
+
+    if(
+        driverPhone &&
+        isPhoneBlocked(driverPhone)
+    ){
+
+        driverLocationConfirmed = false;
+
+    }
+
+}
+
+
+/* =====================================================
    قطر السيارات
 ===================================================== */
 
 function openTowOptions(){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     document.getElementById("towModal")
         .style.display="flex";
@@ -3864,14 +5060,16 @@ function requestNearestTow(){
 
     closeModal("towModal");
 
-    getRealLocation(function(){
+    if(!ensureDriverAccess()){
 
-        showProviders(
-            "nearby",
-            "الخدمات القريبة"
-        );
+        return;
 
-    });
+    }
+
+    showProviders(
+        "nearby",
+        "الخدمات القريبة"
+    );
 
 }
 
@@ -3879,6 +5077,12 @@ function requestNearestTow(){
 function chooseTowDestination(){
 
     closeModal("towModal");
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     document.getElementById("requestModal")
         .style.display="flex";
@@ -3892,6 +5096,12 @@ function chooseTowDestination(){
 
 function openTruckOptions(){
 
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
+
     document.getElementById("truckModal")
         .style.display="flex";
 
@@ -3899,6 +5109,12 @@ function openTruckOptions(){
 
 
 function selectTruckProblem(problem){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     selectedTruckProblem = problem;
 
@@ -3915,11 +5131,7 @@ function selectTruckProblem(problem){
 
     }else{
 
-        getRealLocation(function(){
-
-            showTruckProviders();
-
-        });
+        requestDriverLocation();
 
     }
 
@@ -3931,6 +5143,12 @@ function selectTruckProblem(problem){
 ===================================================== */
 
 function showTruckProviders(){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     const container =
         document.getElementById(
@@ -3976,7 +5194,9 @@ function showTruckProviders(){
         "🚛 القاطرون المقترحون — " +
         selectedTruckProblem;
 
-    container.appendChild(title);
+    container.appendChild(
+        title
+    );
 
 
     const legend =
@@ -4174,6 +5394,12 @@ function showTruckProviders(){
 
 function openMobileWorkshop(){
 
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
+
     document.getElementById(
         "mobileModal"
     ).style.display="flex";
@@ -4182,6 +5408,12 @@ function openMobileWorkshop(){
 
 
 function selectMobileVehicle(vehicle){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     selectedMobileVehicle =
         vehicle;
@@ -4228,6 +5460,12 @@ function backToMobileVehicle(){
 
 
 function selectMobileProblem(problem){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     selectedMobileProblem =
         problem;
@@ -4284,17 +5522,7 @@ function selectMobileProblem(problem){
 
     }else{
 
-        getRealLocation(function(){
-
-            showMobileProviders(
-                selectedMobileVehicle,
-                selectedMobileProblem,
-                brand,
-                model,
-                energy
-            );
-
-        });
+        requestDriverLocation();
 
     }
 
@@ -4312,6 +5540,12 @@ function showMobileProviders(
     model,
     energy
 ){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     const container =
         document.getElementById(
@@ -4456,14 +5690,6 @@ function showMobileProviders(
                 provider.role === "ورشة" &&
                 provider.workshopType === "متنقلة"
             );
-
-        });
-
-
-    registered =
-        registered.filter(function(provider){
-
-            return true;
 
         });
 
@@ -4632,6 +5858,12 @@ function showMobileProviders(
 
 function openPartsOptions(){
 
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
+
     const modal =
         document.getElementById(
             "partsModal"
@@ -4653,6 +5885,12 @@ function openPartsOptions(){
 
 
 function selectPartsVehicle(vehicle){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     selectedPartsVehicle =
         vehicle;
@@ -4694,6 +5932,12 @@ function backToPartsVehicle(){
 
 
 function selectPartsType(type){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     selectedPartsType =
         type;
@@ -4743,16 +5987,7 @@ function selectPartsType(type){
 
     }else{
 
-        getRealLocation(function(){
-
-            showPartsProviders(
-                selectedPartsVehicle,
-                selectedPartsType,
-                brand,
-                model
-            );
-
-        });
+        requestDriverLocation();
 
     }
 
@@ -4769,6 +6004,12 @@ function showPartsProviders(
     brand,
     model
 ){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     const container =
         document.getElementById(
@@ -5080,12 +6321,6 @@ function getRealLocation(callback){
             "الموقع الجغرافي غير متاح على هذا الجهاز."
         );
 
-        if(callback){
-
-            callback();
-
-        }
-
         return;
 
     }
@@ -5121,6 +6356,33 @@ function getRealLocation(callback){
                     position.coords.accuracy
 
             };
+
+
+            driverLocationConfirmed = true;
+
+
+            if(driverPhone){
+
+                localStorage.setItem(
+                    "depannageDriverPhone",
+                    driverPhone
+                );
+
+            }
+
+
+            localStorage.setItem(
+                "depannageDriverLocation",
+                JSON.stringify(
+                    currentLocation
+                )
+            );
+
+
+            localStorage.setItem(
+                "depannageDriverLocationConfirmed",
+                "true"
+            );
 
 
             updateLocationDisplay();
@@ -5165,12 +6427,10 @@ function getRealLocation(callback){
                 message
             );
 
-
-            if(callback){
-
-                callback();
-
-            }
+            /*
+               لا نستدعي callback هنا.
+               تحديد الموقع أصبح شرطًا للوصول للخدمة.
+            */
 
         },
 
@@ -5191,6 +6451,41 @@ function getRealLocation(callback){
 
 
 /* =====================================================
+   التأكد من أن السائق مسموح له باستعمال التطبيق
+===================================================== */
+
+function ensureDriverAccess(){
+
+    if(driverGateCompleted){
+
+        return true;
+
+    }
+
+
+    if(
+        currentLocation &&
+        driverLocationConfirmed &&
+        driverPhone &&
+        isValidAlgerianPhone(driverPhone) &&
+        !isPhoneBlocked(driverPhone)
+    ){
+
+        driverGateCompleted = true;
+
+        return true;
+
+    }
+
+
+    showDriverGate();
+
+    return false;
+
+}
+
+
+/* =====================================================
    خطأ الموقع
 ===================================================== */
 
@@ -5205,8 +6500,7 @@ function updateLocationError(message){
     if(text){
 
         text.innerText =
-            message +
-            " اضغط «القريب مني» لإعادة المحاولة.";
+            message;
 
     }
 
@@ -5275,19 +6569,29 @@ function updateLocationDisplay(){
 
 function findNearby(){
 
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
+
     showToast(
         "جاري تحديد موقعك..."
     );
 
 
-    getRealLocation(function(){
+    if(currentLocation){
 
         showProviders(
             "nearby",
             "الخدمات القريبة"
         );
 
-    });
+    }else{
+
+        requestDriverLocation();
+
+    }
 
 }
 
@@ -5300,6 +6604,12 @@ function showProviders(
     type,
     titleText
 ){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
 
     const container =
         document.getElementById(
@@ -5338,6 +6648,10 @@ function showProviders(
     legend.innerHTML = `
 
         📍 الورش والقاطرون المسجلون تظهر بمواقعهم الحقيقية على الخريطة.
+
+        <br>
+
+        🔒 موقع ورقم هاتف السائق لا يظهران لمقدمي الخدمة.
 
         <br>
 
@@ -5559,6 +6873,13 @@ function callProvider(phone){
 
 function submitRequest(){
 
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
+
+
     const wilaya =
         document.getElementById(
             "wilaya"
@@ -5585,13 +6906,80 @@ function submitRequest(){
     }
 
 
+    /*
+       إنشاء الطلب محليًا في هذه المرحلة.
+       لم يتم بعد إدخال مرحلة قبول القاطر للطلب.
+    */
+
+    const request = {
+
+        id:
+            "REQ-" +
+            Date.now(),
+
+        type:
+            "قطر السيارات",
+
+        method:
+            "النقل إلى وجهة أحددها",
+
+        driverPhone:
+            driverPhone,
+
+        driverLocation:
+            currentLocation
+            ?
+            {
+                latitude:
+                    currentLocation.latitude,
+
+                longitude:
+                    currentLocation.longitude,
+
+                accuracy:
+                    currentLocation.accuracy || null
+            }
+            :
+            null,
+
+        destination:{
+
+            wilaya:
+                wilaya,
+
+            commune:
+                commune
+
+        },
+
+        status:
+            "جديد",
+
+        createdAt:
+            new Date().toISOString()
+
+    };
+
+
+    currentRequest =
+        request;
+
+
+    saveRequest(
+        request
+    );
+
+
     closeModal(
         "requestModal"
     );
 
 
+    showActiveRequest();
+
+
     showToast(
-        "تم تسجيل وجهة النقل: " +
+        "✅ تم تسجيل طلب النقل إلى: " +
         wilaya +
         " - " +
         commune
@@ -5601,10 +6989,345 @@ function submitRequest(){
 
 
 /* =====================================================
+   حفظ الطلبات
+===================================================== */
+
+function getSavedRequests(){
+
+    const saved =
+        localStorage.getItem(
+            "depannageRequests"
+        );
+
+    if(!saved){
+
+        return [];
+
+    }
+
+
+    try{
+
+        const list =
+            JSON.parse(saved);
+
+        return Array.isArray(list)
+            ? list
+            : [];
+
+    }catch(error){
+
+        return [];
+
+    }
+
+}
+
+
+function saveRequest(request){
+
+    const list =
+        getSavedRequests();
+
+
+    const index =
+        list.findIndex(function(item){
+
+            return item.id === request.id;
+
+        });
+
+
+    if(index >= 0){
+
+        list[index] = request;
+
+    }else{
+
+        list.push(request);
+
+    }
+
+
+    localStorage.setItem(
+        "depannageRequests",
+        JSON.stringify(list)
+    );
+
+}
+
+
+/* =====================================================
+   عرض الطلب الحالي
+===================================================== */
+
+function showActiveRequest(){
+
+    const container =
+        document.getElementById(
+            "providers"
+        );
+
+
+    if(
+        !container ||
+        !currentRequest ||
+        currentRequest.status === "ملغى"
+    ){
+
+        return;
+
+    }
+
+
+    container.style.display =
+        "block";
+
+
+    const box =
+        document.createElement(
+            "div"
+        );
+
+
+    box.className =
+        "request-active";
+
+
+    box.innerHTML = `
+
+        <h3>
+            📋 طلبك الحالي
+        </h3>
+
+        <p>
+            رقم الطلب:
+            <b>
+                ${escapeHtml(currentRequest.id)}
+            </b>
+        </p>
+
+        <p>
+            الخدمة:
+            ${escapeHtml(currentRequest.type)}
+        </p>
+
+        <p>
+            الوجهة:
+            <b>
+                ${escapeHtml(
+                    currentRequest.destination.wilaya
+                )}
+                -
+                ${escapeHtml(
+                    currentRequest.destination.commune
+                )}
+            </b>
+        </p>
+
+        <p>
+            الحالة:
+            <b>
+                ${escapeHtml(currentRequest.status)}
+            </b>
+        </p>
+
+        <button class="cancel-request-btn"
+                onclick="openCancelRequest()">
+
+            ❌ إلغاء الطلب
+
+        </button>
+
+    `;
+
+
+    container.prepend(
+        box
+    );
+
+}
+
+
+/* =====================================================
+   فتح إلغاء الطلب
+===================================================== */
+
+function openCancelRequest(){
+
+    if(
+        !currentRequest ||
+        currentRequest.status === "ملغى"
+    ){
+
+        showToast(
+            "لا يوجد طلب نشط لإلغائه"
+        );
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "cancelReason"
+    ).value="";
+
+
+    document.getElementById(
+        "cancelRequestModal"
+    ).style.display="flex";
+
+}
+
+
+/* =====================================================
+   تأكيد إلغاء الطلب
+===================================================== */
+
+function confirmCancelRequest(){
+
+    if(
+        !currentRequest
+    ){
+
+        closeModal(
+            "cancelRequestModal"
+        );
+
+        return;
+
+    }
+
+
+    const reason =
+        document.getElementById(
+            "cancelReason"
+        ).value.trim();
+
+
+    if(!reason){
+
+        showToast(
+            "⚠️ يجب كتابة سبب إلغاء الطلب"
+        );
+
+        return;
+
+    }
+
+
+    currentRequest.status =
+        "ملغى";
+
+
+    currentRequest.cancelReason =
+        reason;
+
+
+    currentRequest.cancelledAt =
+        new Date().toISOString();
+
+
+    saveRequest(
+        currentRequest
+    );
+
+
+    closeModal(
+        "cancelRequestModal"
+    );
+
+
+    const container =
+        document.getElementById(
+            "providers"
+        );
+
+
+    if(container){
+
+        container.innerHTML="";
+        container.style.display="none";
+
+    }
+
+
+    showToast(
+        "تم إلغاء الطلب وتسجيل سبب الإلغاء"
+    );
+
+
+    currentRequest = null;
+
+}
+
+
+/* =====================================================
+   استرجاع الطلب النشط
+===================================================== */
+
+function restoreActiveRequest(){
+
+    if(!driverPhone){
+
+        return;
+
+    }
+
+
+    const list =
+        getSavedRequests();
+
+
+    const active =
+        list
+        .filter(function(request){
+
+            return (
+                request &&
+                request.driverPhone === driverPhone &&
+                request.status !== "ملغى"
+            );
+
+        })
+        .sort(function(a,b){
+
+            return (
+                new Date(b.createdAt) -
+                new Date(a.createdAt)
+            );
+
+        });
+
+
+    if(active.length > 0){
+
+        currentRequest =
+            active[0];
+
+    }
+
+}
+
+
+/* =====================================================
    إغلاق النوافذ
 ===================================================== */
 
 function closeModal(id){
+
+    /*
+       بوابة السائق لا يمكن إغلاقها قبل
+       استكمال شروطها.
+    */
+
+    if(id === "driverGate"){
+
+        return;
+
+    }
+
 
     const modal =
         document.getElementById(
@@ -5627,6 +7350,13 @@ function closeModal(id){
 ===================================================== */
 
 function home(){
+
+    if(!ensureDriverAccess()){
+
+        return;
+
+    }
+
 
     document.getElementById(
         "providers"
@@ -5710,6 +7440,19 @@ document
                 event.target === modal
             ){
 
+                /*
+                   لا نسمح بإغلاق بوابة السائق.
+                */
+
+                if(
+                    modal.id === "driverGate"
+                ){
+
+                    return;
+
+                }
+
+
                 modal.style.display =
                     "none";
 
@@ -5728,6 +7471,9 @@ document
 window.addEventListener(
     "load",
     function(){
+
+        restoreDriverSession();
+
 
         const savedUser =
             localStorage.getItem(
@@ -5751,11 +7497,14 @@ window.addEventListener(
                     /*
                        تحديث سجل مقدم الخدمة
                        عند فتح التطبيق.
+
+                       بالنسبة للورشة الثابتة:
+                       الإحداثيات المحفوظة في الحساب
+                       يتم نقلها إلى سجل مقدمي الخدمة
+                       حتى تظهر على الخريطة.
                     */
 
-                    saveProviderRecord(
-                        currentUser
-                    );
+                    syncCurrentProviderRecord();
 
                 }
 
@@ -5771,6 +7520,53 @@ window.addEventListener(
         setTimeout(function(){
 
             initializeMap();
+
+
+            /*
+               إذا كان رقم السائق محظورًا،
+               لا نسمح بالدخول حتى لو كانت هناك
+               جلسة قديمة محفوظة.
+            */
+
+            if(
+                driverPhone &&
+                isPhoneBlocked(driverPhone)
+            ){
+
+                driverLocationConfirmed = false;
+
+            }
+
+
+            if(
+                driverPhone &&
+                driverLocationConfirmed &&
+                !isPhoneBlocked(driverPhone)
+            ){
+
+                driverGateCompleted = true;
+
+                updateLocationDisplay();
+
+                setTimeout(function(){
+
+                    updateMapLocation();
+
+                    restoreActiveRequest();
+
+                },600);
+
+            }else{
+
+                driverGateCompleted = false;
+
+                setTimeout(function(){
+
+                    showDriverGate();
+
+                },350);
+
+            }
 
         },100);
 
