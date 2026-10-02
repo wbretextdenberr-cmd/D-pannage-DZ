@@ -3,9 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>DÉPANNAGE.DZ</title>
 
+<!-- الخريطة الحقيقية -->
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
 <style>
+
 *{
     box-sizing:border-box;
     margin:0;
@@ -102,42 +110,40 @@ header p{
     margin-top:5px;
 }
 
+
+/* =========================
+   الخريطة الحقيقية
+========================= */
+
 .map{
     margin-top:18px;
-    height:190px;
-    background:
-      linear-gradient(#0000 95%,#ffffff55 95%),
-      linear-gradient(90deg,#0000 95%,#ffffff55 95%),
-      #dbe7d1;
-    background-size:40px 40px;
+    height:260px;
+    background:#dbe7d1;
     border-radius:18px;
     position:relative;
     overflow:hidden;
     border:1px solid #d1d5db;
+    z-index:1;
 }
 
-.road{
-    position:absolute;
-    background:#f8fafc;
-    transform:rotate(-18deg);
-    width:140%;
-    height:34px;
-    top:75px;
-    left:-20%;
-    border-top:3px solid #cbd5e1;
-    border-bottom:3px solid #cbd5e1;
+#realMap{
+    width:100%;
+    height:100%;
 }
 
-.location-dot{
+.map-status{
     position:absolute;
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    background:#2563eb;
-    border:4px solid white;
-    box-shadow:0 2px 7px #0005;
-    top:78px;
-    left:48%;
+    top:10px;
+    right:10px;
+    left:10px;
+    z-index:500;
+    background:#ffffffee;
+    padding:9px;
+    border-radius:10px;
+    text-align:center;
+    font-size:12px;
+    box-shadow:0 2px 8px #0002;
+    pointer-events:none;
 }
 
 #locationText{
@@ -145,11 +151,14 @@ header p{
     bottom:10px;
     right:10px;
     left:10px;
-    background:#ffffffdd;
+    z-index:500;
+    background:#ffffffee;
     padding:8px;
     border-radius:10px;
     text-align:center;
     font-size:12px;
+    box-shadow:0 2px 8px #0002;
+    pointer-events:none;
 }
 
 .providers{
@@ -250,7 +259,7 @@ header p{
     display:none;
     align-items:flex-end;
     justify-content:center;
-    z-index:100;
+    z-index:1000;
 }
 
 .modal{
@@ -349,61 +358,128 @@ label{
     border-radius:12px;
     text-align:center;
     display:none;
-    z-index:200;
+    z-index:2000;
     font-size:14px;
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
-    <button class="sos" onclick="emergencyCall()">🚨</button>
+
+    <button class="sos" onclick="emergencyCall()">
+        🚨
+    </button>
+
     <h1>DÉPANNAGE.DZ</h1>
-    <p>مساعدتك عند تعطل مركبتك</p>
+
+    <p>
+        مساعدتك عند تعطل مركبتك
+    </p>
+
 </header>
+
 
 <div class="container">
 
-    <div class="section-title">الخدمات</div>
+    <div class="section-title">
+        الخدمات
+    </div>
+
 
     <div class="services">
 
         <div class="card" onclick="openTowOptions()">
-            <div class="icon">🚗</div>
-            <h3>قطر السيارات</h3>
-            <p>مساعدة ونقل السيارة</p>
+
+            <div class="icon">
+                🚗
+            </div>
+
+            <h3>
+                قطر السيارات
+            </h3>
+
+            <p>
+                مساعدة ونقل السيارة
+            </p>
+
         </div>
+
 
         <div class="card" onclick="openTruckOptions()">
-            <div class="icon">🚛</div>
-            <h3>قطر الشاحنات</h3>
-            <p>أعطال ونجدة الشاحنات</p>
+
+            <div class="icon">
+                🚛
+            </div>
+
+            <h3>
+                قطر الشاحنات
+            </h3>
+
+            <p>
+                أعطال ونجدة الشاحنات
+            </p>
+
         </div>
+
 
         <div class="card" onclick="openMobileWorkshop()">
-            <div class="icon">🔧</div>
-            <h3>ورشة متنقلة</h3>
-            <p>مصلح قريب منك</p>
+
+            <div class="icon">
+                🔧
+            </div>
+
+            <h3>
+                ورشة متنقلة
+            </h3>
+
+            <p>
+                مصلح قريب منك
+            </p>
+
         </div>
+
 
         <div class="card" onclick="openPartsOptions()">
-            <div class="icon">⚙️</div>
-            <h3>قطع الغيار</h3>
-            <p>محلات قطع الغيار القريبة</p>
+
+            <div class="icon">
+                ⚙️
+            </div>
+
+            <h3>
+                قطع الغيار
+            </h3>
+
+            <p>
+                محلات قطع الغيار القريبة
+            </p>
+
         </div>
 
     </div>
 
-    <div class="section-title">موقعك</div>
+
+    <div class="section-title">
+        موقعك
+    </div>
+
 
     <div class="map">
-        <div class="road"></div>
-        <div class="location-dot"></div>
-        <div id="locationText">
-            اضغط على خدمة للعثور على المساعدة القريبة
+
+        <div id="realMap"></div>
+
+        <div class="map-status">
+            🗺️ الخريطة الحقيقية
         </div>
+
+        <div id="locationText">
+            اضغط على خدمة أو «القريب مني» لتحديد موقعك
+        </div>
+
     </div>
+
 
     <div id="providers" class="providers"></div>
 
@@ -438,7 +514,9 @@ label{
 
     <div class="modal">
 
-        <h2>🚗 قطر السيارات</h2>
+        <h2>
+            🚗 قطر السيارات
+        </h2>
 
         <p>
             اختر طريقة المساعدة المطلوبة
@@ -469,7 +547,9 @@ label{
 
     <div class="modal">
 
-        <h2>🚛 قطر الشاحنات</h2>
+        <h2>
+            🚛 قطر الشاحنات
+        </h2>
 
         <p>
             اختر نوع العطل، وسنبحث عن قاطرات الشاحنات
@@ -517,7 +597,9 @@ label{
 
     <div class="modal">
 
-        <h2>🔧 الورشة المتنقلة</h2>
+        <h2>
+            🔧 الورشة المتنقلة
+        </h2>
 
         <p>
             أولاً اختر نوع المركبة
@@ -549,14 +631,16 @@ label{
 
 
 <!-- =========================
-     معلومات المركبة والعطل
+     معلومات الورشة المتنقلة
 ========================= -->
 
 <div id="mobileDetailsModal" class="modal-bg">
 
     <div class="modal">
 
-        <h2>🔧 معلومات المركبة</h2>
+        <h2>
+            🔧 معلومات المركبة
+        </h2>
 
         <p>
             هذه المعلومات تساعد التطبيق على توجيهك
@@ -667,7 +751,9 @@ label{
 
     <div class="modal">
 
-        <h2>⚙️ قطع الغيار</h2>
+        <h2>
+            ⚙️ قطع الغيار
+        </h2>
 
         <p>
             اختر نوع المركبة ثم أدخل علامتها.
@@ -707,7 +793,9 @@ label{
 
     <div class="modal">
 
-        <h2>⚙️ معلومات المركبة</h2>
+        <h2>
+            ⚙️ معلومات المركبة
+        </h2>
 
         <p>
             العلامة تساعدنا على تصنيف محلات قطع الغيار المناسبة.
@@ -771,17 +859,17 @@ label{
 
         <button
             class="option"
-            onclick="selectPartsType('هيكل وميكانيك وكهرباء')">
+            onclick="selectPartsType('هيكل ميكانيك وكهرباء')">
 
-            🔧 هيكل وميكانيك وكهرباء
+            🔧 هيكل ميكانيك وكهرباء
 
         </button>
 
         <button
             class="option"
-            onclick="selectPartsType('كهرباء فقط')">
+            onclick="selectPartsType('كهرباء وحدها')">
 
-            ⚡ كهرباء فقط
+            ⚡ كهرباء وحدها
 
         </button>
 
@@ -803,7 +891,9 @@ label{
 
     <div class="modal">
 
-        <h2>📍 تحديد وجهة النقل</h2>
+        <h2>
+            📍 تحديد وجهة النقل
+        </h2>
 
         <p>
             أدخل الولاية والبلدية التي تريد نقل السيارة إليها.
@@ -845,6 +935,10 @@ label{
 <div id="toast" class="toast"></div>
 
 
+<!-- مكتبة الخريطة -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
 <script>
 
 let currentLocation = null;
@@ -858,6 +952,147 @@ let selectedMobileProblem = null;
 let selectedPartsVehicle = null;
 
 let selectedPartsType = null;
+
+
+/* =====================================================
+   متغيرات الخريطة
+===================================================== */
+
+let mapInstance = null;
+
+let userMarker = null;
+
+let accuracyCircle = null;
+
+
+/* =====================================================
+   تهيئة الخريطة
+===================================================== */
+
+function initializeMap(){
+
+    if(typeof L === "undefined"){
+
+        document.getElementById("locationText").innerText =
+            "تعذر تحميل الخريطة";
+
+        return;
+
+    }
+
+
+    mapInstance = L.map("realMap",{
+
+        zoomControl:true,
+
+        attributionControl:true
+
+    }).setView(
+        [28.0339,1.6596],
+        5
+    );
+
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:"© OpenStreetMap contributors"
+        }
+    ).addTo(mapInstance);
+
+}
+
+
+/* =====================================================
+   تحديث موقع المستخدم على الخريطة
+===================================================== */
+
+function updateMapLocation(){
+
+    if(
+        !mapInstance ||
+        !currentLocation
+    ){
+
+        return;
+
+    }
+
+
+    const lat =
+        currentLocation.latitude;
+
+    const lng =
+        currentLocation.longitude;
+
+
+    if(userMarker){
+
+        userMarker.setLatLng([lat,lng]);
+
+    }else{
+
+        userMarker =
+            L.marker([lat,lng])
+            .addTo(mapInstance)
+            .bindPopup(
+                "📍 موقعك الحالي"
+            );
+
+    }
+
+
+    if(accuracyCircle){
+
+        accuracyCircle.setLatLng([lat,lng]);
+
+        if(
+            currentLocation.accuracy
+        ){
+
+            accuracyCircle.setRadius(
+                currentLocation.accuracy
+            );
+
+        }
+
+    }else{
+
+        accuracyCircle =
+            L.circle(
+                [lat,lng],
+                {
+                    radius:
+                        currentLocation.accuracy || 30,
+
+                    color:"#2563eb",
+
+                    fillColor:"#60a5fa",
+
+                    fillOpacity:0.18
+                }
+            ).addTo(mapInstance);
+
+    }
+
+
+    mapInstance.setView(
+        [lat,lng],
+        16,
+        {
+            animate:true
+        }
+    );
+
+
+    setTimeout(function(){
+
+        mapInstance.invalidateSize();
+
+    },300);
+
+}
 
 
 /* =====================================================
@@ -902,7 +1137,7 @@ const truckProviders = [
 
 
 /* =====================================================
-   بيانات الورشة المتنقلة - تصنيف مسبق
+   بيانات الورشة المتنقلة
 ===================================================== */
 
 const mobileProviders = [
@@ -911,8 +1146,19 @@ const mobileProviders = [
         name:"ميكانيكي السيارات المتنقل",
         vehicle:"سيارة",
         problem:"عطل ميكانيكي",
-        brands:["Renault","Peugeot","Citroën","Volkswagen","Fiat","Dacia"],
-        energy:["بنزين","ديزل","GPL"],
+        brands:[
+            "Renault",
+            "Peugeot",
+            "Citroën",
+            "Volkswagen",
+            "Fiat",
+            "Dacia"
+        ],
+        energy:[
+            "بنزين",
+            "ديزل",
+            "GPL"
+        ],
         distance:"2.8 كم",
         rating:"4.9",
         phone:"0551000001"
@@ -922,8 +1168,18 @@ const mobileProviders = [
         name:"ورشة ميكانيكا السيارات المتنقلة",
         vehicle:"سيارة",
         problem:"عطل ميكانيكي",
-        brands:["Toyota","Hyundai","Kia","Ford","Nissan"],
-        energy:["بنزين","ديزل","هجينة"],
+        brands:[
+            "Toyota",
+            "Hyundai",
+            "Kia",
+            "Ford",
+            "Nissan"
+        ],
+        energy:[
+            "بنزين",
+            "ديزل",
+            "هجينة"
+        ],
         distance:"4.2 كم",
         rating:"4.7",
         phone:"0661000002"
@@ -933,8 +1189,19 @@ const mobileProviders = [
         name:"كهربائي السيارات المتنقل",
         vehicle:"سيارة",
         problem:"عطل كهربائي",
-        brands:["Renault","Peugeot","Volkswagen","Fiat","Dacia","Citroën"],
-        energy:["بنزين","ديزل","GPL"],
+        brands:[
+            "Renault",
+            "Peugeot",
+            "Volkswagen",
+            "Fiat",
+            "Dacia",
+            "Citroën"
+        ],
+        energy:[
+            "بنزين",
+            "ديزل",
+            "GPL"
+        ],
         distance:"3.1 كم",
         rating:"4.8",
         phone:"0551000003"
@@ -944,8 +1211,19 @@ const mobileProviders = [
         name:"كهربائي السيارات الحديثة",
         vehicle:"سيارة",
         problem:"عطل كهربائي",
-        brands:["Toyota","Hyundai","Kia","BMW","Mercedes-Benz"],
-        energy:["بنزين","ديزل","كهربائية","هجينة"],
+        brands:[
+            "Toyota",
+            "Hyundai",
+            "Kia",
+            "BMW",
+            "Mercedes-Benz"
+        ],
+        energy:[
+            "بنزين",
+            "ديزل",
+            "كهربائية",
+            "هجينة"
+        ],
         distance:"5.3 كم",
         rating:"4.6",
         phone:"0771000004"
@@ -955,8 +1233,22 @@ const mobileProviders = [
         name:"خدمة العجلات المتنقلة",
         vehicle:"سيارة",
         problem:"تصليح عجلات",
-        brands:["Renault","Peugeot","Volkswagen","Fiat","Dacia","Toyota","Hyundai"],
-        energy:["بنزين","ديزل","GPL","كهربائية","هجينة"],
+        brands:[
+            "Renault",
+            "Peugeot",
+            "Volkswagen",
+            "Fiat",
+            "Dacia",
+            "Toyota",
+            "Hyundai"
+        ],
+        energy:[
+            "بنزين",
+            "ديزل",
+            "GPL",
+            "كهربائية",
+            "هجينة"
+        ],
         distance:"2.5 كم",
         rating:"4.8",
         phone:"0551000005"
@@ -966,8 +1258,16 @@ const mobileProviders = [
         name:"ميكانيكي الشاحنات المتنقل",
         vehicle:"شاحنة",
         problem:"عطل ميكانيكي",
-        brands:["Mercedes-Benz","MAN","Volvo","Scania","Isuzu"],
-        energy:["ديزل"],
+        brands:[
+            "Mercedes-Benz",
+            "MAN",
+            "Volvo",
+            "Scania",
+            "Isuzu"
+        ],
+        energy:[
+            "ديزل"
+        ],
         distance:"6.4 كم",
         rating:"4.7",
         phone:"0661000006"
@@ -977,8 +1277,16 @@ const mobileProviders = [
         name:"كهربائي الشاحنات المتنقل",
         vehicle:"شاحنة",
         problem:"عطل كهربائي",
-        brands:["Mercedes-Benz","MAN","Volvo","Scania","Isuzu"],
-        energy:["ديزل"],
+        brands:[
+            "Mercedes-Benz",
+            "MAN",
+            "Volvo",
+            "Scania",
+            "Isuzu"
+        ],
+        energy:[
+            "ديزل"
+        ],
         distance:"7.2 كم",
         rating:"4.6",
         phone:"0551000007"
@@ -988,8 +1296,16 @@ const mobileProviders = [
         name:"عجلات الشاحنات المتنقلة",
         vehicle:"شاحنة",
         problem:"تصليح عجلات",
-        brands:["Mercedes-Benz","MAN","Volvo","Scania","Isuzu"],
-        energy:["ديزل"],
+        brands:[
+            "Mercedes-Benz",
+            "MAN",
+            "Volvo",
+            "Scania",
+            "Isuzu"
+        ],
+        energy:[
+            "ديزل"
+        ],
         distance:"5.8 كم",
         rating:"4.8",
         phone:"0771000008"
@@ -999,8 +1315,14 @@ const mobileProviders = [
         name:"ميكانيكي الدراجات المتنقل",
         vehicle:"دراجة نارية",
         problem:"عطل ميكانيكي",
-        brands:["Yamaha","Honda","Suzuki"],
-        energy:["بنزين"],
+        brands:[
+            "Yamaha",
+            "Honda",
+            "Suzuki"
+        ],
+        energy:[
+            "بنزين"
+        ],
         distance:"3.7 كم",
         rating:"4.9",
         phone:"0551000009"
@@ -1010,8 +1332,15 @@ const mobileProviders = [
         name:"كهربائي الدراجات النارية",
         vehicle:"دراجة نارية",
         problem:"عطل كهربائي",
-        brands:["Yamaha","Honda","Suzuki"],
-        energy:["بنزين","كهربائية"],
+        brands:[
+            "Yamaha",
+            "Honda",
+            "Suzuki"
+        ],
+        energy:[
+            "بنزين",
+            "كهربائية"
+        ],
         distance:"4.6 كم",
         rating:"4.7",
         phone:"0661000010"
@@ -1021,8 +1350,15 @@ const mobileProviders = [
         name:"خدمة عجلات الدراجات",
         vehicle:"دراجة نارية",
         problem:"تصليح عجلات",
-        brands:["Yamaha","Honda","Suzuki"],
-        energy:["بنزين","كهربائية"],
+        brands:[
+            "Yamaha",
+            "Honda",
+            "Suzuki"
+        ],
+        energy:[
+            "بنزين",
+            "كهربائية"
+        ],
         distance:"2.9 كم",
         rating:"4.8",
         phone:"0551000011"
@@ -1039,7 +1375,7 @@ const partsProviders = [
 
     {
         name:"محل قطع الغيار المتكامل",
-        type:"هيكل وميكانيك وكهرباء",
+        type:"هيكل ميكانيك وكهرباء",
         vehicles:["سيارة"],
         brands:[
             "Renault",
@@ -1056,7 +1392,7 @@ const partsProviders = [
 
     {
         name:"قطع غيار السيارات الأوروبية",
-        type:"هيكل وميكانيك وكهرباء",
+        type:"هيكل ميكانيك وكهرباء",
         vehicles:["سيارة"],
         brands:[
             "Renault",
@@ -1072,7 +1408,7 @@ const partsProviders = [
 
     {
         name:"كهرباء وقطع غيار السيارات",
-        type:"كهرباء فقط",
+        type:"كهرباء وحدها",
         vehicles:["سيارة"],
         brands:[
             "Renault",
@@ -1089,7 +1425,7 @@ const partsProviders = [
 
     {
         name:"كهرباء السيارات الحديثة",
-        type:"كهرباء فقط",
+        type:"كهرباء وحدها",
         vehicles:["سيارة"],
         brands:[
             "Toyota",
@@ -1106,7 +1442,7 @@ const partsProviders = [
 
     {
         name:"قطع غيار الشاحنات",
-        type:"هيكل وميكانيك وكهرباء",
+        type:"هيكل ميكانيك وكهرباء",
         vehicles:["شاحنة"],
         brands:[
             "Mercedes-Benz",
@@ -1122,7 +1458,7 @@ const partsProviders = [
 
     {
         name:"كهرباء شاحنات",
-        type:"كهرباء فقط",
+        type:"كهرباء وحدها",
         vehicles:["شاحنة"],
         brands:[
             "Mercedes-Benz",
@@ -1138,7 +1474,7 @@ const partsProviders = [
 
     {
         name:"قطع غيار الدراجات النارية",
-        type:"هيكل وميكانيك وكهرباء",
+        type:"هيكل ميكانيك وكهرباء",
         vehicles:["دراجة نارية"],
         brands:[
             "Yamaha",
@@ -1152,7 +1488,7 @@ const partsProviders = [
 
     {
         name:"كهرباء الدراجات النارية",
-        type:"كهرباء فقط",
+        type:"كهرباء وحدها",
         vehicles:["دراجة نارية"],
         brands:[
             "Yamaha",
@@ -1168,7 +1504,7 @@ const partsProviders = [
 
 
 /* =====================================================
-   بيانات الخدمات العامة
+   الخدمات العامة
 ===================================================== */
 
 const providers = {
@@ -1242,7 +1578,10 @@ function requestNearestTow(){
 
     getRealLocation(function(){
 
-        showProviders("nearby","الخدمات القريبة");
+        showProviders(
+            "nearby",
+            "الخدمات القريبة"
+        );
 
     });
 
@@ -1277,6 +1616,7 @@ function selectTruckProblem(problem){
 
     showToast("جاري تحديد موقعك...");
 
+
     if(currentLocation){
 
         showTruckProviders();
@@ -1309,7 +1649,8 @@ function showTruckProviders(){
 
     backButton.className="back-btn";
 
-    backButton.innerText="← العودة لاختيار نوع العطل";
+    backButton.innerText =
+        "← العودة لاختيار نوع العطل";
 
     backButton.onclick=function(){
 
@@ -1446,11 +1787,14 @@ function selectMobileProblem(problem){
 
     selectedMobileProblem = problem;
 
+
     const brand =
         document.getElementById("vehicleBrand").value;
 
+
     const model =
         document.getElementById("vehicleModel").value.trim();
+
 
     const energy =
         document.getElementById("vehicleEnergy").value;
@@ -1458,7 +1802,9 @@ function selectMobileProblem(problem){
 
     if(!energy){
 
-        showToast("اختر نوع الطاقة أولاً");
+        showToast(
+            "اختر نوع الطاقة أولاً"
+        );
 
         return;
 
@@ -1500,7 +1846,7 @@ function selectMobileProblem(problem){
 
 
 /* =====================================================
-   البحث في تصنيف الورشة المتنقلة
+   البحث في الورشة المتنقلة
 ===================================================== */
 
 function showMobileProviders(
@@ -1524,7 +1870,8 @@ function showMobileProviders(
 
     backButton.className="back-btn";
 
-    backButton.innerText="← تعديل بيانات المركبة والعطل";
+    backButton.innerText =
+        "← تعديل بيانات المركبة والعطل";
 
     backButton.onclick=function(){
 
@@ -1568,8 +1915,12 @@ function showMobileProviders(
         "🚘 المركبة: <b>"+vehicle+"</b>" +
         "<br>⚙️ الطاقة: <b>"+energy+"</b>" +
         "<br>🔧 العطل: <b>"+problem+"</b>" +
-        (brand ? "<br>🏷️ العلامة: <b>"+brand+"</b>" : "") +
-        (model ? "<br>🚘 الموديل: <b>"+model+"</b>" : "");
+        (brand ?
+            "<br>🏷️ العلامة: <b>"+brand+"</b>"
+            : "") +
+        (model ?
+            "<br>🚘 الموديل: <b>"+model+"</b>"
+            : "");
 
     container.appendChild(summary);
 
@@ -1655,11 +2006,15 @@ function showMobileProviders(
 
         empty.innerHTML=`
 
-            <h3>لم نجد مقدم خدمة مطابقًا حاليًا</h3>
+            <h3>
+                لم نجد مقدم خدمة مطابقًا حاليًا
+            </h3>
 
             <div class="provider-info">
+
                 لا توجد بيانات تجريبية لهذا التصنيف حاليًا.
                 سيتم لاحقًا ربط التطبيق بقاعدة بيانات حقيقية.
+
             </div>
 
         `;
@@ -1770,8 +2125,10 @@ function selectPartsType(type){
 
     selectedPartsType = type;
 
+
     const brand =
         document.getElementById("partsBrand").value;
+
 
     const model =
         document.getElementById("partsModel").value.trim();
@@ -1779,7 +2136,9 @@ function selectPartsType(type){
 
     if(!brand){
 
-        showToast("اختر علامة المركبة أولاً");
+        showToast(
+            "اختر علامة المركبة أولاً"
+        );
 
         return;
 
@@ -1842,7 +2201,8 @@ function showPartsProviders(
 
     backButton.className="back-btn";
 
-    backButton.innerText="← تعديل بيانات قطع الغيار";
+    backButton.innerText =
+        "← تعديل بيانات قطع الغيار";
 
     backButton.onclick=function(){
 
@@ -1885,7 +2245,9 @@ function showPartsProviders(
 
         "🚘 المركبة: <b>"+vehicle+"</b>" +
         "<br>🏷️ العلامة: <b>"+brand+"</b>" +
-        (model ? "<br>🚘 الموديل: <b>"+model+"</b>" : "") +
+        (model ?
+            "<br>🚘 الموديل: <b>"+model+"</b>"
+            : "") +
         "<br>🔧 نوع المحل: <b>"+type+"</b>";
 
     container.appendChild(summary);
@@ -1905,11 +2267,6 @@ function showPartsProviders(
 
     container.appendChild(info);
 
-
-    /*
-       المطابقة الأساسية:
-       نوع المركبة + نوع المحل + العلامة.
-    */
 
     let matches =
         partsProviders.filter(function(provider){
@@ -1937,12 +2294,6 @@ function showPartsProviders(
         });
 
 
-    /*
-       إذا لم توجد نتيجة للعلامة بشكل دقيق،
-       نعرض محلات نفس نوع المركبة ونفس التخصص
-       حتى لا يخرج المستخدم بدون نتيجة.
-    */
-
     if(matches.length === 0){
 
         matches =
@@ -1967,11 +2318,15 @@ function showPartsProviders(
 
         empty.innerHTML=`
 
-            <h3>لم نجد محلًا مطابقًا حاليًا</h3>
+            <h3>
+                لم نجد محلًا مطابقًا حاليًا
+            </h3>
 
             <div class="provider-info">
+
                 لا توجد بيانات تجريبية لهذا التصنيف حاليًا.
                 سيتم لاحقًا ربط التطبيق بمحلات حقيقية وقاعدة بيانات حقيقية.
+
             </div>
 
         `;
@@ -2008,7 +2363,7 @@ function showPartsProviders(
                 🏷️ العلامات: ${provider.brands.join("، ")}
                 <br>
 
-                📍 المسافة: ${provider.distance}
+                📍 المسافة التقريبية: ${provider.distance}
                 <br>
 
                 ⭐ التقييم: ${provider.rating}/5
@@ -2063,6 +2418,7 @@ function getRealLocation(callback){
         }
 
         return;
+
     }
 
 
@@ -2076,11 +2432,17 @@ function getRealLocation(callback){
                     position.coords.latitude,
 
                 longitude:
-                    position.coords.longitude
+                    position.coords.longitude,
+
+                accuracy:
+                    position.coords.accuracy
 
             };
 
+
             updateLocationDisplay();
+
+            updateMapLocation();
 
 
             if(callback){
@@ -2091,9 +2453,11 @@ function getRealLocation(callback){
 
         },
 
+
         function(error){
 
             console.log(error);
+
 
             showToast(
                 "تعذر الحصول على الموقع. تأكد من السماح بالموقع."
@@ -2107,6 +2471,7 @@ function getRealLocation(callback){
             }
 
         },
+
 
         {
 
@@ -2144,7 +2509,7 @@ function updateLocationDisplay(){
 
 
     text.innerText =
-        "📍 تم تحديد موقعك الحالي";
+        "📍 تم تحديد موقعك الحالي على الخريطة";
 
 }
 
@@ -2171,7 +2536,10 @@ function findNearby(){
    عرض الخدمات العامة
 ===================================================== */
 
-function showProviders(type,titleText){
+function showProviders(
+    type,
+    titleText
+){
 
     const container =
         document.getElementById("providers");
@@ -2189,6 +2557,21 @@ function showProviders(type,titleText){
     title.innerText=titleText;
 
     container.appendChild(title);
+
+
+    const info =
+        document.createElement("p");
+
+    info.style.color="#64748b";
+
+    info.style.fontSize="12px";
+
+    info.style.marginBottom="12px";
+
+    info.innerText =
+        "موقعك على الخريطة حقيقي، أما بيانات مقدمي الخدمة فهي تجريبية في هذه المرحلة.";
+
+    container.appendChild(info);
 
 
     providers[type].forEach(function(provider){
@@ -2212,7 +2595,7 @@ function showProviders(type,titleText){
 
             <div class="provider-info">
 
-                📍 المسافة: ${provider.distance}
+                📍 المسافة التقريبية: ${provider.distance}
                 <br>
 
                 ⭐ التقييم: ${provider.rating}/5
@@ -2270,6 +2653,7 @@ function submitRequest(){
         document.getElementById("wilaya")
         .value.trim();
 
+
     const commune =
         document.getElementById("commune")
         .value.trim();
@@ -2320,6 +2704,7 @@ function home(){
     document.getElementById("providers")
         .style.display="none";
 
+
     window.scrollTo({
 
         top:0,
@@ -2327,6 +2712,17 @@ function home(){
         behavior:"smooth"
 
     });
+
+
+    setTimeout(function(){
+
+        if(mapInstance){
+
+            mapInstance.invalidateSize();
+
+        }
+
+    },300);
 
 }
 
@@ -2376,6 +2772,20 @@ document
     );
 
 });
+
+
+/* =====================================================
+   بدء التطبيق
+===================================================== */
+
+window.addEventListener(
+    "load",
+    function(){
+
+        initializeMap();
+
+    }
+);
 
 
 /* =====================================================
