@@ -520,42 +520,53 @@ label{
 </head>
 <body>
 
-<!-- واجهة التطبيق الرئيسية (مخفية في البداية لتعرض صفحة دخول السائق أولاً) -->
-<div id="mainApp" style="display: none;">
-    <header>
-        <button class="sos">🚨</button>
-        <h1>DÉPANNAGE.DZ</h1>
-        <p>خدمات السحب والمساعدة على الطريق في الجزائر</p>
-        <button class="account-btn" onclick="openProfile()">👤</button>
-    </header>
+<!-- واجهة التطبيق الأصلية كاملة كما أرسلتها -->
+<header>
+    <button class="sos">🚨</button>
+    <h1>DÉPANNAGE.DZ</h1>
+    <p>خدمات السحب والمساعدة على الطريق في الجزائر</p>
+    <button class="account-btn">👤</button>
+</header>
 
-    <div class="container">
-        <div class="section-title">اختر الخدمة المطلوبة</div>
-        <div class="services">
-            <div class="card" onclick="openService('سحب السيارات')">
-                <div class="icon">🛞</div>
-                <h3>شاحنة قطر</h3>
-                <p>نقل وسحب السيارات المعطلة</p>
-            </div>
-            <div class="card" onclick="openService('إصلاح العجلات')">
-                <div class="icon">🔧</div>
-                <h3>إصلاح عجلات</h3>
-                <p>تغيير وإصلاح الإطارات</p>
-            </div>
+<div class="container" id="mainSection">
+    <div class="section-title">اختر الخدمة المطلوبة</div>
+    <div class="services">
+        <div class="card">
+            <div class="icon">🛞</div>
+            <h3>شاحنة قطر</h3>
+            <p>نقل وسحب السيارات المعطلة</p>
         </div>
-        <div class="map">
-            <div class="map-status">جاري تحديد موقعك الحالي بدقة...</div>
-            <div id="realMap"></div>
-            <div id="locationText">الموقع الحالي: غير محدد</div>
+        <div class="card">
+            <div class="icon">🔧</div>
+            <h3>إصلاح عجلات</h3>
+            <p>تغيير وإصلاح الإطارات</p>
         </div>
+    </div>
+    <div class="map">
+        <div class="map-status">جاري تحديد موقعك الحالي بدقة...</div>
+        <div id="realMap"></div>
+        <div id="locationText">الموقع الحالي: غير محدد</div>
     </div>
 </div>
 
-<!-- صفحة دخول السائق (تظهر أولاً) -->
-<div id="driverLoginPage" style="padding: 20px; max-width: 500px; margin: 40px auto; background: white; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-    <h2 style="margin-bottom: 15px; text-align: center;">تسجيل دخول السائق</h2>
-    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px; text-align: center;">الرجاء إدخال بياناتك للوصول إلى لوحة التحكم واستقبال الطلبات</p>
-    
+<!-- واجهة السائق الأصلية أسفل الصفحة كما صممتها تماماً -->
+<div style="padding: 20px;" id="driverSection">
     <label for="driverPhone">رقم الهاتف:</label>
-    <input type="tel" id="driverPhone" placeholder="0500000000" required>
+    <input type="tel" id="driverPhone" placeholder="0500000000">
     
+    <label for="driverLocation">الموقع الحالي أو الولاية:</label>
+    <!-- الحقل المفقود المضاف بنفس تنسيقات مدخلاتك الحالية -->
+    <input type="text" id="driverLocation" placeholder="مثال: المدية، الجزائر"> 
+    
+    <button class="primary" id="loginBtn" onclick="goToApp()">دخول إلى التطبيق</button>
+</div>
+
+<!-- كود الـ JavaScript المصحح لتفعيل الزر وحفظ البيانات -->
+<script>
+function goToApp() {
+    var phone = document.getElementById('driverPhone').value.trim();
+    var location = document.getElementById('driverLocation').value.trim();
+
+    if(phone === "" || location === "") {
+        alert("الرجاء إدخال رقم الهاتف والموقع أولاً.");
+        return;
