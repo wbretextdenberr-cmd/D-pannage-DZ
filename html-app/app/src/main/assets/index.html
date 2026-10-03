@@ -1879,17 +1879,33 @@ function normalizeProviderCoordinates(provider){
 
 function normalizePhone(phone){
 
-    let value =
-        String(phone || "")
-        .trim()
-        .replace(/\s+/g,"");
+    /* تحويل الأرقام العربية والفارسية إلى لاتينية */
+    var value = String(phone || "")
+        .replace(/[\u0660-\u0669]/g, function(d){
+            return String(d.charCodeAt(0) - 0x0660);
+        })
+        .replace(/[\u06F0-\u06F9]/g, function(d){
+            return String(d.charCodeAt(0) - 0x06F0);
+        });
 
-    if(value.indexOf("+213") === 0){
+    /* إبقاء الأرقام فقط (يزيل المسافات والشرطات والنقاط والرموز المخفية) */
+    value = value.replace(/\D/g, "");
 
-        value =
-            "0" +
-            value.substring(4);
+    /* إزالة الكود الدولي: 00213 أو 213 */
+    if(value.indexOf("00213") === 0){
+        value = value.substring(5);
+    }else if(value.indexOf("213") === 0 && value.length >= 12){
+        value = value.substring(3);
+    }
 
+    /* إضافة الصفر إن حُذف: 550000000 ← 0550000000 */
+    if(value.length === 9 && /^[567]/.test(value)){
+        value = "0" + value;
+    }
+
+    /* حالة +213 (0)550... */
+    if(value.length === 11 && value.indexOf("00") === 0){
+        value = value.substring(1);
     }
 
     return value;
@@ -1897,12 +1913,12 @@ function normalizePhone(phone){
 }
 
 
+/* أرقام جيزي (07) وموبيليس (06) وأوريدو (05): 10 أرقام تبدأ بصفر */
 function isValidAlgerianPhone(phone){
 
-    const value =
-        normalizePhone(phone);
-
-    return /^0[5-7][0-9]{8}$/.test(value);
+    return /^0[567][0-9]{8}$/.test(
+        normalizePhone(phone)
+    );
 
 }
 
@@ -7364,7 +7380,7 @@ window.addEventListener(
             if(error.code === 1){
                 message = "⚠️ إذن الموقع مرفوض. من إعدادات الهاتف > التطبيقات > DÉPANNAGE > الأذونات > الموقع، اختر السماح.";
             }else if(error.code === 2){
-                message = "⚠️ تعذر تحديد الموقع. تأكد من تشغيل GPS ثم حاول مرة أخرى.";
+                message = "⚠️ خدمة الموقع مغلقة على هاتفك. اسحب شريط الإشعارات وفعّل «الموقع / GPS» ثم اضغط الزر مرة أخرى.";
             }else if(error.code === 3){
                 message = "⚠️ انتهى وقت تحديد الموقع. اضغط الزر مرة أخرى.";
             }
