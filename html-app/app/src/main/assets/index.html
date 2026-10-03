@@ -1307,6 +1307,16 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
 </div>
 
 
+<!-- طلبات القاطر المتاحة -->
+<div id="towRequestsModal" class="modal-bg">
+    <div class="modal">
+        <h2>📥 الطلبات المتاحة</h2>
+        <p>تظهر لك الطلبات القريبة. اختر ما يناسبك، وسيتصل بك السائق على هاتفك.</p>
+        <div id="towRequestsList"></div>
+        <button class="close" onclick="closeModal('towRequestsModal')">إغلاق</button>
+    </div>
+</div>
+
 <!-- التحقق من رقم الهاتف (OTP) -->
 <div id="otpModal" class="modal-bg">
     <div class="modal">
@@ -1980,6 +1990,182 @@ const TrackingService = {
         return DataService.tracking.subscribe(requestId, cb);
     }
 };
+
+/* =====================================================
+   توزيع طلبات القطر بعدالة (تكافؤ الفرص)
+   القاعدة: القاطرون المتاحون (غير مشغولين) ضمن نطاق قريب من
+   المركبة، يُرتَّبون عشوائيًا بحيث لا يحتكر أحدهم الطلبات.
+   إن قلّ العدد يتّسع النطاق تدريجيًا (10 ثم 25 ثم 50 كم).
+   deliver: نقطة الربط بالخادم لإيصال الطلب فعليًا لهواتف القاطرين.
+===================================================== */
+const DispatchService = {
+    RADII_KM: [10, 25, 50],
+    MIN_CANDIDATES: 3,
+
+    randomInt: function(n){
+        if(window.crypto && crypto.getRandomValues){
+            var a = new Uint32Array(1);
+            var limit = Math.floor(4294967296 / n) * n;
+            do{ crypto.getRandomValues(a); }while(a[0] >= limit);
+            return a[0] % n;
+        }
+        return Math.floor(Math.random() * n);
+    },
+
+    shuffle: function(list){
+        var a = list.slice();
+        for(var i = a.length - 1; i > 0; i--){
+            var j = this.randomInt(i + 1);
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    },
+
+    assign: function(location, providers){
+        if(!location || typeof location.latitude !== "number" || typeof location.longitude !== "number"){
+            return null;
+        }
+        var self = this;
+        var towers = (providers || []).filter(function(p){
+            return p && p.role === "قاطر" && p.busy !== true &&
+                   typeof p.latitude === "number" && typeof p.longitude === "number";
+        }).map(function(p){
+            return {
+                id: p.id,
+                km: calculateDistanceKm(location.latitude, location.longitude, p.latitude, p.longitude)
+            };
+        });
+        var radius = this.RADII_KM[this.RADII_KM.length - 1];
+        var pool = [];
+        for(var r = 0; r < this.RADII_KM.length; r++){
+            radius = this.RADII_KM[r];
+            pool = towers.filter(function(t){ return t.km <= radius; });
+            if(pool.length >= this.MIN_CANDIDATES){ break; }
+        }
+        return {
+            radiusKm: radius,
+            total: pool.length,
+            order: self.shuffle(pool).map(function(t){ return t.id; }),
+            createdAt: new Date().toISOString()
+        };
+    },
+
+    deliver: async function(request){
+        /* الخادم: أرسل الطلب إلى القاطرين حسب request.dispatch.order */
+        return false;
+    }
+};
+
+/* =====================================================
+   دورة حياة الطلب: جديد ← اختاره قاطر ← منجز (أو ملغى)
+   الوضع التجريبي: يعمل على نفس الجهاز عبر التخزين المحلي.
+   الخادم: استبدل دوال DataService.requests بنداءات API،
+   وليكن accept ذرّيًا (أول قاطر يقبل يفوز).
+===================================================== */
+DataService.requests = {
+    all: function(){ return getSavedRequests(); },
+    openFor: function(provider){
+        return this.all().filter(function(r){
+            return r && r.status === "جديد" && r.dispatch &&
+                   r.dispatch.order && r.dispatch.order.indexOf(provider.id) !== -1;
+        });
+    },
+    accept: async function(requestId, provider){
+        var list = this.all();
+        var r = list.find(function(x){ return x && x.id === requestId; });
+        if(!r || r.status !== "جديد"){ return { ok:false, message:"الطلب لم يعد متاحًا" }; }
+        r.status = "اختاره قاطر";
+        r.acceptedBy = {
+            id: provider.phone,
+            name: provider.name,
+            providerName: provider.providerName || "",
+            phone: provider.phone
+        };
+        r.acceptedAt = new Date().toISOString();
+        saveRequest(r);
+        return { ok:true, request:r };
+    },
+    complete: async function(requestId){
+        var r = this.all().find(function(x){ return x && x.id === requestId; });
+        if(!r || r.status !== "اختاره قاطر"){ return { ok:false, message:"لا يمكن إنهاء هذا الطلب" }; }
+        r.status = "منجز";
+        r.completedAt = new Date().toISOString();
+        saveRequest(r);
+        return { ok:true, request:r };
+    }
+};
+
+function openTowRequests(){
+    var acc = document.getElementById("accountModal");
+    if(acc){ acc.style.display = "none"; }
+    renderTowRequests();
+    document.getElementById("towRequestsModal").style.display = "flex";
+}
+
+function renderTowRequests(){
+    var box = document.getElementById("towRequestsList");
+    box.innerHTML = "";
+    var list = DataService.requests.openFor({ id: currentUser.phone });
+    if(!list.length){
+        box.innerHTML = "<p>لا توجد طلبات متاحة الآن.</p>";
+        return;
+    }
+    list.forEach(function(r){
+        var km = null;
+        if(r.driverLocation && currentUser.latitude != null){
+            km = calculateDistanceKm(
+                Number(currentUser.latitude), Number(currentUser.longitude),
+                r.driverLocation.latitude, r.driverLocation.longitude
+            );
+        }
+        var div = document.createElement("div");
+        div.className = "provider";
+        div.innerHTML =
+            "<h3>🚗 طلب قطر</h3>" +
+            "<p>📍 يبعد عنك: <b>" + escapeHtml(km === null ? "غير معروف" : km.toFixed(1) + " كم") + "</b></p>" +
+            "<p>الوجهة: <b>" + escapeHtml(r.destination.wilaya) + " - " + escapeHtml(r.destination.commune) + "</b></p>";
+        var btn = document.createElement("button");
+        btn.className = "call-btn";
+        btn.textContent = "✅ أقبل هذا الطلب";
+        btn.onclick = function(){ acceptTowRequest(r.id); };
+        div.appendChild(btn);
+        box.appendChild(div);
+    });
+}
+
+async function acceptTowRequest(id){
+    var res = await DataService.requests.accept(id, currentUser);
+    if(!res.ok){ showToast(res.message); renderTowRequests(); return; }
+    closeModal("towRequestsModal");
+    showToast("✅ اخترت الطلب. سيتصل بك السائق على هاتفك قريبًا");
+}
+
+async function completeCurrentRequest(){
+    if(!currentRequest){ return; }
+    var res = await DataService.requests.complete(currentRequest.id);
+    if(!res.ok){ showToast(res.message); return; }
+    document.querySelectorAll(".request-active").forEach(function(e){ e.remove(); });
+    currentRequest = null;
+    NotificationService.push("✅ تم إنجاز الطلب", "شكرًا لاستخدامك Salakni DZ");
+}
+
+/* الخادم: يُستبدل هذا الاستطلاع بإشعار فوري */
+function refreshCurrentRequest(){
+    try{
+        if(!currentRequest || currentRequest.status !== "جديد"){ return; }
+        var fresh = DataService.requests.all().find(function(r){ return r.id === currentRequest.id; });
+        if(fresh && fresh.status !== currentRequest.status){
+            currentRequest = fresh;
+            showActiveRequest();
+            if(fresh.status === "اختاره قاطر"){
+                NotificationService.push("🚛 قاطر اختار طلبك", "يمكنك الاتصال به الآن");
+            }
+        }
+    }catch(e){}
+}
+setInterval(refreshCurrentRequest, 5000);
+
+
 
 </script>
 <script>
@@ -2787,6 +2973,16 @@ function renderAccountContent(){
                 </button>
 
 
+                ${
+                    currentUser.role === "قاطر"
+                    ?
+                    `<button class="primary"
+                             onclick="openTowRequests()">
+                        📥 الطلبات المتاحة
+                    </button>`
+                    :
+                    ""
+                }
                 <div class="busy-control">
 
                     <h4>
@@ -6881,6 +7077,12 @@ function submitRequest(){
     };
 
 
+    request.dispatch =
+        DispatchService.assign(
+            request.driverLocation,
+            getSavedProviders()
+        );
+
     currentRequest =
         request;
 
@@ -7000,6 +7202,7 @@ function showActiveRequest(){
 
     container.style.display =
         "block";
+    container.querySelectorAll(".request-active").forEach(function(old){ old.remove(); });
 
 
     const box =
@@ -7010,6 +7213,18 @@ function showActiveRequest(){
 
     box.className =
         "request-active";
+    const tower = currentRequest.acceptedBy;
+    const towerBlock =
+        (currentRequest.status === "اختاره قاطر" && tower)
+        ? `<p>🚛 القاطر: <b>${escapeHtml(tower.providerName || tower.name)}</b></p>
+           <a class="call-btn" href="tel:${escapeHtml(tower.phone)}"
+              style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">
+              📞 اتصل بالقاطر: ${escapeHtml(tower.phone)}
+           </a>
+           <button class="primary" onclick="completeCurrentRequest()">
+              ✅ تم إنجاز الطلب
+           </button>`
+        : "";
 
 
     box.innerHTML = `
@@ -7050,6 +7265,8 @@ function showActiveRequest(){
             </b>
         </p>
 
+        ${towerBlock}
+
         <button class="cancel-request-btn"
                 onclick="openCancelRequest()">
 
@@ -7058,6 +7275,17 @@ function showActiveRequest(){
         </button>
 
     `;
+    if(currentRequest.dispatch && currentRequest.status === "جديد"){
+        const dispatchInfo = document.createElement("p");
+        dispatchInfo.textContent =
+            currentRequest.dispatch.total > 0
+            ? "🚛 القاطرون المتاحون القريبون (حتى " +
+              currentRequest.dispatch.radiusKm + " كم): " +
+              currentRequest.dispatch.total
+            : "لا يوجد قاطر متاح ضمن النطاق حاليًا";
+        box.appendChild(dispatchInfo);
+    }
+
 
 
     container.prepend(
@@ -7206,7 +7434,8 @@ function restoreActiveRequest(){
             return (
                 request &&
                 request.driverPhone === driverPhone &&
-                request.status !== "ملغى"
+                request.status !== "ملغى" &&
+                request.status !== "منجز"
             );
 
         })
