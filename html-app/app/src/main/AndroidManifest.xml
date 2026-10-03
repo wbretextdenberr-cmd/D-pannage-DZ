@@ -7,7 +7,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="Salakni DZ""
+        android:label="Salakni DZ"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
