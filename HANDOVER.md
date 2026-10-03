@@ -1,0 +1,47 @@
+# Salakni DZ — ملف التسليم
+
+## الحالة
+واجهة كاملة تعمل في **وضع تجريبي محلي** (`DataService.MODE = "local-demo"`): لا خادم، والبيانات في `localStorage` على كل هاتف. لا توجد بيانات وهمية في الكود.
+
+## نقطة الربط
+كل قراءة/كتابة تمر عبر `DataService.storage.get/set/remove` (أعلى أول `<script>`). المفاتيح في `DataService.KEYS`.
+أسرع ربط: استبدال هذه الدوال الثلاث بمنطق الخادم، ثم تحويل الدوال المستدعية إلى `async` تدريجيًا.
+
+## المفاتيح ← الجداول المقترحة
+| المفتاح | الجدول | أهم الحقول |
+|---|---|---|
+| depannageUser | users | phone (فريد)، name، role، password_hash (على الخادم فقط)، wilaya، commune |
+| depannageProviders | providers | user_id، role، providerName، workshopType، lat، lng، busy، created_at |
+| depannageRequests | requests | id، driver_id، provider_id، type، status، driver_lat/lng، destination، created_at |
+| depannageBlockedPhones | blocked_phones | phone، reason |
+| depannageDriverLocation | (جلسة) | آخر موقع للسائق، لا يُخزَّن بالخادم إلا عند الطلب |
+
+أنواع الحساب (`role`): سائق، قاطر، ورشة (ثابتة/متنقلة عبر `workshopType`)، محل قطع غيار. القائمة في `PROVIDER_ROLES`.
+
+## ما يجب أن يتولاه الخادم (غير موجود الآن)
+1. **التحقق بـ OTP** والجلسات. كلمة المرور حاليًا نصٌّ صريح محليًا، ولا يجوز إبقاؤها هكذا.
+2. **حظر الأرقام** (`blockPhone`) فعليًا.
+3. **ظهور مقدمي الخدمة لجميع السائقين** (`getRegisteredProviders`, `getPartsShops` تقرآن حاليًا من الهاتف نفسه).
+4. **إيصال الطلب للقاطر** وقبوله وحالاته (`submitRequest`/`saveRequest` تحفظ محليًا فقط).
+5. **حالة مقدّم الخدمة اللحظية** (`setProviderBusy`).
+6. **التقييمات**: غير مبنية بعد.
+
+## متبقٍّ للتسليم
+- تحميل Leaflet محليًا بدل unpkg.
+- الإشعارات، لوحة الإدارة، سياسة الخصوصية (التطبيق يجمع الموقع).
+- محل قطع الغيار: حقول المركبات والعلامات والفئات غير موجودة في نموذج التسجيل.
+- Android: معالجة روابط `tel:` في `shouldOverrideUrlLoading`، وبناء release موقّع (AAB).
+- أرقام الطوارئ في `EMERGENCY_SERVICES`: الدرك 1055، الشرطة 17، الحماية المدنية 14 (تُراجع قبل النشر).
+
+---
+
+## تحديث: المصادقة والإشعارات والتتبع (واجهات جاهزة للربط)
+
+| الخدمة | الكائن | الحالة الآن (تجريبي) | ما يفعله الخادم |
+|---|---|---|---|
+| كلمة المرور | `DataService.auth.hashPassword` | تُخزَّن مجزّأة (SHA-256) محليًا، والحسابات القديمة تُرقّى تلقائيًا عند أول دخول | تُحذف الدالة؛ الخادم يستعمل bcrypt أو argon2 ولا يستلم إلا كلمة المرور عبر HTTPS |
+| رمز OTP | `DataService.auth.sendOtp / verifyOtp` | الرمز يظهر على الشاشة بوضع `local-demo` (يُطلب عند إنشاء الحساب فقط) | إرسال SMS حقيقي عبر مزوّد، وتحقق من الرمز ومدته ومحاولاته في الخادم |
+| الإشعارات | `NotificationService.push / list / registerDevice` | إشعار داخل التطبيق (Toast + سجل محلي) عند تسجيل الطلب وإلغائه | Firebase Cloud Messaging: حفظ رمز الجهاز بـ`registerDevice` وإرسال الإشعار من الخادم، مع إذن `POST_NOTIFICATIONS` وجسر في `MainActivity` |
+| التتبع المباشر | `TrackingService` و`DataService.tracking.publish / subscribe` | يعمل داخل الجهاز نفسه فقط (لا واجهة عرض بعد) | قناة لحظية (WebSocket أو Realtime): القاطر ينشر موقعه، والسائق يشترك ويحرّك العلامة على الخريطة |
+
+**غير مبني بعد:** شاشة سجل الإشعارات، وشاشة تتبع القاطر على الخريطة، وتتبع في الخلفية (يحتاج خدمة Android أمامية).
