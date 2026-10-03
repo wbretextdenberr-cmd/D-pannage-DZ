@@ -350,6 +350,15 @@ header p{
     background:#e2e8f0;
 }
 
+.emergency-option{
+    display:block;
+    text-decoration:none;
+    color:#991b1b;
+    background:#fef2f2;
+    border-color:#fecaca;
+    font-weight:bold;
+}
+
 .close{
     width:100%;
     border:0;
@@ -1049,6 +1058,10 @@ label{
                 🚛 قاطر
             </option>
 
+            <option value="محل قطع غيار">
+                🔩 محل قطع غيار
+            </option>
+
         </select>
 
 
@@ -1254,6 +1267,16 @@ label{
 
 </div>
 
+
+<!-- الطوارئ -->
+<div id="emergencyModal" class="modal-bg">
+    <div class="modal">
+        <h2>🚨 اتصال طارئ</h2>
+        <p>اختر الجهة، وسيفتح الهاتف مباشرة للاتصال بها.</p>
+        <div id="emergencyList"></div>
+        <button class="close" onclick="closeModal('emergencyModal')">إلغاء</button>
+    </div>
+</div>
 
 <!-- قطر السيارات -->
 
@@ -1719,6 +1742,45 @@ label{
 
 
 <script>
+/* =====================================================
+   DataService - نقطة الاتصال الوحيدة بالتخزين
+   كل قراءة/كتابة بيانات في التطبيق تمر من هنا.
+   الوضع الحالي: تجريبي محلي (localStorage).
+   للربط بالخادم: استبدل محتوى get/set/remove
+   (راجع HANDOVER.md لقائمة المفاتيح والجداول المقابلة).
+===================================================== */
+const DataService = {
+    MODE: "local-demo",
+    KEYS: {
+        user: "depannageUser",
+        providers: "depannageProviders",
+        requests: "depannageRequests",
+        blockedPhones: "depannageBlockedPhones",
+        driverLocation: "depannageDriverLocation"
+    },
+    storage: {
+        get: function(key){
+            try{ return window.localStorage.getItem(key); }
+            catch(e){ return null; }
+        },
+        set: function(key, value){
+            try{ window.localStorage.setItem(key, value); }
+            catch(e){ console.warn("storage set failed", key); }
+        },
+        remove: function(key){
+            try{ window.localStorage.removeItem(key); }
+            catch(e){}
+        }
+    }
+};
+
+/* أنواع الحسابات التي تقدّم خدمة (تظهر على الخريطة) */
+const PROVIDER_ROLES = ["ورشة", "قاطر", "محل قطع غيار"];
+function isProviderRole(role){
+    return PROVIDER_ROLES.indexOf(role) !== -1;
+}
+</script>
+<script>
 
 /* =====================================================
    المتغيرات
@@ -1852,7 +1914,7 @@ function isValidAlgerianPhone(phone){
 function getBlockedPhones(){
 
     const saved =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageBlockedPhones"
         );
 
@@ -1916,7 +1978,7 @@ function blockPhone(phone,reason){
 
     }
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageBlockedPhones",
         JSON.stringify(list)
     );
@@ -2059,7 +2121,7 @@ function shuffleArray(array){
 function getSavedProviders(){
 
     const saved =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageProviders"
         );
 
@@ -2100,8 +2162,7 @@ function saveProviderRecord(user){
     if(
         !user ||
         (
-            user.role !== "ورشة" &&
-            user.role !== "قاطر"
+            !isProviderRole(user.role)
         )
     ){
 
@@ -2202,7 +2263,7 @@ function saveProviderRecord(user){
     }
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageProviders",
         JSON.stringify(list)
     );
@@ -2238,8 +2299,7 @@ function getRegisteredProviders(){
             return (
                 provider &&
                 (
-                    provider.role === "ورشة" ||
-                    provider.role === "قاطر"
+                    isProviderRole(provider.role)
                 )
             );
 
@@ -2262,8 +2322,7 @@ function syncCurrentProviderRecord(){
     }
 
     if(
-        currentUser.role !== "ورشة" &&
-        currentUser.role !== "قاطر"
+        !isProviderRole(currentUser.role)
     ){
 
         return;
@@ -2295,7 +2354,7 @@ function syncCurrentProviderRecord(){
     currentUser.longitude =
         longitude;
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageUser",
         JSON.stringify(currentUser)
     );
@@ -2340,7 +2399,7 @@ function renderAccountContent(){
 
 
     const savedUser =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageUser"
         );
 
@@ -2382,8 +2441,7 @@ function renderAccountContent(){
 
 
         if(
-            currentUser.role === "ورشة" ||
-            currentUser.role === "قاطر"
+            isProviderRole(currentUser.role)
         ){
 
             providerDetails = `
@@ -2492,8 +2550,7 @@ function renderAccountContent(){
 
 
             ${
-                currentUser.role === "ورشة" ||
-                currentUser.role === "قاطر"
+                isProviderRole(currentUser.role)
                 ?
                 `
 
@@ -2648,8 +2705,7 @@ function setProviderBusy(status){
 
 
     if(
-        currentUser.role !== "ورشة" &&
-        currentUser.role !== "قاطر"
+        !isProviderRole(currentUser.role)
     ){
 
         return;
@@ -2661,7 +2717,7 @@ function setProviderBusy(status){
         status === true;
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageUser",
         JSON.stringify(currentUser)
     );
@@ -2779,8 +2835,7 @@ document.addEventListener(
 
 
             if(
-                role === "ورشة" ||
-                role === "قاطر"
+                isProviderRole(role)
             ){
 
                 fields.style.display =
@@ -3111,8 +3166,7 @@ function createAccount(){
 
 
     if(
-        role === "ورشة" ||
-        role === "قاطر"
+        isProviderRole(role)
     ){
 
         if(!providerName){
@@ -3215,7 +3269,7 @@ function createAccount(){
     };
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageUser",
         JSON.stringify(user)
     );
@@ -3225,8 +3279,7 @@ function createAccount(){
 
 
     if(
-        role === "ورشة" ||
-        role === "قاطر"
+        isProviderRole(role)
     ){
 
         saveProviderRecord(user);
@@ -3286,7 +3339,7 @@ function loginAccount(){
 
 
     const savedUser =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageUser"
         );
 
@@ -3342,8 +3395,7 @@ function loginAccount(){
 
 
     if(
-        user.role === "ورشة" ||
-        user.role === "قاطر"
+        isProviderRole(user.role)
     ){
 
         syncCurrentProviderRecord();
@@ -3383,8 +3435,7 @@ function updateProviderLocationFromAccount(){
 
 
     if(
-        currentUser.role !== "ورشة" &&
-        currentUser.role !== "قاطر"
+        !isProviderRole(currentUser.role)
     ){
 
         return;
@@ -3422,7 +3473,7 @@ function updateProviderLocationFromAccount(){
                 position.coords.accuracy;
 
 
-            localStorage.setItem(
+            DataService.storage.set(
                 "depannageUser",
                 JSON.stringify(currentUser)
             );
@@ -3494,7 +3545,7 @@ function updateProviderLocationFromAccount(){
 
 function logoutAccount(){
 
-    localStorage.removeItem(
+    DataService.storage.remove(
         "depannageUser"
     );
 
@@ -4206,357 +4257,43 @@ function refreshProviderMarkers(
 }
 
 
-/* =====================================================
-   بيانات تجريبية لقطر الشاحنات
-===================================================== */
-
-const truckProviders = [
-
-    {
-        name:"قاطر الشاحنات السريع",
-        type:"قاطرة شاحنات",
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0550000001"
-    },
-
-    {
-        name:"نجدة الشاحنات",
-        type:"قاطرة شاحنات",
-        distance:"بيانات تجريبية",
-        rating:"4.6",
-        phone:"0660000002"
-    },
-
-    {
-        name:"ورشة الشاحنات الثقيلة",
-        type:"ورشة إصلاح شاحنات",
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0550000003"
-    },
-
-    {
-        name:"ميكانيكي الشاحنات المتنقل",
-        type:"إصلاح شاحنات",
-        distance:"بيانات تجريبية",
-        rating:"4.5",
-        phone:"0770000004"
-    }
-
-];
 
 
-/* =====================================================
-   بيانات الورشة المتنقلة التجريبية
-===================================================== */
-
-const mobileProviders = [
-
-    {
-        name:"ميكانيكي السيارات المتنقل",
-        vehicle:"سيارة",
-        problem:"عطل ميكانيكي",
-        brands:[
-            "Renault","Peugeot","Citroën",
-            "Volkswagen","Fiat","Dacia"
-        ],
-        energy:["بنزين","ديزل","GPL"],
-        distance:"بيانات تجريبية",
-        rating:"4.9",
-        phone:"0551000001"
-    },
-
-    {
-        name:"ورشة ميكانيكا السيارات المتنقلة",
-        vehicle:"سيارة",
-        problem:"عطل ميكانيكي",
-        brands:[
-            "Toyota","Hyundai","Kia",
-            "Ford","Nissan"
-        ],
-        energy:["بنزين","ديزل","هجينة"],
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0661000002"
-    },
-
-    {
-        name:"كهربائي السيارات المتنقل",
-        vehicle:"سيارة",
-        problem:"عطل كهربائي",
-        brands:[
-            "Renault","Peugeot","Volkswagen",
-            "Fiat","Dacia","Citroën"
-        ],
-        energy:["بنزين","ديزل","GPL"],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0551000003"
-    },
-
-    {
-        name:"كهربائي السيارات الحديثة",
-        vehicle:"سيارة",
-        problem:"عطل كهربائي",
-        brands:[
-            "Toyota","Hyundai","Kia",
-            "BMW","Mercedes-Benz"
-        ],
-        energy:[
-            "بنزين","ديزل","كهربائية","هجينة"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.6",
-        phone:"0771000004"
-    },
-
-    {
-        name:"خدمة العجلات المتنقلة",
-        vehicle:"سيارة",
-        problem:"تصليح عجلات",
-        brands:[
-            "Renault","Peugeot","Volkswagen",
-            "Fiat","Dacia","Toyota","Hyundai"
-        ],
-        energy:[
-            "بنزين","ديزل","GPL","كهربائية","هجينة"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0551000005"
-    },
-
-    {
-        name:"ميكانيكي الشاحنات المتنقل",
-        vehicle:"شاحنة",
-        problem:"عطل ميكانيكي",
-        brands:[
-            "Mercedes-Benz","MAN","Volvo",
-            "Scania","Isuzu"
-        ],
-        energy:["ديزل"],
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0661000006"
-    },
-
-    {
-        name:"كهربائي الشاحنات المتنقل",
-        vehicle:"شاحنة",
-        problem:"عطل كهربائي",
-        brands:[
-            "Mercedes-Benz","MAN","Volvo",
-            "Scania","Isuzu"
-        ],
-        energy:["ديزل"],
-        distance:"بيانات تجريبية",
-        rating:"4.6",
-        phone:"0551000007"
-    },
-
-    {
-        name:"عجلات الشاحنات المتنقلة",
-        vehicle:"شاحنة",
-        problem:"تصليح عجلات",
-        brands:[
-            "Mercedes-Benz","MAN","Volvo",
-            "Scania","Isuzu"
-        ],
-        energy:["ديزل"],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0771000008"
-    },
-
-    {
-        name:"ميكانيكي الدراجات المتنقل",
-        vehicle:"دراجة نارية",
-        problem:"عطل ميكانيكي",
-        brands:[
-            "Yamaha","Honda","Suzuki"
-        ],
-        energy:["بنزين"],
-        distance:"بيانات تجريبية",
-        rating:"4.9",
-        phone:"0551000009"
-    },
-
-    {
-        name:"كهربائي الدراجات النارية",
-        vehicle:"دراجة نارية",
-        problem:"عطل كهربائي",
-        brands:[
-            "Yamaha","Honda","Suzuki"
-        ],
-        energy:["بنزين","كهربائية"],
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0661000010"
-    },
-
-    {
-        name:"خدمة عجلات الدراجات",
-        vehicle:"دراجة نارية",
-        problem:"تصليح عجلات",
-        brands:[
-            "Yamaha","Honda","Suzuki"
-        ],
-        energy:["بنزين","كهربائية"],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0551000011"
-    }
-
-];
 
 
-/* =====================================================
-   قطع الغيار
-===================================================== */
-
-const partsProviders = [
-
-    {
-        name:"محل قطع الغيار المتكامل",
-        type:"هيكل ميكانيك وكهرباء",
-        vehicles:["سيارة"],
-        brands:[
-            "Renault","Peugeot","Citroën",
-            "Volkswagen","Fiat","Dacia"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0552000001"
-    },
-
-    {
-        name:"قطع غيار السيارات الأوروبية",
-        type:"هيكل ميكانيك وكهرباء",
-        vehicles:["سيارة"],
-        brands:[
-            "Renault","Peugeot","Volkswagen",
-            "Citroën","Fiat"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0662000002"
-    },
-
-    {
-        name:"كهرباء وقطع غيار السيارات",
-        type:"كهرباء وحدها",
-        vehicles:["سيارة"],
-        brands:[
-            "Renault","Peugeot","Volkswagen",
-            "Fiat","Dacia","Citroën"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.9",
-        phone:"0552000003"
-    },
-
-    {
-        name:"كهرباء السيارات الحديثة",
-        type:"كهرباء وحدها",
-        vehicles:["سيارة"],
-        brands:[
-            "Toyota","Hyundai","Kia",
-            "BMW","Mercedes-Benz","Ford"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0772000004"
-    },
-
-    {
-        name:"قطع غيار الشاحنات",
-        type:"هيكل ميكانيك وكهرباء",
-        vehicles:["شاحنة"],
-        brands:[
-            "Mercedes-Benz","MAN","Volvo",
-            "Scania","Isuzu"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.6",
-        phone:"0662000005"
-    },
-
-    {
-        name:"كهرباء شاحنات",
-        type:"كهرباء وحدها",
-        vehicles:["شاحنة"],
-        brands:[
-            "Mercedes-Benz","MAN","Volvo",
-            "Scania","Isuzu"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0552000006"
-    },
-
-    {
-        name:"قطع غيار الدراجات النارية",
-        type:"هيكل ميكانيك وكهرباء",
-        vehicles:["دراجة نارية"],
-        brands:[
-            "Yamaha","Honda","Suzuki"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.8",
-        phone:"0772000007"
-    },
-
-    {
-        name:"كهرباء الدراجات النارية",
-        type:"كهرباء وحدها",
-        vehicles:["دراجة نارية"],
-        brands:[
-            "Yamaha","Honda","Suzuki"
-        ],
-        distance:"بيانات تجريبية",
-        rating:"4.7",
-        phone:"0552000008"
-    }
-
-];
 
 
-/* =====================================================
-   الخدمات العامة التجريبية
-===================================================== */
 
-const providers = {
 
-    nearby:[
-        {
-            name:"خدمة قطر السيارات",
-            type:"قاطرة سيارات",
-            distance:"بيانات تجريبية",
-            rating:"4.8",
-            phone:"0550000010"
-        },
 
-        {
-            name:"ورشة السيارات السريعة",
-            type:"ورشة إصلاح",
-            distance:"بيانات تجريبية",
-            rating:"4.6",
-            phone:"0660000011"
-        }
-    ]
 
-};
 
 
 /* =====================================================
    الطوارئ
 ===================================================== */
 
+/* ===== الطوارئ: اختيار الجهة ثم الاتصال ===== */
+const EMERGENCY_SERVICES = [
+    { name: "الدرك الوطني",    icon: "🛡️", number: "1055" },
+    { name: "الشرطة",          icon: "🚓", number: "17"   },
+    { name: "الحماية المدنية", icon: "🚒", number: "14"   }
+];
+
 function emergencyCall(){
-
-    window.location.href="tel:14";
-
+    const box = document.getElementById("emergencyList");
+    const modal = document.getElementById("emergencyModal");
+    if(!box || !modal){ return; }
+    box.innerHTML = "";
+    EMERGENCY_SERVICES.forEach(function(s){
+        const a = document.createElement("a");
+        a.className = "option emergency-option";
+        a.href = "tel:" + s.number;
+        a.textContent = s.icon + " " + s.name + " (" + s.number + ")";
+        a.addEventListener("click", function(){ closeModal("emergencyModal"); });
+        box.appendChild(a);
+    });
+    modal.style.display = "flex";
 }
 
 
@@ -4582,7 +4319,7 @@ function showDriverGate(){
     driverGateCompleted = false;
 
     const savedPhone =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageDriverPhone"
         );
 
@@ -4726,7 +4463,7 @@ function requestDriverLocation(){
             driverLocationConfirmed = true;
 
 
-            localStorage.setItem(
+            DataService.storage.set(
                 "depannageDriverLocation",
                 JSON.stringify(
                     currentLocation
@@ -4901,13 +4638,13 @@ function completeDriverGate(){
         phone;
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageDriverPhone",
         phone
     );
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageDriverLocation",
         JSON.stringify(
             currentLocation
@@ -4915,7 +4652,7 @@ function completeDriverGate(){
     );
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageDriverLocationConfirmed",
         "true"
     );
@@ -4946,19 +4683,19 @@ function completeDriverGate(){
 function restoreDriverSession(){
 
     const savedPhone =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageDriverPhone"
         );
 
 
     const savedLocation =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageDriverLocation"
         );
 
 
     const confirmed =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageDriverLocationConfirmed"
         );
 
@@ -5998,6 +5735,23 @@ function selectPartsType(type){
    عرض قطع الغيار
 ===================================================== */
 
+/* =====================================================
+   محلات قطع الغيار المسجلة
+   (ستُربط بالخادم لاحقًا عبر DataService)
+===================================================== */
+
+function getPartsShops(){
+
+    return getSavedProviders()
+        .filter(function(provider){
+
+            return provider.role === "محل قطع غيار";
+
+        });
+
+}
+
+
 function showPartsProviders(
     vehicle,
     type,
@@ -6109,85 +5863,26 @@ function showPartsProviders(
     );
 
 
-    const info =
-        document.createElement("p");
-
-    info.style.color =
-        "#64748b";
-
-    info.style.fontSize =
-        "12px";
-
-    info.style.margin =
-        "12px 0";
-
-    info.innerText =
-        "النتائج تجريبية حاليًا.";
-
-    container.appendChild(
-        info
-    );
+    
 
 
     let matches =
-        partsProviders.filter(
-            function(provider){
+        getPartsShops().filter(function(provider){
 
-                if(
-                    !provider.vehicles.includes(
-                        vehicle
-                    )
-                ){
+            if(provider.vehicles && !provider.vehicles.includes(vehicle)){ return false; }
+            if(provider.type && provider.type !== type){ return false; }
+            if(provider.brands && !provider.brands.includes(brand)){ return false; }
+            return true;
 
-                    return false;
+        });
 
-                }
-
-
-                if(
-                    provider.type !== type
-                ){
-
-                    return false;
-
-                }
-
-
-                if(
-                    !provider.brands.includes(
-                        brand
-                    )
-                ){
-
-                    return false;
-
-                }
-
-
-                return true;
-
-            }
-        );
-
-
+    /* احتياطي: تجاهل العلامة التجارية إن لم توجد نتيجة */
     if(matches.length === 0){
-
-        matches =
-            partsProviders.filter(
-                function(provider){
-
-                    return (
-                        provider.vehicles.includes(
-                            vehicle
-                        ) &&
-                        provider.type === type
-                    );
-
-                }
-            );
-
+        matches = getPartsShops().filter(function(provider){
+            return (!provider.vehicles || provider.vehicles.includes(vehicle)) &&
+                   (!provider.type || provider.type === type);
+        });
     }
-
 
     if(matches.length === 0){
 
@@ -6206,7 +5901,7 @@ function showPartsProviders(
             </h3>
 
             <div class="provider-info">
-                لا توجد بيانات تجريبية لهذا التصنيف حاليًا.
+                لا يوجد محل قطع غيار مسجل لهذا التصنيف بعد.
             </div>
 
         `;
@@ -6238,7 +5933,7 @@ function showPartsProviders(
                 </h3>
 
                 <span class="badge">
-                    ${escapeHtml(provider.type)}
+                    ${escapeHtml(provider.type || provider.role)}
                 </span>
 
             </div>
@@ -6247,30 +5942,24 @@ function showPartsProviders(
 
                 🚘 المركبة:
                 ${escapeHtml(
-                    provider.vehicles.join("، ")
+                    (provider.vehicles || []).join("، ")
                 )}
 
                 <br>
 
                 🏷️ العلامات:
                 ${escapeHtml(
-                    provider.brands.join("، ")
+                    (provider.brands || []).join("، ")
                 )}
 
                 <br>
 
                 📍 المسافة:
                 ${escapeHtml(
-                    provider.distance
+                    formatDistance(
+                        getProviderDistance(provider)
+                    )
                 )}
-
-                <br>
-
-                ⭐ التقييم:
-                ${escapeHtml(
-                    provider.rating
-                )}/5
-
                 <br>
 
                 📞
@@ -6363,7 +6052,7 @@ function getRealLocation(callback){
 
             if(driverPhone){
 
-                localStorage.setItem(
+                DataService.storage.set(
                     "depannageDriverPhone",
                     driverPhone
                 );
@@ -6371,7 +6060,7 @@ function getRealLocation(callback){
             }
 
 
-            localStorage.setItem(
+            DataService.storage.set(
                 "depannageDriverLocation",
                 JSON.stringify(
                     currentLocation
@@ -6379,7 +6068,7 @@ function getRealLocation(callback){
             );
 
 
-            localStorage.setItem(
+            DataService.storage.set(
                 "depannageDriverLocationConfirmed",
                 "true"
             );
@@ -6995,7 +6684,7 @@ function submitRequest(){
 function getSavedRequests(){
 
     const saved =
-        localStorage.getItem(
+        DataService.storage.get(
             "depannageRequests"
         );
 
@@ -7049,7 +6738,7 @@ function saveRequest(request){
     }
 
 
-    localStorage.setItem(
+    DataService.storage.set(
         "depannageRequests",
         JSON.stringify(list)
     );
@@ -7476,7 +7165,7 @@ window.addEventListener(
 
 
         const savedUser =
-            localStorage.getItem(
+            DataService.storage.get(
                 "depannageUser"
             );
 
@@ -7490,8 +7179,7 @@ window.addEventListener(
 
 
                 if(
-                    currentUser.role === "ورشة" ||
-                    currentUser.role === "قاطر"
+                    isProviderRole(currentUser.role)
                 ){
 
                     /*
@@ -7664,7 +7352,7 @@ window.addEventListener(
                 accuracy: position.coords.accuracy
             };
             driverLocationConfirmed = true;
-            localStorage.setItem("depannageDriverLocation", JSON.stringify(currentLocation));
+            DataService.storage.set("depannageDriverLocation", JSON.stringify(currentLocation));
             updateDriverLocationStatus("success","✅ تم تحديد موقعك بنجاح. يمكنك الآن الدخول إلى التطبيق.");
             updateLocationDisplay();
             updateMapLocation();
