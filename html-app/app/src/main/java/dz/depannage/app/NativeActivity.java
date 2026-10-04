@@ -31,12 +31,14 @@ public class NativeActivity extends Activity {
 
     Store store;
     Flow flow;
+    MapScreen mapScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         store = new Store(this);
         flow = new Flow(this, store);
+        mapScreen = new MapScreen(this, store);
 
         String phone = store.session();
         if (phone != null && store.findBy("users", "phone", phone) != null) {
@@ -360,6 +362,12 @@ public class NativeActivity extends Activity {
                 }
             }));
         }
+        c.addView(button("🗺️ الخريطة والقريب مني", BLUE, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mapScreen.open();
+            }
+        }));
         c.addView(button("🔔 الإشعارات" + (flow.x.unread() > 0 ? " (" + flow.x.unread() + ")" : ""),
                 SURFACE, new View.OnClickListener() {
                     @Override
