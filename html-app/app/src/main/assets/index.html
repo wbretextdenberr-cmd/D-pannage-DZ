@@ -1181,6 +1181,18 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
                 </select>
 
             </div>
+            <div id="shopFields" style="display:none">
+                <label>المركبات التي يبيع لها المحل</label>
+                <label style="display:block;margin:6px 0"><input type="checkbox" name="shopVehicle" value="سيارة"> 🚗 سيارة</label>
+                <label style="display:block;margin:6px 0"><input type="checkbox" name="shopVehicle" value="شاحنة"> 🚛 شاحنة</label>
+                <label style="display:block;margin:6px 0"><input type="checkbox" name="shopVehicle" value="دراجة نارية"> 🏍️ دراجة نارية</label>
+                <label>نوع القطع</label>
+                <label style="display:block;margin:6px 0"><input type="checkbox" name="shopType" value="هيكل ميكانيك وكهرباء"> 🔧 هيكل ميكانيك وكهرباء</label>
+                <label style="display:block;margin:6px 0"><input type="checkbox" name="shopType" value="كهرباء وحدها"> ⚡ كهرباء وحدها</label>
+                <label for="shopBrands">العلامات (اتركها فارغة لكل العلامات)</label>
+                <select id="shopBrands" multiple size="5"></select>
+            </div>
+
 
 
             <label for="providerWilaya">
@@ -1306,6 +1318,30 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
 
 </div>
 
+
+<!-- تقييم القاطر -->
+<div id="ratingModal" class="modal-bg">
+    <div class="modal">
+        <h2>⭐ قيّم القاطر</h2>
+        <p id="ratingTowerName"></p>
+        <div id="ratingStars" style="font-size:34px;text-align:center;direction:ltr;margin:10px 0">
+            <span onclick="setRating(1)">☆</span><span onclick="setRating(2)">☆</span><span onclick="setRating(3)">☆</span><span onclick="setRating(4)">☆</span><span onclick="setRating(5)">☆</span>
+        </div>
+        <textarea id="ratingComment" maxlength="140" rows="3" placeholder="تعليق اختياري (140 حرفًا)"></textarea>
+        <button class="primary" onclick="submitRating()">إرسال التقييم</button>
+        <button class="close" onclick="skipRating()">تخطي</button>
+    </div>
+</div>
+
+<!-- سجل الإشعارات -->
+<div id="notificationsModal" class="modal-bg">
+    <div class="modal">
+        <h2>🔔 الإشعارات</h2>
+        <div id="notificationsList"></div>
+        <button class="back-btn" onclick="clearNotifications()">مسح السجل</button>
+        <button class="close" onclick="closeModal('notificationsModal')">إغلاق</button>
+    </div>
+</div>
 
 <!-- طلبات القاطر المتاحة -->
 <div id="towRequestsModal" class="modal-bg">
@@ -1815,6 +1851,7 @@ const DataService = {
     MODE: "local-demo",
     KEYS: {
         user: "depannageUser",
+        users: "depannageUsers",
         providers: "depannageProviders",
         requests: "depannageRequests",
         blockedPhones: "depannageBlockedPhones",
@@ -1828,6 +1865,9 @@ const DataService = {
         set: function(key, value){
             try{ window.localStorage.setItem(key, value); }
             catch(e){ console.warn("storage set failed", key); }
+            if(key === "depannageUser" && DataService.auth){
+                DataService.auth._upsert(value);
+            }
         },
         remove: function(key){
             try{ window.localStorage.removeItem(key); }
@@ -1863,6 +1903,32 @@ function _fallbackHash(str){
 var _otpStore = {};
 
 DataService.auth = {
+    /* سجل الحسابات المحلي (تجريبي). الخادم يحلّ محله. */
+    _accounts: function(){
+        try{
+            var l = JSON.parse(DataService.storage.get("depannageUsers") || "[]");
+            return Array.isArray(l) ? l : [];
+        }catch(e){ return []; }
+    },
+    _upsert: function(json){
+        try{
+            var u = JSON.parse(json);
+            if(!u || !u.phone){ return; }
+            var l = this._accounts();
+            var i = l.findIndex(function(x){ return x.phone === u.phone; });
+            if(i >= 0){ l[i] = u; }else{ l.push(u); }
+            DataService.storage.set("depannageUsers", JSON.stringify(l));
+        }catch(e){}
+    },
+    findAccount: function(phone){
+        var f = this._accounts().find(function(x){ return x.phone === phone; });
+        if(f){ return f; }
+        try{
+            var s = JSON.parse(DataService.storage.get("depannageUser") || "null");
+            if(s && s.phone === phone){ return s; }
+        }catch(e){}
+        return null;
+    },
     hashPassword: async function(phone, password){
         var text = "salakni:" + phone + ":" + password;
         try{
@@ -2145,8 +2211,10 @@ async function completeCurrentRequest(){
     var res = await DataService.requests.complete(currentRequest.id);
     if(!res.ok){ showToast(res.message); return; }
     document.querySelectorAll(".request-active").forEach(function(e){ e.remove(); });
+    var doneRequest = res.request;
     currentRequest = null;
     NotificationService.push("✅ تم إنجاز الطلب", "شكرًا لاستخدامك Salakni DZ");
+    openRatingModal(doneRequest);
 }
 
 /* الخادم: يُستبدل هذا الاستطلاع بإشعار فوري */
@@ -2164,6 +2232,129 @@ function refreshCurrentRequest(){
     }catch(e){}
 }
 setInterval(refreshCurrentRequest, 5000);
+
+/* =====================================================
+   التقييمات (بعد إنجاز الطلب)
+   الخادم: استبدل DataService.ratings بنداءات API، وامنع
+   التقييم إلا لسائق أُنجز طلبه فعلًا مع هذا القاطر.
+===================================================== */
+DataService.ratings = {
+    KEY: "depannageRatings",
+    all: function(){
+        try{ return JSON.parse(DataService.storage.get(this.KEY) || "[]"); }
+        catch(e){ return []; }
+    },
+    add: async function(r){
+        var l = this.all();
+        if(l.some(function(x){ return x.requestId === r.requestId; })){
+            return { ok:false, message:"تم تقييم هذا الطلب من قبل" };
+        }
+        l.push({
+            requestId: r.requestId,
+            providerId: r.providerId,
+            stars: Math.min(5, Math.max(1, Math.round(r.stars))),
+            comment: String(r.comment || "").slice(0, 140),
+            createdAt: new Date().toISOString()
+        });
+        DataService.storage.set(this.KEY, JSON.stringify(l));
+        return { ok:true };
+    },
+    summary: function(providerId){
+        var l = this.all().filter(function(x){ return x.providerId === providerId; });
+        if(!l.length){ return { count:0, avg:0 }; }
+        var sum = l.reduce(function(a, x){ return a + x.stars; }, 0);
+        return { count: l.length, avg: Math.round(sum / l.length * 10) / 10 };
+    }
+};
+
+function ratingText(providerId){
+    var s = DataService.ratings.summary(providerId);
+    return s.count ? "⭐ " + s.avg + " (" + s.count + ")" : "بدون تقييمات بعد";
+}
+
+var _ratingStars = 0;
+
+function openRatingModal(request){
+    window.__ratingRequest = request;
+    setRating(0);
+    document.getElementById("ratingComment").value = "";
+    var t = request.acceptedBy || {};
+    document.getElementById("ratingTowerName").textContent = t.providerName || t.name || "";
+    document.getElementById("ratingModal").style.display = "flex";
+}
+
+function setRating(n){
+    _ratingStars = n;
+    document.querySelectorAll("#ratingStars span").forEach(function(s, i){
+        s.textContent = i < n ? "★" : "☆";
+    });
+}
+
+async function submitRating(){
+    if(!_ratingStars){ showToast("اختر عدد النجوم"); return; }
+    var r = window.__ratingRequest;
+    var res = await DataService.ratings.add({
+        requestId: r.id,
+        providerId: r.acceptedBy.id,
+        stars: _ratingStars,
+        comment: document.getElementById("ratingComment").value
+    });
+    closeModal("ratingModal");
+    showToast(res.ok ? "شكرًا لتقييمك" : res.message);
+}
+
+function skipRating(){ closeModal("ratingModal"); }
+
+/* =====================================================
+   سجل الإشعارات
+===================================================== */
+NotificationService.markAllRead = function(){
+    var l = this.list().map(function(n){ n.read = true; return n; });
+    DataService.storage.set(this.KEY, JSON.stringify(l));
+};
+NotificationService.unreadCount = function(){
+    return this.list().filter(function(n){ return !n.read; }).length;
+};
+
+function openNotifications(){
+    var acc = document.getElementById("accountModal");
+    if(acc){ acc.style.display = "none"; }
+    var box = document.getElementById("notificationsList");
+    box.innerHTML = "";
+    var l = NotificationService.list();
+    if(!l.length){ box.innerHTML = "<p>لا توجد إشعارات بعد.</p>"; }
+    l.forEach(function(n){
+        var d = document.createElement("div");
+        d.className = "option";
+        d.innerHTML = "<b>" + escapeHtml(n.title) + "</b><br><small>" +
+            escapeHtml(n.body) + " · " +
+            escapeHtml(new Date(n.ts).toLocaleString("ar-DZ")) + "</small>";
+        box.appendChild(d);
+    });
+    NotificationService.markAllRead();
+    document.getElementById("notificationsModal").style.display = "flex";
+}
+
+function clearNotifications(){
+    DataService.storage.set(NotificationService.KEY, "[]");
+    openNotifications();
+}
+
+/* =====================================================
+   محل قطع الغيار: تعبئة قائمة العلامات من قائمة البحث نفسها
+===================================================== */
+function fillShopBrands(){
+    var sel = document.getElementById("shopBrands");
+    if(!sel || sel.options.length){ return; }
+    var src = document.getElementById("partsBrand");
+    Array.from(src.options).forEach(function(o){
+        if(o.value !== "" || o.text.trim() !== ""){
+            var v = (o.value || o.text).trim();
+            if(v){ sel.appendChild(new Option(v, v)); }
+        }
+    });
+}
+
 
 
 
@@ -2637,6 +2828,9 @@ function saveProviderRecord(user){
 
         busy:
             user.busy === true,
+        vehicles: user.vehicles || null,
+        types: user.types || null,
+        brands: user.brands || null,
 
         createdAt:
             user.createdAt ||
@@ -3047,6 +3241,11 @@ function renderAccountContent(){
             </button>
 
 
+            <button class="back-btn" onclick="openNotifications()">
+                    🔔 الإشعارات ${NotificationService.unreadCount() ? "(" + NotificationService.unreadCount() + ")" : ""}
+                </button>
+
+
             <button class="logout-btn"
                     onclick="logoutAccount()">
 
@@ -3234,6 +3433,11 @@ document.addEventListener(
 
             const role =
                 event.target.value;
+            const shopBox = document.getElementById("shopFields");
+            if(shopBox){
+                shopBox.style.display = role === "محل قطع غيار" ? "block" : "none";
+                if(role === "محل قطع غيار"){ fillShopBrands(); }
+            }
 
 
             const fields =
@@ -3633,6 +3837,23 @@ async function createAccount(){
     }
 
 
+    let shopVehicles = null, shopTypes = null, shopBrands = null;
+    if(role === "محل قطع غيار"){
+        const pick = function(sel){
+            return Array.from(document.querySelectorAll(sel)).map(function(x){ return x.value; });
+        };
+        shopVehicles = pick('input[name="shopVehicle"]:checked');
+        shopTypes = pick('input[name="shopType"]:checked');
+        shopBrands = Array.from(document.getElementById("shopBrands").selectedOptions).map(function(o){ return o.value; });
+        if(!shopVehicles.length || !shopTypes.length){
+            showToast("اختر نوع المركبات ونوع القطع التي يبيعها المحل");
+            return;
+        }
+    }
+    if(DataService.auth.findAccount(phone)){
+        showToast("هذا الرقم مسجّل من قبل. سجّل الدخول بدل إنشاء حساب جديد");
+        return;
+    }
     if(window.__otpVerifiedPhone !== phone){
         requestOtpThen(phone, createAccount);
         return;
@@ -3644,6 +3865,9 @@ async function createAccount(){
         name:name,
         phone:phone,
         passwordHash:passwordHash,
+        vehicles:shopVehicles,
+        types:shopTypes,
+        brands:shopBrands,
 
         role:role,
 
@@ -3756,40 +3980,14 @@ async function loginAccount(){
     }
 
 
-    const savedUser =
-        DataService.storage.get(
-            "depannageUser"
-        );
-
-
-    if(!savedUser){
-
+    const found = DataService.auth.findAccount(phone);
+    if(!found){
         showToast(
-            "لا يوجد حساب محفوظ. أنشئ حسابًا أولاً."
+            "لا يوجد حساب بهذا الرقم. أنشئ حسابًا أولاً."
         );
-
         return;
-
     }
-
-
-    let user;
-
-
-    try{
-
-        user =
-            JSON.parse(savedUser);
-
-    }catch(error){
-
-        showToast(
-            "تعذر قراءة بيانات الحساب"
-        );
-
-        return;
-
-    }
+    let user = found;
 
 
     const loginHash =
@@ -3816,6 +4014,7 @@ async function loginAccount(){
         DataService.storage.set("depannageUser", JSON.stringify(user));
     }
     currentUser = user;
+    DataService.storage.set("depannageUser", JSON.stringify(user));
 
 
     closeModal("loginModal");
@@ -6296,9 +6495,9 @@ function showPartsProviders(
     let matches =
         getPartsShops().filter(function(provider){
 
-            if(provider.vehicles && !provider.vehicles.includes(vehicle)){ return false; }
-            if(provider.type && provider.type !== type){ return false; }
-            if(provider.brands && !provider.brands.includes(brand)){ return false; }
+            if(provider.vehicles && provider.vehicles.length && !provider.vehicles.includes(vehicle)){ return false; }
+            if(provider.types && provider.types.length && !provider.types.includes(type)){ return false; }
+            if(provider.brands && provider.brands.length && brand && !provider.brands.includes(brand) && !provider.brands.includes("Autre")){ return false; }
             return true;
 
         });
@@ -6306,8 +6505,8 @@ function showPartsProviders(
     /* احتياطي: تجاهل العلامة التجارية إن لم توجد نتيجة */
     if(matches.length === 0){
         matches = getPartsShops().filter(function(provider){
-            return (!provider.vehicles || provider.vehicles.includes(vehicle)) &&
-                   (!provider.type || provider.type === type);
+            return (!provider.vehicles || !provider.vehicles.length || provider.vehicles.includes(vehicle)) &&
+                   (!provider.types || !provider.types.length || provider.types.includes(type));
         });
     }
 
@@ -6360,7 +6559,7 @@ function showPartsProviders(
                 </h3>
 
                 <span class="badge">
-                    ${escapeHtml(provider.type || provider.role)}
+                    ${escapeHtml(provider.types && provider.types.length ? provider.types.join("، ") : provider.role)}
                 </span>
 
             </div>
@@ -7216,7 +7415,7 @@ function showActiveRequest(){
     const tower = currentRequest.acceptedBy;
     const towerBlock =
         (currentRequest.status === "اختاره قاطر" && tower)
-        ? `<p>🚛 القاطر: <b>${escapeHtml(tower.providerName || tower.name)}</b></p>
+        ? `<p>🚛 القاطر: <b>${escapeHtml(tower.providerName || tower.name)}</b> — ${escapeHtml(ratingText(tower.id))}</p>
            <a class="call-btn" href="tel:${escapeHtml(tower.phone)}"
               style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">
               📞 اتصل بالقاطر: ${escapeHtml(tower.phone)}
