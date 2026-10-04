@@ -38,4 +38,5 @@ configurations.all {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'org.osmdroid:osmdroid-android:6.1.20'
 }
