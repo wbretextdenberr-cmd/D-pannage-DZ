@@ -31,6 +31,7 @@ public class MapScreen {
     private final Store s;
     private MapView map;
     private double myLat, myLng;
+    private String currentFilter = "الكل";
 
     MapScreen(NativeActivity a, Store s) {
         this.a = a;
@@ -41,10 +42,23 @@ public class MapScreen {
         Configuration.getInstance().setUserAgentValue(a.getPackageName());
         Configuration.getInstance().setOsmdroidBasePath(new File(a.getCacheDir(), "osmdroid"));
         Configuration.getInstance().setOsmdroidTileCache(new File(a.getCacheDir(), "osmdroid/tiles"));
-        a.flow.withLocation((lat, lng) -> render(lat, lng));
+        double[] q = a.flow.quick();
+        render(q != null ? q[0] : 36.75, q != null ? q[1] : 3.06, q != null ? 13.0 : 6.0);
+        a.flow.withLocation((lat, lng) -> recenter(lat, lng));
     }
 
-    private void render(double lat, double lng) {
+    private void recenter(double lat, double lng) {
+        if (map == null) {
+            return;
+        }
+        myLat = lat;
+        myLng = lng;
+        map.getController().setZoom(13.0);
+        map.getController().animateTo(new GeoPoint(lat, lng));
+        refresh(currentFilter);
+    }
+
+    private void render(double lat, double lng, double zoom) {
         myLat = lat;
         myLng = lng;
 
@@ -75,7 +89,7 @@ public class MapScreen {
         map = new MapView(a);
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
-        map.getController().setZoom(13.0);
+        map.getController().setZoom(zoom);
         map.getController().setCenter(new GeoPoint(lat, lng));
         root.addView(map, new LinearLayout.LayoutParams(-1, 0, 1f));
 
@@ -108,6 +122,10 @@ public class MapScreen {
     }
 
     private void refresh(String filter) {
+        currentFilter = filter;
+        if (map == null) {
+            return;
+        }
         map.getOverlays().clear();
 
         Marker me = new Marker(map);

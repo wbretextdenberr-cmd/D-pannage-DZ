@@ -109,6 +109,26 @@ public class Flow {
         }
     }
 
+    /** آخر موقع معروف دون انتظار؛ null إن لم يتوفر. */
+    double[] quick() {
+        if (a.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
+        LocationManager lm = (LocationManager) a.getSystemService(Context.LOCATION_SERVICE);
+        Location best = null;
+        try {
+            for (String p : new String[]{LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER}) {
+                Location l = lm.getLastKnownLocation(p);
+                if (l != null && (best == null || l.getTime() > best.getTime())) {
+                    best = l;
+                }
+            }
+        } catch (SecurityException ignored) {
+        }
+        return best == null ? null : new double[]{best.getLatitude(), best.getLongitude()};
+    }
+
     void onPermission(int[] results) {
         boolean ok = false;
         for (int r : results) {
