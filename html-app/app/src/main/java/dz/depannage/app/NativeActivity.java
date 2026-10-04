@@ -29,12 +29,14 @@ public class NativeActivity extends Activity {
 
     static final String[] ROLES = {"سائق", "قاطر", "ورشة ثابتة", "ورشة متنقلة", "محل قطع غيار"};
 
-    private Store store;
+    Store store;
+    Flow flow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         store = new Store(this);
+        flow = new Flow(this, store);
 
         String phone = store.session();
         if (phone != null && store.findBy("users", "phone", phone) != null) {
@@ -46,11 +48,11 @@ public class NativeActivity extends Activity {
 
     /* ---------- أدوات الواجهة ---------- */
 
-    private int dp(int v) {
+    int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);
     }
 
-    private GradientDrawable shape(int fill, int stroke, int radius) {
+    GradientDrawable shape(int fill, int stroke, int radius) {
         GradientDrawable g = new GradientDrawable();
         g.setColor(fill);
         g.setCornerRadius(dp(radius));
@@ -60,14 +62,14 @@ public class NativeActivity extends Activity {
         return g;
     }
 
-    private LinearLayout column() {
+    LinearLayout column() {
         LinearLayout c = new LinearLayout(this);
         c.setOrientation(LinearLayout.VERTICAL);
         c.setPadding(dp(18), dp(18), dp(18), dp(24));
         return c;
     }
 
-    private void show(LinearLayout content) {
+    void show(LinearLayout content) {
         ScrollView sv = new ScrollView(this);
         sv.setFillViewport(true);
         sv.setBackgroundColor(BG);
@@ -85,7 +87,7 @@ public class NativeActivity extends Activity {
         sv.requestApplyInsets();
     }
 
-    private TextView text(String s, int sp, int color, boolean bold) {
+    TextView text(String s, int sp, int color, boolean bold) {
         TextView t = new TextView(this);
         t.setText(s);
         t.setTextSize(sp);
@@ -96,7 +98,7 @@ public class NativeActivity extends Activity {
         return t;
     }
 
-    private TextView button(String label, int fill, View.OnClickListener l) {
+    TextView button(String label, int fill, View.OnClickListener l) {
         TextView t = text(label, 16, Color.WHITE, true);
         t.setGravity(Gravity.CENTER);
         t.setPadding(dp(14), dp(14), dp(14), dp(14));
@@ -108,7 +110,7 @@ public class NativeActivity extends Activity {
         return t;
     }
 
-    private EditText field(String hint, int inputType) {
+    EditText field(String hint, int inputType) {
         EditText e = new EditText(this);
         e.setHint(hint);
         e.setHintTextColor(MUTED);
@@ -122,7 +124,7 @@ public class NativeActivity extends Activity {
         return e;
     }
 
-    private void toast(String s) {
+    void toast(String s) {
         Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
     }
 
@@ -217,21 +219,39 @@ public class NativeActivity extends Activity {
         askOtp(phone, new Runnable() {
             @Override
             public void run() {
-                try {
-                    JSONObject u = new JSONObject();
-                    u.put("phone", phone);
-                    u.put("name", name);
-                    u.put("role", role);
-                    u.put("passwordHash", Auth.hash(phone, password));
-                    u.put("createdAt", System.currentTimeMillis());
-                    store.upsert("users", "phone", u);
-                    store.setSession(phone);
-                    showHome();
-                } catch (Exception e) {
-                    toast("تعذر إنشاء الحساب");
+                if ("سائق".equals(role)) {
+                    saveUser(name, phone, password, role, null);
+                } else {
+                    flow.withLocation(new Flow.Callback() {
+                        @Override
+                        public void got(double lat, double lng) {
+                            saveUser(name, phone, password, role, new double[]{lat, lng});
+                        }
+                    });
                 }
             }
         });
+    }
+
+    private void saveUser(String name, String phone, String password, String role, double[] loc) {
+        try {
+            JSONObject u = new JSONObject();
+            u.put("phone", phone);
+            u.put("name", name);
+            u.put("role", role);
+            u.put("passwordHash", Auth.hash(phone, password));
+            u.put("createdAt", System.currentTimeMillis());
+            if (loc != null) {
+                u.put("lat", loc[0]);
+                u.put("lng", loc[1]);
+                u.put("busy", false);
+            }
+            store.upsert("users", "phone", u);
+            store.setSession(phone);
+            showHome();
+        } catch (Exception e) {
+            toast("تعذر إنشاء الحساب");
+        }
     }
 
     /** وضع تجريبي: الرمز يظهر في النافذة. الخادم يرسله عبر SMS. */
@@ -260,7 +280,7 @@ public class NativeActivity extends Activity {
 
     /* ---------- الرئيسية ---------- */
 
-    private void showHome() {
+    void showHome() {
         JSONObject user = store.findBy("users", "phone", String.valueOf(store.session()));
         LinearLayout c = column();
 
@@ -292,12 +312,32 @@ public class NativeActivity extends Activity {
             card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    toast("«" + it[1] + "» تأتي في المرحلة القادمة");
+                    if (it[1].startsWith("قطر")) {
+                        flow.openTowRequest();
+                    } else {
+                        toast("«" + it[1] + "» تأتي في المرحلة القادمة");
+                    }
                 }
             });
             c.addView(card);
         }
 
+        if (user != null && "قاطر".equals(user.optString("role"))) {
+            c.addView(button("📥 الطلبات المتاحة", BLUE, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    flow.openTowerRequests();
+                }
+            }));
+        }
+        if (flow.activeRequest() != null) {
+            c.addView(button("📄 طلبك الحالي", BLUE, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    flow.showActive();
+                }
+            }));
+        }
         c.addView(button("🚨 طوارئ", RED, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -329,5 +369,13 @@ public class NativeActivity extends Activity {
                 })
                 .setNegativeButton("إلغاء", null)
                 .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
+        super.onRequestPermissionsResult(code, perms, results);
+        if (code == Flow.PERM) {
+            flow.onPermission(results);
+        }
     }
 }
