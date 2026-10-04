@@ -4,6 +4,7 @@
 
 <meta charset="utf-8">
 
+<meta name="theme-color" content="#111c33">
 <meta name="viewport"
       content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
@@ -791,6 +792,12 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
 .driver-warning strong,.busy-control h4{ color:#fed7aa; }
 .map-status,#locationText{ background:#172238ee; color:#e6edf7; }
 .map{ background:#172238; border-color:#26385c; }
+
+/* حركات ناعمة */
+@keyframes slideUp{ from{ transform:translateY(40px); opacity:0; } to{ transform:none; opacity:1; } }
+.modal-bg[style*="flex"] .modal{ animation:slideUp .22s ease; }
+.card{ transition:transform .12s ease; }
+.card:active{ transform:scale(0.97); }
 </style>
 </head>
 
@@ -1343,6 +1350,32 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
     </div>
 </div>
 
+<!-- مشاركة الموقع -->
+<div id="shareModal" class="modal-bg">
+    <div class="modal">
+        <h2>📍 مشاركة موقعي</h2>
+        <p>أرسل موقعك الحالي لشخص قريب ليعرف أين أنت.</p>
+        <button class="option" onclick="shareVia('sms')">💬 رسالة SMS</button>
+        <button class="option" onclick="shareVia('wa')">🟢 واتساب</button>
+        <button class="option" onclick="shareVia('map')">🗺️ فتح موقعي في الخرائط</button>
+        <button class="close" onclick="closeModal('shareModal')">إلغاء</button>
+    </div>
+</div>
+
+<!-- سياسة الخصوصية -->
+<div id="privacyModal" class="modal-bg">
+    <div class="modal">
+        <h2>📄 سياسة الخصوصية</h2>
+        <p><b>ما هو Salakni DZ؟</b> تطبيق يربط سائقي المركبات المعطلة بمقدّمي خدمات القطر والإصلاح وقطع الغيار القريبين منهم.</p>
+        <p><b>البيانات التي نستعملها:</b> الاسم، ورقم الهاتف، ونوع الحساب، وموقعك الجغرافي حين تطلب خدمة أو تسجّل كمقدّم خدمة، وبيانات الطلبات والتقييمات.</p>
+        <p><b>لماذا؟</b> لعرض الأقرب إليك وتنفيذ طلبك فقط. لا نتتبع موقعك في الخلفية، ولا نبيع بياناتك.</p>
+        <p><b>أين تُحفظ؟</b> في هذه النسخة على هاتفك. وعند ربط التطبيق بخادم ستُحفظ على الخادم وتُحدَّث هذه السياسة.</p>
+        <p><b>ما الذي يراه الآخرون؟</b> يرى القاطر المسافة والوجهة ونوع العطل دون رقمك، ويظهر لك رقمه بعد قبوله طلبك.</p>
+        <p><b>حقوقك:</b> يمكنك طلب حذف بياناتك، وحاليًا بمسح بيانات التطبيق من إعدادات الهاتف.</p>
+        <button class="close" onclick="closeModal('privacyModal')">إغلاق</button>
+    </div>
+</div>
+
 <!-- طلبات القاطر المتاحة -->
 <div id="towRequestsModal" class="modal-bg">
     <div class="modal">
@@ -1372,6 +1405,7 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
         <h2>🚨 اتصال طارئ</h2>
         <p>اختر الجهة، وسيفتح الهاتف مباشرة للاتصال بها.</p>
         <div id="emergencyList"></div>
+        <button class="back-btn" onclick="closeModal('emergencyModal');openShare('')">📍 شارك موقعي مع شخص قريب</button>
         <button class="close" onclick="closeModal('emergencyModal')">إلغاء</button>
     </div>
 </div>
@@ -1775,6 +1809,16 @@ input::placeholder,textarea::placeholder{ color:#64748b; }
             type="text"
             placeholder="مثال: مهدية"
         >
+        <label>نوع العطل</label>
+        <select id="towFault">
+            <option value="">لا أعرف / غير محدد</option>
+            <option>بطارية</option><option>إطار</option><option>وقود</option>
+            <option>محرك</option><option>حادث</option><option>أخرى</option>
+        </select>
+        <label>نوع المركبة</label>
+        <select id="towVehicle">
+            <option>سيارة</option><option>شاحنة</option><option>دراجة نارية</option>
+        </select>
 
         <button class="primary"
                 onclick="submitRequest()">
@@ -2189,7 +2233,8 @@ function renderTowRequests(){
         div.innerHTML =
             "<h3>🚗 طلب قطر</h3>" +
             "<p>📍 يبعد عنك: <b>" + escapeHtml(km === null ? "غير معروف" : km.toFixed(1) + " كم") + "</b></p>" +
-            "<p>الوجهة: <b>" + escapeHtml(r.destination.wilaya) + " - " + escapeHtml(r.destination.commune) + "</b></p>";
+            "<p>الوجهة: <b>" + escapeHtml(r.destination.wilaya) + " - " + escapeHtml(r.destination.commune) + "</b></p>" +
+            "<p>العطل: <b>" + escapeHtml(r.fault || "غير محدد") + "</b> · المركبة: <b>" + escapeHtml(r.vehicleType || "—") + "</b></p>";
         var btn = document.createElement("button");
         btn.className = "call-btn";
         btn.textContent = "✅ أقبل هذا الطلب";
@@ -2232,6 +2277,65 @@ function refreshCurrentRequest(){
     }catch(e){}
 }
 setInterval(refreshCurrentRequest, 5000);
+
+/* =====================================================
+   زر الرجوع الذكي: يغلق النافذة المفتوحة قبل الخروج
+===================================================== */
+window.handleBack = function(){
+    var open = Array.from(document.querySelectorAll(".modal-bg")).filter(function(m){
+        return m.style.display === "flex";
+    });
+    if(open.length){
+        open[open.length - 1].style.display = "none";
+        return true;
+    }
+    var prov = document.getElementById("providers");
+    if(prov && prov.style.display === "block"){
+        prov.style.display = "none";
+        if(typeof refreshProviderMarkers === "function"){ refreshProviderMarkers(); }
+        return true;
+    }
+    return false;
+};
+
+/* =====================================================
+   مشاركة الموقع (SMS / واتساب / خرائط Google)
+===================================================== */
+function locationLink(){
+    if(!currentLocation){ return null; }
+    return "https://www.google.com/maps?q=" + currentLocation.latitude + "," + currentLocation.longitude;
+}
+
+function openShare(phone){
+    if(!currentLocation){ showToast("حدّد موقعك أولًا"); return; }
+    window.__sharePhone = phone || "";
+    document.getElementById("shareModal").style.display = "flex";
+}
+
+function shareVia(kind){
+    var link = locationLink();
+    if(!link){ return; }
+    var text = "أحتاج مساعدة على الطريق. موقعي: " + link + " (Salakni DZ)";
+    var phone = window.__sharePhone || "";
+    var url;
+    if(kind === "sms"){
+        url = "sms:" + phone + "?body=" + encodeURIComponent(text);
+    }else if(kind === "wa"){
+        url = "https://wa.me/" + (phone ? "213" + phone.replace(/^0/, "") : "") +
+              "?text=" + encodeURIComponent(text);
+    }else{
+        url = link;
+    }
+    closeModal("shareModal");
+    window.location.href = url;
+}
+
+function openPrivacy(){
+    var acc = document.getElementById("accountModal");
+    if(acc){ acc.style.display = "none"; }
+    document.getElementById("privacyModal").style.display = "flex";
+}
+
 
 /* =====================================================
    التقييمات (بعد إنجاز الطلب)
@@ -3239,6 +3343,9 @@ function renderAccountContent(){
                 ⚙️ تعديل بيانات الحساب
 
             </button>
+
+
+            <button class="back-btn" onclick="openPrivacy()">📄 سياسة الخصوصية</button>
 
 
             <button class="back-btn" onclick="openNotifications()">
@@ -7237,6 +7344,10 @@ function submitRequest(){
 
         method:
             "النقل إلى وجهة أحددها",
+        fault:
+            document.getElementById("towFault").value || "غير محدد",
+        vehicleType:
+            document.getElementById("towVehicle").value,
 
         driverPhone:
             driverPhone,
@@ -7420,6 +7531,9 @@ function showActiveRequest(){
               style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">
               📞 اتصل بالقاطر: ${escapeHtml(tower.phone)}
            </a>
+           <button class="back-btn" onclick="openShare('${escapeHtml(tower.phone)}')">
+              📍 أرسل موقعي للقاطر
+           </button>
            <button class="primary" onclick="completeCurrentRequest()">
               ✅ تم إنجاز الطلب
            </button>`
