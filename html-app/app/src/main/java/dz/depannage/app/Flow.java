@@ -37,6 +37,7 @@ public class Flow {
 
     private final NativeActivity a;
     private final Store s;
+    final Extras x;
     private Callback pending;
     private String screen = "";
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -44,6 +45,7 @@ public class Flow {
     Flow(NativeActivity a, Store s) {
         this.a = a;
         this.s = s;
+        this.x = new Extras(a, s);
     }
 
     /* ---------- الموقع ---------- */
@@ -209,6 +211,8 @@ public class Flow {
             r.put("dispatch", Dispatch.assign(lat, lng, s.list("users")));
             r.put("createdAt", System.currentTimeMillis());
             s.upsert("requests", "id", r);
+            x.notify(me(), "✅ تم تسجيل طلبك",
+                    "القاطرون المتاحون: " + r.optJSONObject("dispatch").optInt("total"));
             a.toast("✅ تم تسجيل طلبك");
             showActive();
         } catch (Exception e) {
@@ -249,14 +253,17 @@ public class Flow {
             final JSONObject t = r.optJSONObject("acceptedBy");
             if (t != null) {
                 c.addView(a.text("🚛 القاطر: " + t.optString("name"), 17, Color.WHITE, true));
+                c.addView(a.text(x.ratingText(t.optString("phone")), 14, NativeActivity.MUTED, false));
+                c.addView(a.button("📍 أرسل موقعي للقاطر", NativeActivity.SURFACE,
+                        v -> x.share(t.optString("phone"))));
                 c.addView(a.button("📞 اتصل بالقاطر: " + t.optString("phone"), NativeActivity.BLUE,
                         v -> a.startActivity(new Intent(Intent.ACTION_DIAL,
                                 Uri.parse("tel:" + t.optString("phone"))))));
             }
             c.addView(a.button("✅ تم إنجاز الطلب", 0xFF16A34A, v -> {
                 setStatus(r, "منجز");
-                a.toast("شكرًا لاستخدامك Salakni DZ");
-                a.showHome();
+                x.notify(me(), "✅ تم إنجاز الطلب", "شكرًا لاستخدامك Salakni DZ");
+                x.rate(r);
             }));
         }
         c.addView(a.button("❌ إلغاء الطلب", NativeActivity.RED, v -> {
@@ -331,6 +338,9 @@ public class Flow {
             r.put("acceptedBy", t);
             r.put("acceptedAt", System.currentTimeMillis());
             setStatus(r, "اختاره قاطر");
+            x.notify(r.optString("driverPhone"), "🚛 قاطر اختار طلبك",
+                    "اتصل بـ " + t.optString("name"));
+            x.notify(me(), "✅ اخترت طلبًا", "سيتصل بك السائق قريبًا");
             a.toast("✅ اخترت الطلب. سيتصل بك السائق قريبًا");
         } catch (Exception ignored) {
         }

@@ -220,12 +220,24 @@ public class NativeActivity extends Activity {
             @Override
             public void run() {
                 if ("سائق".equals(role)) {
-                    saveUser(name, phone, password, role, null);
+                    saveUser(name, phone, password, role, null, null);
+                } else if ("محل قطع غيار".equals(role)) {
+                    flow.x.pickShop(new Extras.ShopCb() {
+                        @Override
+                        public void got(final JSONObject info) {
+                            flow.withLocation(new Flow.Callback() {
+                                @Override
+                                public void got(double lat, double lng) {
+                                    saveUser(name, phone, password, role, new double[]{lat, lng}, info);
+                                }
+                            });
+                        }
+                    });
                 } else {
                     flow.withLocation(new Flow.Callback() {
                         @Override
                         public void got(double lat, double lng) {
-                            saveUser(name, phone, password, role, new double[]{lat, lng});
+                            saveUser(name, phone, password, role, new double[]{lat, lng}, null);
                         }
                     });
                 }
@@ -233,7 +245,8 @@ public class NativeActivity extends Activity {
         });
     }
 
-    private void saveUser(String name, String phone, String password, String role, double[] loc) {
+    private void saveUser(String name, String phone, String password, String role,
+                          double[] loc, JSONObject extra) {
         try {
             JSONObject u = new JSONObject();
             u.put("phone", phone);
@@ -245,6 +258,13 @@ public class NativeActivity extends Activity {
                 u.put("lat", loc[0]);
                 u.put("lng", loc[1]);
                 u.put("busy", false);
+            }
+            if (extra != null) {
+                java.util.Iterator<String> keys = extra.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    u.put(key, extra.get(key));
+                }
             }
             store.upsert("users", "phone", u);
             store.setSession(phone);
@@ -314,6 +334,8 @@ public class NativeActivity extends Activity {
                 public void onClick(View v) {
                     if (it[1].startsWith("قطر")) {
                         flow.openTowRequest();
+                    } else if (it[1].startsWith("قطع")) {
+                        flow.x.openParts();
                     } else {
                         toast("«" + it[1] + "» تأتي في المرحلة القادمة");
                     }
@@ -338,6 +360,19 @@ public class NativeActivity extends Activity {
                 }
             }));
         }
+        c.addView(button("🔔 الإشعارات" + (flow.x.unread() > 0 ? " (" + flow.x.unread() + ")" : ""),
+                SURFACE, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        flow.x.openNotifications();
+                    }
+                }));
+        c.addView(button("📄 سياسة الخصوصية", SURFACE, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                flow.x.privacy();
+            }
+        }));
         c.addView(button("🚨 طوارئ", RED, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -357,12 +392,16 @@ public class NativeActivity extends Activity {
 
     private void emergency() {
         final String[] numbers = {"1055", "17", "14"};
-        String[] names = {"🛡️ الدرك الوطني (1055)", "🚓 الشرطة (17)", "🚒 الحماية المدنية (14)"};
+        String[] names = {"🛡️ الدرك الوطني (1055)", "🚓 الشرطة (17)", "🚒 الحماية المدنية (14)", "📍 شارك موقعي مع شخص قريب"};
         new AlertDialog.Builder(this)
                 .setTitle("🚨 اتصال طارئ")
                 .setItems(names, new android.content.DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(android.content.DialogInterface d, int which) {
+                        if (which == 3) {
+                            flow.x.share("");
+                            return;
+                        }
                         startActivity(new Intent(Intent.ACTION_DIAL,
                                 Uri.parse("tel:" + numbers[which])));
                     }
