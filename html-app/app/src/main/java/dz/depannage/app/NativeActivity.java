@@ -32,20 +32,44 @@ public class NativeActivity extends Activity {
     Store store;
     Flow flow;
     MapScreen mapScreen;
+    Account account;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+        getWindow().setNavigationBarColor(BG);
+        getWindow().setStatusBarColor(BG);
         store = new Store(this);
-        flow = new Flow(this, store);
-        mapScreen = new MapScreen(this, store);
+            flow = new Flow(this, store);
+            mapScreen = new MapScreen(this, store);
+            account = new Account(this, store);
 
-        String phone = store.session();
-        if (phone != null && store.findBy("users", "phone", phone) != null) {
-            showHome();
-        } else {
-            showAuth(false);
+            String phone = store.session();
+            if (phone != null && store.findBy("users", "phone", phone) != null) {
+                showHome();
+            } else {
+                showAuth(false);
+            }
+        } catch (Throwable t) {
+            showError(t);
         }
+    }
+
+    /** يعرض سبب التعطل على الشاشة بدل إغلاق التطبيق. */
+    private void showError(Throwable t) {
+        java.io.StringWriter w = new java.io.StringWriter();
+        t.printStackTrace(new java.io.PrintWriter(w));
+        TextView tv = new TextView(this);
+        tv.setText("حدث خطأ أثناء التشغيل. صوّر هذه الشاشة وأرسلها:\n\n" + w);
+        tv.setTextColor(Color.WHITE);
+        tv.setTextSize(11);
+        tv.setTextIsSelectable(true);
+        tv.setPadding(24, 60, 24, 24);
+        ScrollView sv = new ScrollView(this);
+        sv.setBackgroundColor(0xFF7F1D1D);
+        sv.addView(tv);
+        setContentView(sv);
     }
 
     /* ---------- أدوات الواجهة ---------- */
@@ -132,7 +156,7 @@ public class NativeActivity extends Activity {
 
     /* ---------- الدخول والتسجيل ---------- */
 
-    private void showAuth(final boolean register) {
+    void showAuth(final boolean register) {
         LinearLayout c = column();
 
         TextView title = text("Salakni DZ", 30, Color.WHITE, true);
@@ -302,17 +326,141 @@ public class NativeActivity extends Activity {
 
     /* ---------- الرئيسية ---------- */
 
+    /* ---------- الشريط السفلي ---------- */
+
+    void showNav(LinearLayout content, String active) {
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(BG);
+        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+
+        ScrollView sv = new ScrollView(this);
+        sv.setFillViewport(true);
+        sv.addView(content);
+        root.addView(sv, new LinearLayout.LayoutParams(-1, 0, 1f));
+
+        LinearLayout nav = new LinearLayout(this);
+        nav.setOrientation(LinearLayout.HORIZONTAL);
+        nav.setBackgroundColor(0xFF0F1A30);
+        nav.setPadding(0, dp(6), 0, dp(6));
+        String[][] items = {
+                {"home", "🏠", "الرئيسية"}, {"map", "📍", "القريب مني"},
+                {"account", "👤", "حسابي"}, {"sos", "🚨", "طوارئ"}
+        };
+        for (final String[] it : items) {
+            LinearLayout cell = new LinearLayout(this);
+            cell.setOrientation(LinearLayout.VERTICAL);
+            cell.setGravity(Gravity.CENTER);
+            cell.setPadding(0, dp(4), 0, dp(4));
+            int color = it[0].equals(active) ? 0xFF60A5FA : MUTED;
+            TextView icon = text(it[1], 22, Color.WHITE, false);
+            icon.setGravity(Gravity.CENTER);
+            TextView label = text(it[2], 11, color, it[0].equals(active));
+            label.setGravity(Gravity.CENTER);
+            cell.addView(icon);
+            cell.addView(label);
+            cell.setOnClickListener(v -> navGo(it[0]));
+            nav.addView(cell, new LinearLayout.LayoutParams(0, -2, 1f));
+        }
+        root.addView(nav);
+
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                v.setPadding(0, insets.getSystemWindowInsetTop(),
+                        0, insets.getSystemWindowInsetBottom());
+                return insets;
+            }
+        });
+        setContentView(root);
+        root.requestApplyInsets();
+    }
+
+    private void navGo(String id) {
+        if ("home".equals(id)) {
+            showHome();
+        } else if ("map".equals(id)) {
+            mapScreen.open();
+        } else if ("account".equals(id)) {
+            account.open();
+        } else {
+            emergency();
+        }
+    }
+
+    private TextView circle(String emoji, int fill, View.OnClickListener l) {
+        TextView t = text(emoji, 20, Color.WHITE, false);
+        t.setGravity(Gravity.CENTER);
+        GradientDrawable g = new GradientDrawable();
+        g.setShape(GradientDrawable.OVAL);
+        g.setColor(fill);
+        t.setBackground(g);
+        t.setOnClickListener(l);
+        t.setLayoutParams(new LinearLayout.LayoutParams(dp(46), dp(46)));
+        return t;
+    }
+
+    private LinearLayout tile(final String[] it) {
+        LinearLayout t = new LinearLayout(this);
+        t.setOrientation(LinearLayout.VERTICAL);
+        t.setGravity(Gravity.CENTER);
+        t.setPadding(dp(10), dp(14), dp(10), dp(14));
+        t.setBackground(shape(SURFACE, BORDER, 20));
+        TextView icon = text(it[0], 40, Color.WHITE, false);
+        icon.setGravity(Gravity.CENTER);
+        TextView title = text(it[1], 16, TEXT, true);
+        title.setGravity(Gravity.CENTER);
+        title.setPadding(0, dp(8), 0, dp(2));
+        TextView sub = text(it[2], 12, MUTED, false);
+        sub.setGravity(Gravity.CENTER);
+        t.addView(icon);
+        t.addView(title);
+        t.addView(sub);
+        t.setOnClickListener(v -> {
+            if (it[1].startsWith("قطر")) {
+                flow.openTowRequest();
+            } else if (it[1].startsWith("ورشة")) {
+                account.openProviders("ورشة متنقلة", "🔧 ورش متنقلة قريبة");
+            } else {
+                flow.x.openParts();
+            }
+        });
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(150), 1f);
+        p.setMargins(dp(6), dp(6), dp(6), dp(6));
+        t.setLayoutParams(p);
+        return t;
+    }
+
+    /* ---------- الرئيسية ---------- */
+
     void showHome() {
         JSONObject user = store.findBy("users", "phone", String.valueOf(store.session()));
         LinearLayout c = column();
 
-        TextView title = text("Salakni DZ", 26, Color.WHITE, true);
-        c.addView(title);
-        c.addView(text("مرحبًا " + (user == null ? "" : user.optString("name"))
-                + " · " + (user == null ? "" : user.optString("role")), 15, MUTED, false));
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.addView(circle("👤", BLUE, v -> account.open()));
+        LinearLayout titles = new LinearLayout(this);
+        titles.setOrientation(LinearLayout.VERTICAL);
+        titles.setGravity(Gravity.CENTER);
+        TextView name = text("Salakni DZ", 24, Color.WHITE, true);
+        name.setGravity(Gravity.CENTER);
+        TextView tag = text("مساعدتك عند تعطل مركبتك", 12, MUTED, false);
+        tag.setGravity(Gravity.CENTER);
+        titles.addView(name);
+        titles.addView(tag);
+        header.addView(titles, new LinearLayout.LayoutParams(0, -2, 1f));
+        header.addView(circle("🚨", RED, v -> emergency()));
+        c.addView(header);
+
+        TextView hello = text("مرحبًا " + (user == null ? "" : user.optString("name"))
+                + " · " + (user == null ? "" : user.optString("role")), 13, MUTED, false);
+        hello.setPadding(0, dp(14), 0, 0);
+        c.addView(hello);
 
         TextView services = text("الخدمات", 18, Color.WHITE, true);
-        services.setPadding(0, dp(18), 0, dp(4));
+        services.setPadding(0, dp(10), 0, dp(4));
         c.addView(services);
 
         String[][] items = {
@@ -321,81 +469,23 @@ public class NativeActivity extends Activity {
                 {"🔧", "ورشة متنقلة", "مصلح قريب منك"},
                 {"⚙️", "قطع الغيار", "محلات قطع الغيار القريبة"}
         };
-        for (final String[] it : items) {
-            LinearLayout card = new LinearLayout(this);
-            card.setOrientation(LinearLayout.VERTICAL);
-            card.setPadding(dp(16), dp(16), dp(16), dp(16));
-            card.setBackground(shape(SURFACE, BORDER, 16));
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
-            p.topMargin = dp(10);
-            card.setLayoutParams(p);
-            card.addView(text(it[0] + "  " + it[1], 17, TEXT, true));
-            card.addView(text(it[2], 13, MUTED, false));
-            card.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (it[1].startsWith("قطر")) {
-                        flow.openTowRequest();
-                    } else if (it[1].startsWith("قطع")) {
-                        flow.x.openParts();
-                    } else {
-                        toast("«" + it[1] + "» تأتي في المرحلة القادمة");
-                    }
-                }
-            });
-            c.addView(card);
+        for (int r = 0; r < 2; r++) {
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.addView(tile(items[r * 2]));
+            row.addView(tile(items[r * 2 + 1]));
+            c.addView(row);
         }
 
         if (user != null && "قاطر".equals(user.optString("role"))) {
-            c.addView(button("📥 الطلبات المتاحة", BLUE, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    flow.openTowerRequests();
-                }
-            }));
+            c.addView(button("📥 الطلبات المتاحة", BLUE, v -> flow.openTowerRequests()));
         }
         if (flow.activeRequest() != null) {
-            c.addView(button("📄 طلبك الحالي", BLUE, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    flow.showActive();
-                }
-            }));
+            c.addView(button("📄 طلبك الحالي", BLUE, v -> flow.showActive()));
         }
-        c.addView(button("🗺️ الخريطة والقريب مني", BLUE, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mapScreen.open();
-            }
-        }));
-        c.addView(button("🔔 الإشعارات" + (flow.x.unread() > 0 ? " (" + flow.x.unread() + ")" : ""),
-                SURFACE, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        flow.x.openNotifications();
-                    }
-                }));
-        c.addView(button("📄 سياسة الخصوصية", SURFACE, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                flow.x.privacy();
-            }
-        }));
-        c.addView(button("🚨 طوارئ", RED, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emergency();
-            }
-        }));
-        c.addView(button("تسجيل الخروج", SURFACE, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                store.setSession(null);
-                showAuth(false);
-            }
-        }));
+        c.addView(button("🗺️ افتح الخريطة وموقعك", SURFACE, v -> mapScreen.open()));
 
-        show(c);
+        showNav(c, "home");
     }
 
     private void emergency() {
