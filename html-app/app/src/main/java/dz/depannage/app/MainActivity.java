@@ -7,11 +7,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.webkit.GeolocationPermissions;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -32,6 +34,11 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         setContentView(webView);
+
+        // خلفية داكنة تمنع الوميض الأبيض عند الفتح
+        webView.setBackgroundColor(Color.parseColor("#0B1324"));
+        getWindow().setStatusBarColor(Color.parseColor("#111C33"));
+        getWindow().setNavigationBarColor(Color.parseColor("#0B1324"));
 
         android.webkit.WebSettings settings = webView.getSettings();
 
@@ -115,6 +122,26 @@ public class MainActivity extends Activity {
                 );
 
                 startActivity(intent);
+
+            } catch (Exception ignored) {
+            }
+
+            return true;
+        }
+
+        boolean external =
+                url.startsWith("sms:") || url.startsWith("smsto:")
+                || url.startsWith("geo:") || url.startsWith("mailto:")
+                || url.startsWith("whatsapp:")
+                || url.startsWith("http://") || url.startsWith("https://");
+
+        if (external) {
+
+            try {
+
+                startActivity(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                );
 
             } catch (Exception ignored) {
             }
@@ -237,13 +264,25 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
 
-        if (webView.canGoBack()) {
+        // نسأل الصفحة أولًا: هل أغلقت نافذة مفتوحة؟
+        webView.evaluateJavascript(
+                "(function(){return window.handleBack ? window.handleBack() : false;})()",
+                new ValueCallback<String>() {
 
-            webView.goBack();
+                    @Override
+                    public void onReceiveValue(String value) {
 
-        } else {
+                        if ("true".equals(value)) {
+                            return;
+                        }
 
-            super.onBackPressed();
-        }
+                        if (webView.canGoBack()) {
+                            webView.goBack();
+                        } else {
+                            finish();
+                        }
+                    }
+                }
+        );
     }
 }
