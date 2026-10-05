@@ -2643,10 +2643,15 @@ function saveTowRequest(data) {
         createdAt: new Date().toISOString()
     };
 
-    var requests = Store.getJSON("salakni_requests", []);
-    requests.unshift(request);
-    Store.setJSON("salakni_requests", requests.slice(0, 20));
+    /* حساب التوزيع */
+request.dispatch = calculateDispatch(request);
 
+var requests = Store.getJSON("salakni_requests", []);
+requests.unshift(request);
+Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+/* إرسال لمقدمي الخدمة */
+dispatchRequestToProviders(request, request.dispatch);
     var msg = t("requestSaved");
     if (data.method === "nearest") {
         msg += " — 🏢 " + t("towNearest");
@@ -3915,6 +3920,184 @@ function enhanceProvidersWithRating(providers) {
         p.behaviour = getBehaviourClass(p.phone);
         return p;
     });
+}
+    /* =====================================================
+   الجزء 15: التوزيع العادل للطلبات
+===================================================== */
+
+Object.assign(I18N.ar, {
+    dispatchRadius: "نطاق البحث",
+    dispatchAvailable: "متاح",
+    dispatchBusy: "مشغول",
+    dispatchTotal: "المتاحون",
+    dispatchNoProviders: "لا يوجد مقدمو خدمة متاحون الآن",
+    dispatchNewRequest: "🔔 طلب جديد",
+    dispatchRequestAccepted: "✅ تم قبول الطلب"
+});
+
+Object.assign(I18N.fr, {
+    dispatchRadius: "Rayon",
+    dispatchAvailable: "Disponible",
+    dispatchBusy: "Occupé",
+    dispatchTotal: "Disponibles",
+    dispatchNoProviders: "Aucun prestataire disponible",
+    dispatchNewRequest: "🔔 Nouvelle demande",
+    dispatchRequestAccepted: "✅ Demande acceptée"
+});
+
+/* ---------- خلط عشوائي مع مرجّح للسلوك ---------- */
+function shuffleWithWeight(list) {
+    if (!Array.isArray(list) || list.length === 0) return [];
+
+    var result = [];
+    var pool = list.slice();
+
+    while (pool.length > 0) {
+        /* حساب الوزن الكلي */
+        var totalWeight = 0;
+        for (var i = 0; i < pool.length; i++) {
+            totalWeight += getProviderWeight(pool[i]);
+        }
+
+        /* اختيار عشوائي مرجّح */
+        var rand = Math.random() * totalWeight;
+        var cumulative = 0;
+        var chosenIndex = 0;
+
+        for (var j = 0; j < pool.length; j++) {
+            cumulative += getProviderWeight(pool[j]);
+            if (rand <= cumulative) {
+                chosenIndex = j;
+                break;
+            }
+        }
+
+        result.push(pool[chosenIndex]);
+        pool.splice(chosenIndex, 1);
+    }
+
+    return result;
+}
+
+/* ---------- وزن مقدم الخدمة (حسب السلوك) ---------- */
+function getProviderWeight(provider) {
+    /* لا يوجد مرجّح للسلوك في الوقت الحالي */
+    return 1;
+}
+
+/* ---------- إيجاد مقدمي الخدمة حسب النطاق ---------- */
+function findProvidersInRadius(driverLat, driverLng, providers, radiusKm) {
+    return providers.filter(function(p) {
+        if (typeof p.lat !== "number" || typeof p.lng !== "number") return false;
+        var km = haversineKm(driverLat, driverLng, p.lat, p.lng);
+        p.km = Math.round(km * 10) / 10;
+        return km <= radiusKm;
+    });
+}
+
+/* ---------- الحصول على قائمة مقدمي الخدمة المتاحين ---------- */
+function getAvailableProviders(roleFilter) {
+    var users = Store.getJSON("salakni_users", []);
+
+    return users.filter(function(u) {
+        if (!u.role || u.role === "driver") return false;
+        if (u.suspended === true) return false;
+        if (u.busy === true) return false;
+        if (typeof u.lat !== "number" || typeof u.lng !== "number") return false;
+
+        if (roleFilter) {
+            if (roleFilter === "tower" && u.role !== "tower") return false;
+            if (roleFilter === "workshop" &&
+                u.role !== "workshop" && u.role !== "workshop-mobile") return false;
+            if (roleFilter === "parts_shop" &&
+                u.role !== "parts_shop" && u.role !== "shop") return false;
+        }
+
+        return true;
+    });
+}
+
+/* ---------- خريطة الأدوار → مقدمي الخدمة ---------- */
+function getProviderRolesForRequest(requestType) {
+    var map = {
+        "tow-cars": "tower",
+        "tow-trucks": "tower",
+        "workshop": "workshop",
+        "parts": "parts_shop",
+        "new-car": "tower"
+    };
+    return map[requestType] || null;
+}
+
+/* ---------- حساب التوزيع للطلب ---------- */
+function calculateDispatch(request) {
+    if (!request || !request.driverLocation) {
+        return { total: 0, radiusKm: 0, order: [], providers: [] };
+    }
+
+    var lat = request.driverLocation.lat;
+    var lng = request.driverLocation.lng;
+    var roleFilter = getProviderRolesForRequest(request.type);
+
+    var candidates = getAvailableProviders(roleFilter);
+
+    if (candidates.length === 0) {
+        return { total: 0, radiusKm: 0, order: [], providers: [] };
+    }
+
+    /* المحاولة بنطاقات متزايدة */
+    var radii = [10, 25, 50];
+    var radius = radii[radii.length - 1];
+    var pool = [];
+
+    for (var i = 0; i < radii.length; i++) {
+        radius = radii[i];
+        pool = findProvidersInRadius(lat, lng, candidates, radius);
+        if (pool.length >= 3) break;
+    }
+
+    /* ترتيب عشوائي مرجّح (السلوك السوي مرجّح) */
+    pool = shuffleWithWeight(pool);
+
+    return {
+        total: pool.length,
+        radiusKm: radius,
+        order: pool.map(function(p) { return p.phone; }),
+        providers: pool
+    };
+}
+
+/* ---------- إرسال الطلب لمقدمي الخدمة ---------- */
+function dispatchRequestToProviders(request, dispatch) {
+    if (!dispatch || !dispatch.order || dispatch.order.length === 0) return;
+
+    /* إشعار أول 5 مقدمي خدمة في القائمة */
+    var limit = Math.min(dispatch.order.length, 5);
+
+    for (var i = 0; i < limit; i++) {
+        var phone = dispatch.order[i];
+        addNotification(
+            phone,
+            t("dispatchNewRequest"),
+            getRequestTypeLabel(request.type) + " — " + (request.destination ?
+                (request.destination.wilaya || "") : "")
+        );
+    }
+}
+
+/* ---------- إعادة بناء التوزيع عند إنشاء طلب جديد ---------- */
+function recomputeDispatch(requestId) {
+    var requests = Store.getJSON("salakni_requests", []);
+    var idx = requests.findIndex(function(r) { return r.id === requestId; });
+    if (idx === -1) return;
+
+    var request = requests[idx];
+    request.dispatch = calculateDispatch(request);
+    requests[idx] = request;
+    Store.setJSON("salakni_requests", requests);
+
+    /* إرسال لمقدمي الخدمة */
+    dispatchRequestToProviders(request, request.dispatch);
 }
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
