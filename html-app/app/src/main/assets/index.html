@@ -1286,6 +1286,108 @@ select.field-input {
 
     </div>
 </div> 
+    <!-- نافذة قطع الغيار -->
+<div id="partsModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">⚙️</div>
+            <h2 data-i18n="partsTitle">قطع الغيار</h2>
+            <p data-i18n="partsSubtitle">اختر نوع المركبة</p>
+        </div>
+
+        <div class="option-list">
+
+            <button class="option-item" onclick="selectPartsVehicle('car')">
+                <div class="option-icon">🚗</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="partsCar">سيارة</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectPartsVehicle('truck')">
+                <div class="option-icon">🚛</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="partsTruck">شاحنة</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectPartsVehicle('moto')">
+                <div class="option-icon">🏍️</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="partsMoto">دراجة نارية</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+        </div>
+
+        <button class="modal-close" onclick="closeModal('partsModal')">
+            <span data-i18n="close">إغلاق</span>
+        </button>
+
+    </div>
+</div>
+
+<!-- نافذة تفاصيل قطع الغيار -->
+<div id="partsDetailsModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">🔍</div>
+            <h2 data-i18n="partsDetailsTitle">تفاصيل المركبة</h2>
+            <p data-i18n="partsDetailsSubtitle">لنجد المحل المناسب</p>
+        </div>
+
+        <label class="field-label" data-i18n="brand">العلامة</label>
+        <select id="partsBrand" class="field-input">
+            <option value="">—</option>
+            <option>Renault</option>
+            <option>Peugeot</option>
+            <option>Citroën</option>
+            <option>Volkswagen</option>
+            <option>Fiat</option>
+            <option>Hyundai</option>
+            <option>Toyota</option>
+            <option>Kia</option>
+            <option>Dacia</option>
+            <option>Mercedes-Benz</option>
+            <option>BMW</option>
+            <option>Ford</option>
+            <option>Opel</option>
+            <option>Nissan</option>
+            <option>Isuzu</option>
+            <option>MAN</option>
+            <option>Volvo</option>
+            <option>Scania</option>
+            <option>Yamaha</option>
+            <option>Honda</option>
+            <option>Suzuki</option>
+            <option>Autre</option>
+        </select>
+
+        <label class="field-label" data-i18n="model">الموديل</label>
+        <input type="text" id="partsModel" class="field-input" placeholder="Ex: Clio 4">
+
+        <label class="field-label" data-i18n="partsShopType">نوع المحل</label>
+        <select id="partsShopType" class="field-input">
+            <option value="" data-i18n="partsShopChoose">اختر نوع المحل</option>
+            <option value="mech_elec" data-i18n="partsMechElec">هيكل ميكانيك وكهرباء</option>
+            <option value="elec" data-i18n="partsElec">كهرباء وحدها</option>
+        </select>
+
+        <button class="btn-primary" onclick="submitPartsRequest()">
+            <span data-i18n="confirm">تأكيد الطلب</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('partsDetailsModal')">
+            <span data-i18n="cancel">إلغاء</span>
+        </button>
+
+    </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -1502,6 +1604,10 @@ function openService(id) {
     }
     if (id === "tow-trucks") {
     openModal("truckModal");
+    return;
+}
+    if (id === "workshop") {
+    openModal("workshopModal");
     return;
 }
     toast("🚧 " + t("soon") + " — " + id);
