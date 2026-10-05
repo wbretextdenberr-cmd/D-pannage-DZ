@@ -1388,6 +1388,187 @@ select.field-input {
 
     </div>
 </div>
+    <!-- نافذة التسجيل -->
+<div id="registerModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">📝</div>
+            <h2 data-i18n="registerTitle">إنشاء حساب</h2>
+            <p data-i18n="registerSubtitle">اختر نوع الحساب</p>
+        </div>
+
+        <label class="field-label" data-i18n="role">نوع الحساب</label>
+        <select id="registerRole" class="field-input" onchange="onRoleChange()">
+            <option value="" data-i18n="roleChoose">اختر النوع</option>
+            <option value="driver" data-i18n="roleDriver">👤 سائق</option>
+            <option value="tower" data-i18n="roleTower">🚛 قاطر</option>
+            <option value="workshop" data-i18n="roleWorkshop">🔧 ورشة</option>
+            <option value="parts_shop" data-i18n="roleParts">⚙️ محل قطع غيار</option>
+        </select>
+
+        <label class="field-label" data-i18n="fullName">الاسم الكامل</label>
+        <input type="text" id="registerName" class="field-input" placeholder="Ex: Mohamed">
+
+        <label class="field-label" data-i18n="phone">رقم الهاتف</label>
+        <input type="tel" id="registerPhone" class="field-input" placeholder="05XXXXXXXX" inputmode="tel">
+
+        <label class="field-label" data-i18n="password">كلمة المرور</label>
+        <input type="password" id="registerPassword" class="field-input" placeholder="••••••">
+
+        <div id="providerFields" style="display:none;">
+
+            <label class="field-label" data-i18n="businessName">اسم النشاط</label>
+            <input type="text" id="registerBusiness" class="field-input" placeholder="Ex: ورشة الأمل">
+
+            <label class="field-label" data-i18n="wilaya">الولاية</label>
+            <input type="text" id="registerWilaya" class="field-input" placeholder="Ex: البليدة">
+
+            <label class="field-label" data-i18n="commune">البلدية</label>
+            <input type="text" id="registerCommune" class="field-input" placeholder="Ex: بوفاريك">
+
+            <button type="button" class="btn-location" onclick="captureProviderLocation()">
+                📍 <span data-i18n="captureLocation">تحديد موقعي الحقيقي</span>
+            </button>
+
+            <div id="registerLocationStatus" class="location-status" data-i18n="locationNotSet">
+                لم يتم تحديد الموقع بعد
+            </div>
+
+        </div>
+
+        <button class="btn-primary" onclick="submitRegister()">
+            <span data-i18n="createAccount">إنشاء الحساب</span>
+        </button>
+
+        <button class="modal-close" onclick="switchToLogin()">
+            <span data-i18n="haveAccount">لدي حساب بالفعل</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('registerModal')">
+            <span data-i18n="cancel">إلغاء</span>
+        </button>
+
+    </div>
+</div>
+
+<!-- نافذة تسجيل الدخول -->
+<div id="loginModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">🔑</div>
+            <h2 data-i18n="loginTitle">تسجيل الدخول</h2>
+            <p data-i18n="loginSubtitle">أدخل رقمك وكلمة المرور</p>
+        </div>
+
+        <label class="field-label" data-i18n="phone">رقم الهاتف</label>
+        <input type="tel" id="loginPhone" class="field-input" placeholder="05XXXXXXXX" inputmode="tel">
+
+        <label class="field-label" data-i18n="password">كلمة المرور</label>
+        <input type="password" id="loginPassword" class="field-input" placeholder="••••••">
+
+        <button class="btn-primary" onclick="submitLogin()">
+            <span data-i18n="loginBtn">دخول</span>
+        </button>
+
+        <button class="modal-close" onclick="switchToRegister()">
+            <span data-i18n="noAccount">إنشاء حساب جديد</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('loginModal')">
+            <span data-i18n="cancel">إلغاء</span>
+        </button>
+
+    </div>
+</div>
+
+<!-- نافذة OTP -->
+<div id="otpModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">🔐</div>
+            <h2 data-i18n="otpTitle">تأكيد رقم الهاتف</h2>
+            <p id="otpPhoneLabel"></p>
+        </div>
+
+        <div id="otpDemoHint" class="demo-hint" style="display:none;"></div>
+
+        <label class="field-label" data-i18n="otpCode">الرمز المكوّن من 6 أرقام</label>
+        <input type="tel" id="otpInput" class="field-input" maxlength="6" inputmode="numeric" placeholder="••••••" style="text-align:center;font-size:24px;letter-spacing:8px;">
+
+        <button class="btn-primary" onclick="confirmOtp()">
+            <span data-i18n="otpConfirm">تأكيد</span>
+        </button>
+
+        <button class="modal-close" onclick="resendOtp()">
+            <span data-i18n="otpResend">إعادة إرسال الرمز</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('otpModal')">
+            <span data-i18n="cancel">إلغاء</span>
+        </button>
+
+    </div>
+</div>
+
+<style>
+.btn-location {
+    width: 100%;
+    background: rgba(22,163,74,0.15);
+    border: 1.5px solid rgba(22,163,74,0.5);
+    color: #4ADE80;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.btn-location:active {
+    transform: scale(0.97);
+    background: rgba(22,163,74,0.28);
+}
+.location-status {
+    background: rgba(15,26,48,0.8);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+}
+.location-status.success {
+    background: rgba(22,163,74,0.15);
+    border-color: rgba(22,163,74,0.5);
+    color: #4ADE80;
+}
+.location-status.error {
+    background: rgba(220,38,38,0.15);
+    border-color: rgba(220,38,38,0.5);
+    color: #FCA5A5;
+}
+.demo-hint {
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(37,99,235,0.4);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 12px;
+    color: #93C5FD;
+    text-align: center;
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+</style>
 <div id="toast"></div>
 
 <script>
@@ -1608,6 +1789,10 @@ function openService(id) {
 }
     if (id === "workshop") {
     openModal("workshopModal");
+    return;
+}
+    if (id === "parts") {
+    openModal("partsModal");
     return;
 }
     toast("🚧 " + t("soon") + " — " + id);
