@@ -1170,6 +1170,122 @@ select.field-input {
 
     </div>
 </div>
+   <!-- نافذة الورشة المتنقلة — اختيار نوع المركبة -->
+<div id="workshopModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">🔧</div>
+            <h2 data-i18n="workshopTitle">الورشة المتنقلة</h2>
+            <p data-i18n="workshopSubtitle">اختر نوع المركبة</p>
+        </div>
+
+        <div class="option-list">
+
+            <button class="option-item" onclick="selectWorkshopVehicle('car')">
+                <div class="option-icon">🚗</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="workshopCar">سيارة</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectWorkshopVehicle('truck')">
+                <div class="option-icon">🚛</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="workshopTruck">شاحنة</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectWorkshopVehicle('moto')">
+                <div class="option-icon">🏍️</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="workshopMoto">دراجة نارية</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+        </div>
+
+        <button class="modal-close" onclick="closeModal('workshopModal')">
+            <span data-i18n="close">إغلاق</span>
+        </button>
+
+    </div>
+</div>
+
+<!-- نافذة تفاصيل الورشة -->
+<div id="workshopDetailsModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">🔍</div>
+            <h2 data-i18n="workshopDetailsTitle">تفاصيل المركبة</h2>
+            <p data-i18n="workshopDetailsSubtitle">ساعدنا على توجيهك</p>
+        </div>
+
+        <label class="field-label" data-i18n="brand">العلامة</label>
+        <select id="workshopBrand" class="field-input">
+            <option value="">—</option>
+            <option>Renault</option>
+            <option>Peugeot</option>
+            <option>Citroën</option>
+            <option>Volkswagen</option>
+            <option>Fiat</option>
+            <option>Hyundai</option>
+            <option>Toyota</option>
+            <option>Kia</option>
+            <option>Dacia</option>
+            <option>Mercedes-Benz</option>
+            <option>BMW</option>
+            <option>Ford</option>
+            <option>Opel</option>
+            <option>Nissan</option>
+            <option>Isuzu</option>
+            <option>MAN</option>
+            <option>Volvo</option>
+            <option>Scania</option>
+            <option>Yamaha</option>
+            <option>Honda</option>
+            <option>Suzuki</option>
+            <option>Autre</option>
+        </select>
+
+        <label class="field-label" data-i18n="model">الموديل</label>
+        <input type="text" id="workshopModel" class="field-input" placeholder="Ex: Clio 4">
+
+        <label class="field-label" data-i18n="energy">الطاقة</label>
+        <select id="workshopEnergy" class="field-input">
+            <option value="" data-i18n="energyChoose">اختر الطاقة</option>
+            <option value="gasoline" data-i18n="energyGasoline">بنزين</option>
+            <option value="diesel" data-i18n="energyDiesel">ديزل</option>
+            <option value="gpl" data-i18n="energyGpl">GPL</option>
+            <option value="electric" data-i18n="energyElectric">كهربائية</option>
+            <option value="hybrid" data-i18n="energyHybrid">هجينة</option>
+            <option value="other" data-i18n="energyOther">أخرى</option>
+        </select>
+
+        <label class="field-label" data-i18n="faultTypeWorkshop">نوع العطل</label>
+        <select id="workshopFault" class="field-input">
+            <option value="" data-i18n="faultChoose">اختر نوع العطل</option>
+            <option value="mechanical" data-i18n="faultMechanical">عطل ميكانيكي</option>
+            <option value="electric" data-i18n="faultElectric">عطل كهربائي</option>
+            <option value="tire" data-i18n="faultTireFix">تصليح الإطار</option>
+            <option value="door" data-i18n="faultDoor">فتح الأبواب المغلقة</option>
+            <option value="boost" data-i18n="faultBoost">Boost البطارية</option>
+        </select>
+
+        <button class="btn-primary" onclick="submitWorkshopRequest()">
+            <span data-i18n="confirm">تأكيد الطلب</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('workshopDetailsModal')">
+            <span data-i18n="cancel">إلغاء</span>
+        </button>
+
+    </div>
+</div> 
 <div id="toast"></div>
 
 <script>
@@ -1384,6 +1500,10 @@ function openService(id) {
         openModal("towModal");
         return;
     }
+    if (id === "tow-trucks") {
+    openModal("truckModal");
+    return;
+}
     toast("🚧 " + t("soon") + " — " + id);
 }
 
