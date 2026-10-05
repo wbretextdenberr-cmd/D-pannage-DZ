@@ -1910,7 +1910,59 @@ select.field-input {
     background: rgba(220,38,38,0.22);
 }
 </style>
-<div id="toast"></div>
+<!-- نافذة التقييم -->
+<div id="ratingModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon" style="background:linear-gradient(145deg,#F59E0B,#B45309);box-shadow:0 0 25px rgba(245,158,11,0.55);">⭐</div>
+            <h2 data-i18n="ratingTitle">قيّم مقدم الخدمة</h2>
+            <p id="ratingProviderName">—</p>
+        </div>
+
+        <div class="rating-stars" id="ratingStars">
+            <span onclick="setRating(1)">☆</span>
+            <span onclick="setRating(2)">☆</span>
+            <span onclick="setRating(3)">☆</span>
+            <span onclick="setRating(4)">☆</span>
+            <span onclick="setRating(5)">☆</span>
+        </div>
+
+        <label class="field-label" data-i18n="ratingComment">تعليق (اختياري)</label>
+        <textarea id="ratingComment" class="field-input" rows="3" maxlength="140" placeholder="..." style="resize:vertical;min-height:80px;font-family:inherit;"></textarea>
+
+        <button class="btn-primary" style="background:linear-gradient(145deg,#F59E0B,#B45309);box-shadow:0 6px 20px rgba(245,158,11,0.4);" onclick="submitRating()">
+            <span data-i18n="ratingSubmit">إرسال التقييم</span>
+        </button>
+
+        <button class="modal-close" onclick="skipRating()">
+            <span data-i18n="ratingSkip">تخطي</span>
+        </button>
+
+    </div>
+</div>
+
+<style>
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0 24px;
+    direction: ltr;
+}
+.rating-stars span {
+    font-size: 44px;
+    color: #F59E0B;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+    filter: drop-shadow(0 0 10px rgba(245,158,11,0.4));
+}
+.rating-stars span:active {
+    transform: scale(1.2);
+}
+</style>
+    <div id="toast"></div>
 
 <script>
 const Store = {
