@@ -1100,9 +1100,22 @@ function setActiveNav(index) {
 }
 
 function openService(id) {
+    if (id === "emergency") {
+        openModal("emergencyModal");
+        return;
+    }
     toast("🚧 " + t("soon") + " — " + id);
 }
 
+function openModal(id) {
+    var modal = document.getElementById(id);
+    if (modal) modal.classList.add("open");
+}
+
+function closeModal(id) {
+    var modal = document.getElementById(id);
+    if (modal) modal.classList.remove("open");
+}
 function openAccount() {
     toast("👤 " + t("soon"));
 }
