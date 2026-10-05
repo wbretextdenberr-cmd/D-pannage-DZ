@@ -3414,6 +3414,212 @@ function getRegisteredProviders() {
         return typeof p.lat === "number" && typeof p.lng === "number";
     });
 }
+    /* =====================================================
+   الجزء 12: دوال نظام الطلبات
+===================================================== */
+
+Object.assign(I18N.ar, {
+    activeRequestTitle: "طلبك الحالي",
+    requestId: "رقم الطلب",
+    requestType: "نوع الخدمة",
+    requestDestination: "الوجهة",
+    requestStatus: "الحالة",
+    requestTime: "الوقت",
+    callProvider: "اتصل بمقدم الخدمة",
+    markComplete: "تم إنجاز الطلب",
+    cancelRequest: "إلغاء الطلب",
+    cancelRequestTitle: "إلغاء الطلب",
+    cancelRequestSubtitle: "اذكر السبب",
+    cancelReason: "سبب الإلغاء",
+    confirmCancel: "تأكيد الإلغاء",
+    back: "العودة",
+    noActiveRequest: "لا يوجد طلب نشط",
+    requestCancelled: "تم إلغاء الطلب",
+    requestCompleted: "تم إنجاز الطلب",
+    cancelReasonRequired: "اكتب سبب الإلغاء",
+    statusNew: "جديد",
+    statusAccepted: "قبله مقدم الخدمة",
+    statusCompleted: "منجز",
+    statusCancelled: "ملغى",
+    requestFooter: "طلبك"
+});
+
+Object.assign(I18N.fr, {
+    activeRequestTitle: "Votre demande",
+    requestId: "N° de demande",
+    requestType: "Type de service",
+    requestDestination: "Destination",
+    requestStatus: "Statut",
+    requestTime: "Heure",
+    callProvider: "Appeler le prestataire",
+    markComplete: "Marquer terminé",
+    cancelRequest: "Annuler la demande",
+    cancelRequestTitle: "Annuler la demande",
+    cancelRequestSubtitle: "Indiquez la raison",
+    cancelReason: "Raison d'annulation",
+    confirmCancel: "Confirmer l'annulation",
+    back: "Retour",
+    noActiveRequest: "Aucune demande active",
+    requestCancelled: "Demande annulée",
+    requestCompleted: "Demande terminée",
+    cancelReasonRequired: "Indiquez la raison",
+    statusNew: "Nouveau",
+    statusAccepted: "Accepté",
+    statusCompleted: "Terminé",
+    statusCancelled: "Annulé",
+    requestFooter: "Demande"
+});
+
+var currentActiveRequestId = null;
+
+/* ---------- فتح الطلب الحالي ---------- */
+function openActiveRequest(requestId) {
+    var requests = Store.getJSON("salakni_requests", []);
+    var req = requests.find(function(r) { return r.id === requestId; });
+    if (!req) {
+        toast("⚠️ " + t("noActiveRequest"));
+        return;
+    }
+
+    currentActiveRequestId = requestId;
+
+    /* البيانات الأساسية */
+    document.getElementById("reqId").textContent = req.id;
+    document.getElementById("reqType").textContent = getRequestTypeLabel(req.type);
+    document.getElementById("reqDest").textContent = getRequestDestinationLabel(req);
+    document.getElementById("reqStatus").textContent = getStatusLabel(req.status);
+
+    if (req.createdAt) {
+        var d = new Date(req.createdAt);
+        document.getElementById("reqTime").textContent =
+            d.toLocaleString(currentLang === "ar" ? "ar-DZ" : "fr-FR");
+    } else {
+        document.getElementById("reqTime").textContent = "—";
+    }
+
+    /* قسم مقدم الخدمة */
+    var providerBlock = document.getElementById("reqProviderBlock");
+    if (req.acceptedBy && (req.status === "accepted" || req.status === "completed")) {
+        providerBlock.style.display = "block";
+        document.getElementById("reqProviderName").textContent = req.acceptedBy.name || "—";
+        document.getElementById("reqProviderPhone").textContent = req.acceptedBy.phone || "—";
+        document.getElementById("reqCallBtn").href = "tel:" + (req.acceptedBy.phone || "");
+    } else {
+        providerBlock.style.display = "none";
+    }
+
+    /* زر الإلغاء */
+    var cancelBlock = document.getElementById("reqCancelBlock");
+    if (req.status === "cancelled" || req.status === "completed") {
+        cancelBlock.style.display = "none";
+    } else {
+        cancelBlock.style.display = "block";
+    }
+
+    openModal("activeRequestModal");
+}
+
+/* ---------- مساعدات ---------- */
+function getRequestTypeLabel(type) {
+    var labels = {
+        "tow-cars": "🚗 " + t("svcTowCars"),
+        "tow-trucks": "🚛 " + t("svcTowTrucks"),
+        "workshop": "🔧 " + t("svcWorkshop"),
+        "parts": "⚙️ " + t("svcParts")
+    };
+    return labels[type] || type;
+}
+
+function getRequestDestinationLabel(req) {
+    if (req.destination && req.destination.wilaya) {
+        return req.destination.wilaya + " - " + (req.destination.commune || "");
+    }
+    if (req.method === "nearest") {
+        return t("towNearest");
+    }
+    return "—";
+}
+
+function getStatusLabel(status) {
+    var map = {
+        "new": t("statusNew"),
+        "accepted": t("statusAccepted"),
+        "completed": t("statusCompleted"),
+        "cancelled": t("statusCancelled")
+    };
+    return map[status] || status;
+}
+
+/* ---------- فتح نافذة الإلغاء ---------- */
+function openCancelRequest() {
+    closeModal("activeRequestModal");
+    document.getElementById("cancelReasonInput").value = "";
+    openModal("cancelRequestModal");
+}
+
+/* ---------- تأكيد الإلغاء ---------- */
+function confirmCancelRequest() {
+    var reason = document.getElementById("cancelReasonInput").value.trim();
+    if (!reason) {
+        toast("⚠️ " + t("cancelReasonRequired"));
+        return;
+    }
+
+    var requests = Store.getJSON("salakni_requests", []);
+    var idx = requests.findIndex(function(r) { return r.id === currentActiveRequestId; });
+    if (idx === -1) {
+        closeModal("cancelRequestModal");
+        return;
+    }
+
+    requests[idx].status = "cancelled";
+    requests[idx].cancelReason = reason;
+    requests[idx].cancelledAt = new Date().toISOString();
+    Store.setJSON("salakni_requests", requests);
+
+    closeModal("cancelRequestModal");
+    toast("✅ " + t("requestCancelled"));
+    currentActiveRequestId = null;
+}
+
+/* ---------- إنجاز الطلب ---------- */
+function completeActiveRequest() {
+    if (!currentActiveRequestId) return;
+
+    var requests = Store.getJSON("salakni_requests", []);
+    var idx = requests.findIndex(function(r) { return r.id === currentActiveRequestId; });
+    if (idx === -1) return;
+
+    requests[idx].status = "completed";
+    requests[idx].completedAt = new Date().toISOString();
+    Store.setJSON("salakni_requests", requests);
+
+    closeModal("activeRequestModal");
+    toast("✅ " + t("requestCompleted"));
+    currentActiveRequestId = null;
+}
+
+/* ---------- عرض زر الطلب النشط في الرئيسية ---------- */
+function updateActiveRequestButton() {
+    var box = document.getElementById("activeRequestBtnBox");
+    if (!box) return;
+
+    var requests = Store.getJSON("salakni_requests", []);
+    var active = requests.find(function(r) {
+        return r.status === "new" || r.status === "accepted";
+    });
+
+    if (active) {
+        box.innerHTML =
+            '<button class="btn-active-request" onclick="openActiveRequest(\'' + escapeHtml(active.id) + '\')">' +
+                '📋 ' + t("requestFooter") + ' — ' + getStatusLabel(active.status) +
+            '</button>';
+        box.style.display = "block";
+    } else {
+        box.innerHTML = "";
+        box.style.display = "none";
+    }
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
