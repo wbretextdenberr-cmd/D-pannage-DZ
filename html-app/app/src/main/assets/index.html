@@ -1623,6 +1623,141 @@ Object.assign(I18N.fr, {
     emergencySubtitle: "Choisissez le service",
     close: "Fermer"
 });
+/* =====================================================
+   الجزء 6.2: دوال قطر السيارات
+===================================================== */
+
+Object.assign(I18N.ar, {
+    towCarsTitle: "قطر السيارات",
+    towCarsSubtitle: "كيف تريد المساعدة؟",
+    towNearest: "النقل إلى أقرب ورشة",
+    towNearestDesc: "نختار لك الأقرب",
+    towCustom: "النقل إلى وجهة أحددها",
+    towCustomDesc: "اختر الولاية والبلدية",
+    destinationTitle: "وجهة النقل",
+    destinationSubtitle: "أدخل الولاية والبلدية",
+    wilaya: "الولاية",
+    commune: "البلدية",
+    wilayaPlaceholder: "مثال: البليدة",
+    communePlaceholder: "مثال: بوفاريك",
+    faultType: "نوع العطل",
+    faultUnknown: "لا أعرف / غير محدد",
+    faultBattery: "بطارية",
+    faultTire: "إطار",
+    faultFuel: "وقود",
+    faultEngine: "محرك",
+    faultAccident: "حادث",
+    faultOther: "أخرى",
+    vehicleType: "نوع المركبة",
+    vehicleCar: "سيارة",
+    vehicleTruck: "شاحنة",
+    vehicleMoto: "دراجة نارية",
+    confirm: "تأكيد الطلب",
+    cancel: "إلغاء",
+    fillAllFields: "أدخل الولاية والبلدية",
+    requestSaved: "تم تسجيل طلبك"
+});
+
+Object.assign(I18N.fr, {
+    towCarsTitle: "Remorquage Auto",
+    towCarsSubtitle: "Comment voulez-vous de l'aide?",
+    towNearest: "Vers l'atelier le plus proche",
+    towNearestDesc: "On choisit pour vous",
+    towCustom: "Vers une destination précise",
+    towCustomDesc: "Choisissez wilaya et commune",
+    destinationTitle: "Destination",
+    destinationSubtitle: "Entrez wilaya et commune",
+    wilaya: "Wilaya",
+    commune: "Commune",
+    wilayaPlaceholder: "Ex: Blida",
+    communePlaceholder: "Ex: Boufarik",
+    faultType: "Type de panne",
+    faultUnknown: "Inconnue",
+    faultBattery: "Batterie",
+    faultTire: "Pneu",
+    faultFuel: "Carburant",
+    faultEngine: "Moteur",
+    faultAccident: "Accident",
+    faultOther: "Autre",
+    vehicleType: "Type de véhicule",
+    vehicleCar: "Voiture",
+    vehicleTruck: "Camion",
+    vehicleMoto: "Moto",
+    confirm: "Confirmer",
+    cancel: "Annuler",
+    fillAllFields: "Entrez wilaya et commune",
+    requestSaved: "Votre demande est enregistrée"
+});
+
+function towToNearestWorkshop() {
+    closeModal("towModal");
+    saveTowRequest({
+        method: "nearest",
+        wilaya: "",
+        commune: "",
+        fault: "",
+        vehicle: "car"
+    });
+}
+
+function towToCustomDestination() {
+    closeModal("towModal");
+    openModal("destinationModal");
+}
+
+function submitTowRequest() {
+    var wilaya = document.getElementById("destWilaya").value.trim();
+    var commune = document.getElementById("destCommune").value.trim();
+    var fault = document.getElementById("destFault").value;
+    var vehicle = document.getElementById("destVehicle").value;
+
+    if (!wilaya || !commune) {
+        toast("⚠️ " + t("fillAllFields"));
+        return;
+    }
+
+    closeModal("destinationModal");
+
+    saveTowRequest({
+        method: "custom",
+        wilaya: wilaya,
+        commune: commune,
+        fault: fault,
+        vehicle: vehicle
+    });
+}
+
+function saveTowRequest(data) {
+    var userLoc = Store.getJSON("salakni_user_location", null);
+
+    var request = {
+        id: "REQ-" + Date.now(),
+        type: "tow-cars",
+        driverLocation: userLoc,
+        destination: {
+            wilaya: data.wilaya,
+            commune: data.commune
+        },
+        method: data.method,
+        fault: data.fault,
+        vehicleType: data.vehicle,
+        status: "new",
+        createdAt: new Date().toISOString()
+    };
+
+    var requests = Store.getJSON("salakni_requests", []);
+    requests.unshift(request);
+    Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+    var msg = t("requestSaved");
+    if (data.method === "nearest") {
+        msg += " — 🏢 " + t("towNearest");
+    } else {
+        msg += " — 📍 " + data.wilaya + " - " + data.commune;
+    }
+
+    toast("✅ " + msg);
+}
 
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
