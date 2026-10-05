@@ -1,10 +1,32 @@
 {
-  "name": "DÉPANNAGE.DZ",
-  "short_name": "DÉPANNAGE.DZ",
-  "start_url": "index.html",
+  "name": "Salakni DZ — سلكني ديزاد",
+  "short_name": "Salakni DZ",
+  "description": "تطبيق الإغاثة والمساعدة على الطرقات في الجزائر",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f4f7fb",
-  "theme_color": "#0b1324",
+  "orientation": "portrait",
+  "background_color": "#0B1324",
+  "theme_color": "#0B1324",
   "lang": "ar",
-  "dir": "rtl"
+  "dir": "rtl",
+  "categories": ["travel", "utilities"],
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
