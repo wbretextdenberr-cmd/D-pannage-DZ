@@ -1312,6 +1312,10 @@ function openService(id) {
         openModal("emergencyModal");
         return;
     }
+    if (id === "tow-cars") {
+        openModal("towModal");
+        return;
+    }
     toast("🚧 " + t("soon") + " — " + id);
 }
 
