@@ -128,10 +128,18 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.loadUrl(
-                "file:///android_asset/index.html"
-        );
-    }
+        webView.setVisibility(android.view.View.INVISIBLE);
+
+webView.loadUrl(
+"file:///android_asset/index.html"
+);
+
+webView.postDelayed(new Runnable() {
+@Override
+public void run() {
+webView.setVisibility(android.view.View.VISIBLE);
+}
+}, 300);
 
     private boolean handleUrl(String url) {
 
