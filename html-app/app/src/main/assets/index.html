@@ -2918,10 +2918,15 @@ function submitPartsRequest() {
         createdAt: new Date().toISOString()
     };
 
-    var requests = Store.getJSON("salakni_requests", []);
-    requests.unshift(request);
-    Store.setJSON("salakni_requests", requests.slice(0, 20));
+    /* حساب التوزيع */
+request.dispatch = calculateDispatch(request);
 
+var requests = Store.getJSON("salakni_requests", []);
+requests.unshift(request);
+Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+/* إرسال لمقدمي الخدمة */
+dispatchRequestToProviders(request, request.dispatch);
     toast("✅ " + t("partsSaved"));
 }
     /* =====================================================
