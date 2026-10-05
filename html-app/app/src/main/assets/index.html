@@ -881,12 +881,178 @@ body::before {
 </style>
 
 <div id="account" class="screen">
-    <div class="placeholder-msg">
-        <div class="big">👤</div>
-        <div>الحساب — قيد البناء</div>
+
+    <header class="home-header">
+        <button class="icon-btn blue" onclick="navHome()" title="رجوع">←</button>
+        <div class="home-title">
+            <div class="home-brand">حسابي</div>
+            <div class="home-sub" data-i18n="accountSubtitle">معلوماتك وإعداداتك</div>
+        </div>
+        <button class="icon-btn red" onclick="logoutAccount()" title="خروج">🚪</button>
+    </header>
+
+    <div class="home-body" id="accountBody">
+
+        <div class="account-profile">
+            <div class="account-avatar" id="accountAvatar">👤</div>
+            <h2 id="accountName">—</h2>
+            <p id="accountPhone">—</p>
+            <div class="account-role-badge" id="accountRole">—</div>
+        </div>
+
+        <div class="account-section">
+            <h3 data-i18n="accountInfo">المعلومات</h3>
+            <div class="account-row">
+                <span data-i18n="accountProviderName">اسم النشاط</span>
+                <b id="accountProviderName">—</b>
+            </div>
+            <div class="account-row">
+                <span data-i18n="wilaya">الولاية</span>
+                <b id="accountWilaya">—</b>
+            </div>
+            <div class="account-row">
+                <span data-i18n="commune">البلدية</span>
+                <b id="accountCommune">—</b>
+            </div>
+            <div class="account-row">
+                <span data-i18n="accountSince">تاريخ الانضمام</span>
+                <b id="accountSince">—</b>
+            </div>
+        </div>
+
+        <div class="account-section" id="providerControlSection" style="display:none;">
+            <h3 data-i18n="accountStatus">حالتي</h3>
+            <div id="busyControl">
+                <div class="available-badge" id="busyBadge">🟢 متاح</div>
+                <button class="btn-primary" id="busyBtn" onclick="toggleProviderBusy()">
+                    <span data-i18n="markBusy">تسجيل كـ مشغول</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="account-section">
+            <h3 data-i18n="accountActions">الإجراءات</h3>
+            <button class="option-item" onclick="openNotifications()">
+                <div class="option-icon">🔔</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="notifications">الإشعارات</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+            <button class="option-item" onclick="openPrivacy()">
+                <div class="option-icon">📄</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="privacy">سياسة الخصوصية</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+            <button class="option-item" onclick="openAbout()">
+                <div class="option-icon">ℹ️</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="about">حول التطبيق</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+        </div>
+
     </div>
+
 </div>
 
+<style>
+.account-profile {
+    text-align: center;
+    padding: 26px 20px;
+    background: linear-gradient(160deg, #1E2C47, #172238);
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+.account-avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #2563EB, #1E40AF);
+    display: grid;
+    place-items: center;
+    font-size: 42px;
+    margin: 0 auto 14px;
+    box-shadow: 0 0 25px rgba(37,99,235,0.5);
+}
+.account-profile h2 {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 6px;
+}
+.account-profile p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    direction: ltr;
+}
+.account-role-badge {
+    display: inline-block;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(37,99,235,0.5);
+    color: #93C5FD;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+.account-section {
+    background: linear-gradient(160deg, #1E2C47, #172238);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+.account-section h3 {
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 12px;
+}
+.account-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(38,56,92,0.5);
+    font-size: 13px;
+    gap: 12px;
+}
+.account-row:last-child {
+    border-bottom: 0;
+}
+.account-row span {
+    color: var(--muted);
+}
+.account-row b {
+    color: var(--ink);
+    font-weight: 800;
+    text-align: left;
+    flex: 1;
+}
+.available-badge {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(22,163,74,0.18);
+    border: 1px solid rgba(22,163,74,0.5);
+    color: #4ADE80;
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+.available-badge.busy {
+    background: rgba(220,38,38,0.18);
+    border-color: rgba(220,38,38,0.5);
+    color: #FCA5A5;
+}
+</style>
 <div id="emergency" class="screen">
     <div class="placeholder-msg">
         <div class="big">🚨</div>
@@ -1808,7 +1974,13 @@ function closeModal(id) {
     if (modal) modal.classList.remove("open");
 }
 function openAccount() {
-    toast("👤 " + t("soon"));
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        openRegister();
+        return;
+    }
+    toast("👤 " + Store.get("salakni_user_name"));
+}
 }
 
 function emergencyCall() {
