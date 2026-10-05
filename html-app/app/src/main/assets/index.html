@@ -1392,6 +1392,11 @@ locateUser = function() {
     }, 800);
 };
 window.addEventListener("load", () => {
+    var leafletScript = document.createElement("script");
+leafletScript.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+leafletScript.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+leafletScript.crossOrigin = "";
+document.head.appendChild(leafletScript);
     applyLang();
     const splashSeen = Store.get("salakni_splash_seen");
     if (splashSeen === "true") {
