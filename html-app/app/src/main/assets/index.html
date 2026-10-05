@@ -2490,6 +2490,382 @@ function submitPartsRequest() {
 
     toast("✅ " + t("partsSaved"));
 }
+    /* =====================================================
+   الجزء 10: التسجيل والدخول
+===================================================== */
+
+Object.assign(I18N.ar, {
+    registerTitle: "إنشاء حساب",
+    registerSubtitle: "اختر نوع الحساب",
+    role: "نوع الحساب",
+    roleChoose: "اختر النوع",
+    roleDriver: "👤 سائق",
+    roleTower: "🚛 قاطر",
+    roleWorkshop: "🔧 ورشة",
+    roleParts: "⚙️ محل قطع غيار",
+    fullName: "الاسم الكامل",
+    phone: "رقم الهاتف",
+    password: "كلمة المرور",
+    businessName: "اسم النشاط",
+    wilaya: "الولاية",
+    commune: "البلدية",
+    captureLocation: "تحديد موقعي الحقيقي",
+    locationNotSet: "لم يتم تحديد الموقع بعد",
+    locationCaptured: "✅ تم تحديد الموقع",
+    createAccount: "إنشاء الحساب",
+    haveAccount: "لدي حساب بالفعل",
+    loginTitle: "تسجيل الدخول",
+    loginSubtitle: "أدخل رقمك وكلمة المرور",
+    loginBtn: "دخول",
+    noAccount: "إنشاء حساب جديد",
+    otpTitle: "تأكيد رقم الهاتف",
+    otpCode: "الرمز المكوّن من 6 أرقام",
+    otpConfirm: "تأكيد",
+    otpResend: "إعادة إرسال الرمز",
+    fillAll: "أملأ جميع الحقول المطلوبة",
+    invalidPhone: "رقم هاتف غير صحيح",
+    invalidPassword: "كلمة المرور 4 أحرف على الأقل",
+    phoneExists: "الرقم مسجّل من قبل",
+    locationRequired: "حدد موقعك أولاً",
+    accountCreated: "تم إنشاء حسابك",
+    invalidCredentials: "رقم أو كلمة مرور غير صحيحة",
+    welcome: "مرحباً",
+    otpWrong: "الرمز غير صحيح"
+});
+
+Object.assign(I18N.fr, {
+    registerTitle: "Créer un compte",
+    registerSubtitle: "Choisissez le type",
+    role: "Type de compte",
+    roleChoose: "Choisir",
+    roleDriver: "👤 Chauffeur",
+    roleTower: "🚛 Dépanneuse",
+    roleWorkshop: "🔧 Atelier",
+    roleParts: "⚙️ Pièces",
+    fullName: "Nom complet",
+    phone: "Téléphone",
+    password: "Mot de passe",
+    businessName: "Nom du commerce",
+    wilaya: "Wilaya",
+    commune: "Commune",
+    captureLocation: "Ma position réelle",
+    locationNotSet: "Position non définie",
+    locationCaptured: "✅ Position définie",
+    createAccount: "Créer le compte",
+    haveAccount: "J'ai déjà un compte",
+    loginTitle: "Connexion",
+    loginSubtitle: "Entrez téléphone et mot de passe",
+    loginBtn: "Entrer",
+    noAccount: "Créer un compte",
+    otpTitle: "Vérification du téléphone",
+    otpCode: "Code à 6 chiffres",
+    otpConfirm: "Confirmer",
+    otpResend: "Renvoyer le code",
+    fillAll: "Remplissez tous les champs",
+    invalidPhone: "Numéro invalide",
+    invalidPassword: "Mot de passe 4 caractères min",
+    phoneExists: "Numéro déjà enregistré",
+    locationRequired: "Définissez votre position",
+    accountCreated: "Compte créé",
+    invalidCredentials: "Téléphone ou mot de passe incorrect",
+    welcome: "Bienvenue",
+    otpWrong: "Code incorrect"
+});
+
+var pendingUser = null;
+var currentProviderLocation = null;
+var _otpCode = null;
+var _otpPhone = null;
+var _otpCallback = null;
+
+/* ---------- فتح نوافذ ---------- */
+function openRegister() {
+    closeModal("accountModal");
+    resetRegisterForm();
+    openModal("registerModal");
+}
+
+function openLogin() {
+    closeModal("accountModal");
+    document.getElementById("loginPhone").value = "";
+    document.getElementById("loginPassword").value = "";
+    openModal("loginModal");
+}
+
+function switchToLogin() {
+    closeModal("registerModal");
+    openLogin();
+}
+
+function switchToRegister() {
+    closeModal("loginModal");
+    openRegister();
+}
+
+/* ---------- إعادة تعيين النموذج ---------- */
+function resetRegisterForm() {
+    ["registerRole", "registerName", "registerPhone", "registerPassword",
+     "registerBusiness", "registerWilaya", "registerCommune"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = "";
+    });
+    var pf = document.getElementById("providerFields");
+    if (pf) pf.style.display = "none";
+    currentProviderLocation = null;
+    updateRegisterLocationStatus();
+}
+
+/* ---------- تغيير نوع الحساب ---------- */
+function onRoleChange() {
+    var role = document.getElementById("registerRole").value;
+    var pf = document.getElementById("providerFields");
+    if (!pf) return;
+
+    if (role === "driver" || role === "") {
+        pf.style.display = "none";
+    } else {
+        pf.style.display = "block";
+    }
+}
+
+/* ---------- تحديد الموقع ---------- */
+function captureProviderLocation() {
+    if (!navigator.geolocation) {
+        toast("⚠️ الموقع غير متاح");
+        return;
+    }
+
+    var status = document.getElementById("registerLocationStatus");
+    if (status) {
+        status.className = "location-status";
+        status.textContent = "📍 جاري تحديد موقعك...";
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            currentProviderLocation = {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                acc: pos.coords.accuracy
+            };
+            updateRegisterLocationStatus();
+            toast(t("locationCaptured"));
+        },
+        function(err) {
+            currentProviderLocation = null;
+            updateRegisterLocationStatus();
+            toast("⚠️ تعذر تحديد الموقع");
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    );
+}
+
+function updateRegisterLocationStatus() {
+    var status = document.getElementById("registerLocationStatus");
+    if (!status) return;
+
+    if (currentProviderLocation) {
+        status.className = "location-status success";
+        status.textContent = t("locationCaptured");
+    } else {
+        status.className = "location-status";
+        status.textContent = t("locationNotSet");
+    }
+}
+
+/* ---------- التحقق من رقم الهاتف ---------- */
+function normalizePhone(phone) {
+    var v = String(phone || "").replace(/[\u0660-\u0669]/g, function(d) {
+        return String(d.charCodeAt(0) - 0x0660);
+    });
+    v = v.replace(/\D/g, "");
+    if (v.indexOf("00213") === 0) v = v.substring(5);
+    else if (v.indexOf("213") === 0 && v.length >= 12) v = v.substring(3);
+    if (v.length === 9 && /^[567]/.test(v)) v = "0" + v;
+    return v;
+}
+
+function isValidAlgerianPhone(phone) {
+    return /^0[567][0-9]{8}$/.test(phone);
+}
+
+/* ---------- إرسال النموذج ---------- */
+function submitRegister() {
+    var role = document.getElementById("registerRole").value;
+    var name = document.getElementById("registerName").value.trim();
+    var phone = normalizePhone(document.getElementById("registerPhone").value);
+    var password = document.getElementById("registerPassword").value;
+
+    if (!role || !name || !phone || !password) {
+        toast("⚠️ " + t("fillAll"));
+        return;
+    }
+
+    if (!isValidAlgerianPhone(phone)) {
+        toast("⚠️ " + t("invalidPhone"));
+        return;
+    }
+
+    if (password.length < 4) {
+        toast("⚠️ " + t("invalidPassword"));
+        return;
+    }
+
+    /* التحقق من السجلات */
+    var users = Store.getJSON("salakni_users", []);
+    if (users.some(function(u) { return u.phone === phone; })) {
+        toast("⚠️ " + t("phoneExists"));
+        return;
+    }
+
+    var providerData = null;
+    if (role !== "driver") {
+        var business = document.getElementById("registerBusiness").value.trim();
+        var wilaya = document.getElementById("registerWilaya").value.trim();
+        var commune = document.getElementById("registerCommune").value.trim();
+
+        if (!business || !wilaya || !currentProviderLocation) {
+            toast("⚠️ " + t("locationRequired"));
+            return;
+        }
+
+        providerData = {
+            business: business,
+            wilaya: wilaya,
+            commune: commune,
+            lat: currentProviderLocation.lat,
+            lng: currentProviderLocation.lng,
+            acc: currentProviderLocation.acc
+        };
+    }
+
+    pendingUser = {
+        role: role,
+        name: name,
+        phone: phone,
+        password: password,
+        provider: providerData
+    };
+
+    sendOtp(phone, function() {
+        finalizeRegister();
+    });
+}
+
+/* ---------- OTP ---------- */
+function sendOtp(phone, callback) {
+    _otpCode = String(Math.floor(100000 + Math.random() * 900000));
+    _otpPhone = phone;
+    _otpCallback = callback;
+
+    document.getElementById("otpPhoneLabel").textContent = phone;
+    var hint = document.getElementById("otpDemoHint");
+    if (hint) {
+        hint.style.display = "block";
+        hint.textContent = "🔓 وضع تجريبي: الرمز هو " + _otpCode;
+    }
+    document.getElementById("otpInput").value = "";
+    openModal("otpModal");
+}
+
+function confirmOtp() {
+    var input = document.getElementById("otpInput").value.trim();
+    if (input !== _otpCode) {
+        toast("⚠️ " + t("otpWrong"));
+        return;
+    }
+    closeModal("otpModal");
+    if (_otpCallback) _otpCallback();
+}
+
+function resendOtp() {
+    if (_otpPhone) sendOtp(_otpPhone, _otpCallback);
+}
+
+/* ---------- إنهاء التسجيل ---------- */
+function finalizeRegister() {
+    if (!pendingUser) return;
+
+    var users = Store.getJSON("salakni_users", []);
+    var user = {
+        phone: pendingUser.phone,
+        name: pendingUser.name,
+        role: pendingUser.role,
+        password: pendingUser.password,
+        createdAt: new Date().toISOString()
+    };
+
+    users.push(user);
+    Store.setJSON("salakni_users", users);
+
+    /* إذا كان مقدم خدمة */
+    if (pendingUser.provider) {
+        var providers = Store.getJSON("salakni_providers", []);
+        providers.push({
+            id: pendingUser.phone,
+            phone: pendingUser.phone,
+            name: pendingUser.name,
+            role: pendingUser.role,
+            business: pendingUser.provider.business,
+            wilaya: pendingUser.provider.wilaya,
+            commune: pendingUser.provider.commune,
+            lat: pendingUser.provider.lat,
+            lng: pendingUser.provider.lng,
+            busy: false,
+            createdAt: new Date().toISOString()
+        });
+        Store.setJSON("salakni_providers", providers);
+    }
+
+    Store.setJSON("salakni_session", { phone: user.phone });
+    Store.set("salakni_user_name", user.name);
+
+    pendingUser = null;
+
+    closeModal("registerModal");
+    toast("✅ " + t("accountCreated"));
+    updateHomeGreeting();
+}
+
+/* ---------- تسجيل الدخول ---------- */
+function submitLogin() {
+    var phone = normalizePhone(document.getElementById("loginPhone").value);
+    var password = document.getElementById("loginPassword").value;
+
+    if (!phone || !password) {
+        toast("⚠️ " + t("fillAll"));
+        return;
+    }
+
+    var users = Store.getJSON("salakni_users", []);
+    var user = users.find(function(u) {
+        return u.phone === phone && u.password === password;
+    });
+
+    if (!user) {
+        toast("⚠️ " + t("invalidCredentials"));
+        return;
+    }
+
+    Store.setJSON("salakni_session", { phone: user.phone });
+    Store.set("salakni_user_name", user.name);
+
+    closeModal("loginModal");
+    toast("👋 " + t("welcome") + " " + user.name);
+    updateHomeGreeting();
+}
+
+/* ---------- تحديث الترحيب ---------- */
+function updateHomeGreeting() {
+    var greet = document.getElementById("greeting");
+    if (!greet) return;
+    var name = Store.get("salakni_user_name");
+    if (name) {
+        greet.textContent = (currentLang === "ar" ? "مرحباً، " : "Bonjour, ") + name;
+    } else {
+        greet.textContent = t("welcome");
+    }
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
