@@ -3038,6 +3038,213 @@ function updateHomeGreeting() {
         greet.textContent = t("welcome");
     }
 }
+    /* =====================================================
+   الجزء 11: دوال شاشة الحساب
+===================================================== */
+
+Object.assign(I18N.ar, {
+    accountSubtitle: "معلوماتك وإعداداتك",
+    accountInfo: "المعلومات",
+    accountProviderName: "اسم النشاط",
+    accountSince: "تاريخ الانضمام",
+    accountStatus: "حالتي",
+    accountActions: "الإجراءات",
+    markBusy: "تسجيل كـ مشغول",
+    markFree: "تسجيل كـ متاح",
+    notifications: "الإشعارات",
+    privacy: "سياسة الخصوصية",
+    about: "حول التطبيق",
+    busyMarked: "تم تسجيلك كـ مشغول",
+    freeMarked: "تم تسجيلك كـ متاح",
+    logout: "تسجيل الخروج",
+    logoutDone: "تم تسجيل الخروج",
+    roleDriver: "سائق",
+    roleTower: "قاطر",
+    roleWorkshop: "ورشة",
+    roleParts: "محل قطع غيار",
+    aboutText: "Salakni DZ — تطبيق الإغاثة والمساعدة على الطرقات في الجزائر. يعمل 24/7."
+});
+
+Object.assign(I18N.fr, {
+    accountSubtitle: "Vos informations",
+    accountInfo: "Informations",
+    accountProviderName: "Nom du commerce",
+    accountSince: "Date d'inscription",
+    accountStatus: "Mon état",
+    accountActions: "Actions",
+    markBusy: "Marquer occupé",
+    markFree: "Marquer disponible",
+    notifications: "Notifications",
+    privacy: "Confidentialité",
+    about: "À propos",
+    busyMarked: "Vous êtes marqué occupé",
+    freeMarked: "Vous êtes marqué disponible",
+    logout: "Déconnexion",
+    logoutDone: "Déconnecté",
+    roleDriver: "Chauffeur",
+    roleTower: "Dépanneuse",
+    roleWorkshop: "Atelier",
+    roleParts: "Pièces détachées",
+    aboutText: "Salakni DZ — Application d'assistance routière en Algérie. 24/7."
+});
+
+/* ---------- عرض شاشة الحساب ---------- */
+function showAccountScreen() {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        openRegister();
+        return;
+    }
+
+    var users = Store.getJSON("salakni_users", []);
+    var user = users.find(function(u) { return u.phone === session.phone; });
+    if (!user) {
+        openRegister();
+        return;
+    }
+
+    /* البيانات الأساسية */
+    document.getElementById("accountName").textContent = user.name || "—";
+    document.getElementById("accountPhone").textContent = user.phone || "—";
+
+    var roleLabels = {
+        driver: "roleDriver",
+        tower: "roleTower",
+        workshop: "roleWorkshop",
+        parts_shop: "roleParts"
+    };
+    var roleIcons = {
+        driver: "👤",
+        tower: "🚛",
+        workshop: "🔧",
+        parts_shop: "⚙️"
+    };
+
+    var roleKey = roleLabels[user.role] || "roleDriver";
+    document.getElementById("accountRole").textContent = roleIcons[user.role] + " " + t(roleKey);
+    document.getElementById("accountAvatar").textContent = roleIcons[user.role] || "👤";
+
+    /* بيانات مقدم الخدمة */
+    var providerNameEl = document.getElementById("accountProviderName");
+    var wilayaEl = document.getElementById("accountWilaya");
+    var communeEl = document.getElementById("accountCommune");
+    var sinceEl = document.getElementById("accountSince");
+
+    if (user.role !== "driver") {
+        var providers = Store.getJSON("salakni_providers", []);
+        var provider = providers.find(function(p) { return p.phone === user.phone; });
+
+        if (provider) {
+            providerNameEl.textContent = provider.business || "—";
+            wilayaEl.textContent = provider.wilaya || "—";
+            communeEl.textContent = provider.commune || "—";
+        } else {
+            providerNameEl.textContent = "—";
+            wilayaEl.textContent = "—";
+            communeEl.textContent = "—";
+        }
+    } else {
+        providerNameEl.textContent = "—";
+        wilayaEl.textContent = "—";
+        communeEl.textContent = "—";
+    }
+
+    if (user.createdAt) {
+        var d = new Date(user.createdAt);
+        sinceEl.textContent = d.toLocaleDateString(currentLang === "ar" ? "ar-DZ" : "fr-FR");
+    } else {
+        sinceEl.textContent = "—";
+    }
+
+    /* قسم التحكم بالحالة (لمقدمي الخدمة فقط) */
+    var section = document.getElementById("providerControlSection");
+    if (user.role !== "driver") {
+        section.style.display = "block";
+        updateBusyUI(user.phone);
+    } else {
+        section.style.display = "none";
+    }
+
+    /* الانتقال إلى الشاشة */
+    showScreen("account");
+}
+
+/* ---------- تحديث واجهة "متاح/مشغول" ---------- */
+function updateBusyUI(phone) {
+    var providers = Store.getJSON("salakni_providers", []);
+    var provider = providers.find(function(p) { return p.phone === phone; });
+    if (!provider) return;
+
+    var badge = document.getElementById("busyBadge");
+    var btn = document.getElementById("busyBtn");
+
+    if (provider.busy) {
+        badge.className = "available-badge busy";
+        badge.textContent = "🔴 " + t("markBusy");
+        btn.querySelector("span").textContent = t("markFree");
+    } else {
+        badge.className = "available-badge";
+        badge.textContent = "🟢 " + t("markFree");
+        btn.querySelector("span").textContent = t("markBusy");
+    }
+}
+
+/* ---------- تبديل الحالة ---------- */
+function toggleProviderBusy() {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) return;
+
+    var providers = Store.getJSON("salakni_providers", []);
+    var index = providers.findIndex(function(p) { return p.phone === session.phone; });
+    if (index === -1) return;
+
+    providers[index].busy = !providers[index].busy;
+    Store.setJSON("salakni_providers", providers);
+
+    updateBusyUI(session.phone);
+
+    toast(providers[index].busy ? t("busyMarked") : t("freeMarked"));
+
+    /* تحديث الخريطة إن وُجدت */
+    if (typeof renderProvidersOnMap === "function") {
+        var providersList = getRegisteredProviders();
+        renderProvidersOnMap(providersList);
+        if (typeof renderNearbyList === "function") {
+            renderNearbyList(providersList);
+        }
+    }
+}
+
+/* ---------- تسجيل الخروج ---------- */
+function logoutAccount() {
+    Store.remove("salakni_session");
+    Store.remove("salakni_user_name");
+    toast(t("logoutDone"));
+    navHome();
+}
+
+/* ---------- الإشعارات ---------- */
+function openNotifications() {
+    toast("🔔 " + t("notifications"));
+}
+
+/* ---------- سياسة الخصوصية ---------- */
+function openPrivacy() {
+    toast("📄 " + t("privacy"));
+}
+
+/* ---------- حول التطبيق ---------- */
+function openAbout() {
+    toast("ℹ️ " + t("aboutText"));
+}
+
+/* ---------- استرجاع مقدمي الخدمة المسجلين ---------- */
+function getRegisteredProviders() {
+    var providers = Store.getJSON("salakni_providers", []);
+    return providers.filter(function(p) {
+        return typeof p.lat === "number" && typeof p.lng === "number";
+    });
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
