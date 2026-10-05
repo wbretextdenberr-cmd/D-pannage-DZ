@@ -140,7 +140,7 @@ public void run() {
 webView.setVisibility(android.view.View.VISIBLE);
 }
 }, 300);
-
+}
     private boolean handleUrl(String url) {
 
         if (url.startsWith("tel:")) {
