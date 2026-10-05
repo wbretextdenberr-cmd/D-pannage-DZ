@@ -893,7 +893,215 @@ body::before {
         <div>الطوارئ — قيد البناء</div>
     </div>
 </div>
+<!-- نافذة قطر السيارات -->
+<div id="towModal" class="modal-bg">
+    <div class="modal">
 
+        <div class="modal-header">
+            <div class="modal-icon blue">🚗</div>
+            <h2 data-i18n="towCarsTitle">قطر السيارات</h2>
+            <p data-i18n="towCarsSubtitle">كيف تريد المساعدة؟</p>
+        </div>
+
+        <div class="option-list">
+
+            <button class="option-item" onclick="towToNearestWorkshop()">
+                <div class="option-icon">🏢</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="towNearest">النقل إلى أقرب ورشة</div>
+                    <div class="option-desc" data-i18n="towNearestDesc">نختار لك الأقرب</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="towToCustomDestination()">
+                <div class="option-icon">🗺️</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="towCustom">النقل إلى وجهة أحددها</div>
+                    <div class="option-desc" data-i18n="towCustomDesc">اختر الولاية والبلدية</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+        </div>
+
+        <button class="modal-close" onclick="closeModal('towModal')">
+            <span data-i18n="close">إغلاق</span>
+        </button>
+
+    </div>
+</div>
+
+<!-- نافذة وجهة مخصصة -->
+<div id="destinationModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">📍</div>
+            <h2 data-i18n="destinationTitle">وجهة النقل</h2>
+            <p data-i18n="destinationSubtitle">أدخل الولاية والبلدية</p>
+        </div>
+
+        <label class="field-label" data-i18n="wilaya">الولاية</label>
+        <input type="text" id="destWilaya" class="field-input" data-i18n-placeholder="wilayaPlaceholder" placeholder="مثال: البليدة">
+
+        <label class="field-label" data-i18n="commune">البلدية</label>
+        <input type="text" id="destCommune" class="field-input" data-i18n-placeholder="communePlaceholder" placeholder="مثال: بوفاريك">
+
+        <label class="field-label" data-i18n="faultType">نوع العطل</label>
+        <select id="destFault" class="field-input">
+            <option value="" data-i18n="faultUnknown">لا أعرف / غير محدد</option>
+            <option value="battery" data-i18n="faultBattery">بطارية</option>
+            <option value="tire" data-i18n="faultTire">إطار</option>
+            <option value="fuel" data-i18n="faultFuel">وقود</option>
+            <option value="engine" data-i18n="faultEngine">محرك</option>
+            <option value="accident" data-i18n="faultAccident">حادث</option>
+            <option value="other" data-i18n="faultOther">أخرى</option>
+        </select>
+
+        <label class="field-label" data-i18n="vehicleType">نوع المركبة</label>
+        <select id="destVehicle" class="field-input">
+            <option value="car" data-i18n="vehicleCar">سيارة</option>
+            <option value="truck" data-i18n="vehicleTruck">شاحنة</option>
+            <option value="moto" data-i18n="vehicleMoto">دراجة نارية</option>
+        </select>
+
+        <button class="btn-primary" onclick="submitTowRequest()">
+            <span data-i18n="confirm">تأكيد الطلب</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('destinationModal')">
+            <span data-i18n="cancel">إلغاء</span>
+        </button>
+
+    </div>
+</div>
+
+<style>
+.option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(37,99,235,0.1);
+    border: 1.5px solid rgba(37,99,235,0.4);
+    border-radius: 18px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    color: var(--ink);
+    text-align: right;
+    width: 100%;
+}
+
+.option-item:active {
+    transform: scale(0.97);
+    background: rgba(37,99,235,0.22);
+    box-shadow: 0 0 25px rgba(37,99,235,0.5);
+}
+
+.option-icon {
+    font-size: 30px;
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    background: rgba(37,99,235,0.2);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+
+.option-info {
+    flex: 1;
+}
+
+.option-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 3px;
+}
+
+.option-desc {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.option-arrow {
+    font-size: 26px;
+    color: var(--primary);
+    font-weight: 300;
+}
+
+.field-label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 700;
+    margin: 14px 0 6px;
+}
+
+.field-input {
+    width: 100%;
+    padding: 14px;
+    background: rgba(15,26,48,0.8);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    color: var(--ink);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.field-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(37,99,235,0.3);
+}
+
+.field-input::placeholder {
+    color: var(--dim);
+}
+
+select.field-input {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M6 9L1 4h10z' fill='%2394A3B8'/></svg>");
+    background-repeat: no-repeat;
+    background-position: left 16px center;
+    padding-left: 40px;
+}
+
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(145deg, #2563EB, #1D4ED8);
+    border: 0;
+    color: #fff;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+    font-family: inherit;
+    box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 30px rgba(37,99,235,0.7);
+}
+</style>
 <div id="toast"></div>
 
 <script>
