@@ -1102,6 +1102,74 @@ select.field-input {
     box-shadow: 0 0 30px rgba(37,99,235,0.7);
 }
 </style>
+    <!-- نافذة قطر الشاحنات -->
+<div id="truckModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon red">🚛</div>
+            <h2 data-i18n="truckTitle">قطر الشاحنات</h2>
+            <p data-i18n="truckSubtitle">ما نوع العطل؟</p>
+        </div>
+
+        <div class="option-list">
+
+            <button class="option-item" onclick="selectTruckFault('engine')">
+                <div class="option-icon">⚙️</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="truckEngine">عطل في المحرك</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectTruckFault('gearbox')">
+                <div class="option-icon">🔩</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="truckGearbox">عطل في ناقل الحركة</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectTruckFault('electric')">
+                <div class="option-icon">⚡</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="truckElectric">عطل كهربائي</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectTruckFault('tire')">
+                <div class="option-icon">🛞</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="truckTire">عطل في الإطارات</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectTruckFault('accident')">
+                <div class="option-icon">🚨</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="truckAccident">حادث</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+            <button class="option-item" onclick="selectTruckFault('other')">
+                <div class="option-icon">❓</div>
+                <div class="option-info">
+                    <div class="option-title" data-i18n="truckOther">عطل آخر</div>
+                </div>
+                <div class="option-arrow">›</div>
+            </button>
+
+        </div>
+
+        <button class="modal-close" onclick="closeModal('truckModal')">
+            <span data-i18n="close">إغلاق</span>
+        </button>
+
+    </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -1758,7 +1826,58 @@ function saveTowRequest(data) {
 
     toast("✅ " + msg);
 }
+/* =====================================================
+   الجزء 7: دوال قطر الشاحنات
+===================================================== */
 
+Object.assign(I18N.ar, {
+    truckTitle: "قطر الشاحنات",
+    truckSubtitle: "ما نوع العطل؟",
+    truckEngine: "عطل في المحرك",
+    truckGearbox: "عطل في ناقل الحركة",
+    truckElectric: "عطل كهربائي",
+    truckTire: "عطل في الإطارات",
+    truckAccident: "حادث",
+    truckOther: "عطل آخر",
+    truckRequestSaved: "تم تسجيل طلب قطر الشاحنة"
+});
+
+Object.assign(I18N.fr, {
+    truckTitle: "Remorquage Camions",
+    truckSubtitle: "Quel type de panne?",
+    truckEngine: "Panne moteur",
+    truckGearbox: "Panne boîte de vitesses",
+    truckElectric: "Panne électrique",
+    truckTire: "Panne de pneus",
+    truckAccident: "Accident",
+    truckOther: "Autre panne",
+    truckRequestSaved: "Demande de remorquage enregistrée"
+});
+
+function selectTruckFault(fault) {
+    closeModal("truckModal");
+    saveTruckRequest(fault);
+}
+
+function saveTruckRequest(fault) {
+    var userLoc = Store.getJSON("salakni_user_location", null);
+
+    var request = {
+        id: "TRK-" + Date.now(),
+        type: "tow-trucks",
+        driverLocation: userLoc,
+        fault: fault,
+        vehicleType: "truck",
+        status: "new",
+        createdAt: new Date().toISOString()
+    };
+
+    var requests = Store.getJSON("salakni_requests", []);
+    requests.unshift(request);
+    Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+    toast("✅ " + t("truckRequestSaved"));
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
