@@ -1998,6 +1998,122 @@ function saveTruckRequest(fault) {
 
     toast("✅ " + t("truckRequestSaved"));
 }
+    /* =====================================================
+   الجزء 8: دوال الورشة المتنقلة
+===================================================== */
+
+Object.assign(I18N.ar, {
+    workshopTitle: "الورشة المتنقلة",
+    workshopSubtitle: "اختر نوع المركبة",
+    workshopCar: "سيارة",
+    workshopTruck: "شاحنة",
+    workshopMoto: "دراجة نارية",
+    workshopDetailsTitle: "تفاصيل المركبة",
+    workshopDetailsSubtitle: "ساعدنا على توجيهك",
+    brand: "العلامة",
+    model: "الموديل",
+    energy: "الطاقة",
+    energyChoose: "اختر الطاقة",
+    energyGasoline: "بنزين",
+    energyDiesel: "ديزل",
+    energyGpl: "GPL",
+    energyElectric: "كهربائية",
+    energyHybrid: "هجينة",
+    energyOther: "أخرى",
+    faultTypeWorkshop: "نوع العطل",
+    faultChoose: "اختر نوع العطل",
+    faultMechanical: "عطل ميكانيكي",
+    faultElectric: "عطل كهربائي",
+    faultTireFix: "تصليح الإطار",
+    faultDoor: "فتح الأبواب المغلقة",
+    faultBoost: "Boost البطارية",
+    workshopSaved: "تم تسجيل طلب الورشة",
+    workshopFillFault: "اختر نوع العطل"
+});
+
+Object.assign(I18N.fr, {
+    workshopTitle: "Atelier Mobile",
+    workshopSubtitle: "Choisissez le véhicule",
+    workshopCar: "Voiture",
+    workshopTruck: "Camion",
+    workshopMoto: "Moto",
+    workshopDetailsTitle: "Détails du véhicule",
+    workshopDetailsSubtitle: "Aidez-nous à vous orienter",
+    brand: "Marque",
+    model: "Modèle",
+    energy: "Énergie",
+    energyChoose: "Choisir l'énergie",
+    energyGasoline: "Essence",
+    energyDiesel: "Diesel",
+    energyGpl: "GPL",
+    energyElectric: "Électrique",
+    energyHybrid: "Hybride",
+    energyOther: "Autre",
+    faultTypeWorkshop: "Type de panne",
+    faultChoose: "Choisir la panne",
+    faultMechanical: "Panne mécanique",
+    faultElectric: "Panne électrique",
+    faultTireFix: "Réparation pneu",
+    faultDoor: "Ouverture portes",
+    faultBoost: "Boost batterie",
+    workshopSaved: "Demande d'atelier enregistrée",
+    workshopFillFault: "Choisissez la panne"
+});
+
+var currentWorkshopVehicle = null;
+
+function selectWorkshopVehicle(vehicle) {
+    currentWorkshopVehicle = vehicle;
+    closeModal("workshopModal");
+
+    /* إعادة تعيين الحقول */
+    var brand = document.getElementById("workshopBrand");
+    var model = document.getElementById("workshopModel");
+    var energy = document.getElementById("workshopEnergy");
+    var fault = document.getElementById("workshopFault");
+    if (brand) brand.value = "";
+    if (model) model.value = "";
+    if (energy) energy.value = "";
+    if (fault) fault.value = "";
+
+    openModal("workshopDetailsModal");
+}
+
+function submitWorkshopRequest() {
+    var fault = document.getElementById("workshopFault").value;
+
+    if (!fault) {
+        toast("⚠️ " + t("workshopFillFault"));
+        return;
+    }
+
+    var brand = document.getElementById("workshopBrand").value;
+    var model = document.getElementById("workshopModel").value.trim();
+    var energy = document.getElementById("workshopEnergy").value;
+
+    closeModal("workshopDetailsModal");
+
+    var userLoc = Store.getJSON("salakni_user_location", null);
+
+    var request = {
+        id: "WS-" + Date.now(),
+        type: "workshop",
+        driverLocation: userLoc,
+        vehicleType: currentWorkshopVehicle,
+        brand: brand,
+        model: model,
+        energy: energy,
+        fault: fault,
+        status: "new",
+        createdAt: new Date().toISOString()
+    };
+
+    var requests = Store.getJSON("salakni_requests", []);
+    requests.unshift(request);
+    Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+    toast("✅ " + t("workshopSaved"));
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
