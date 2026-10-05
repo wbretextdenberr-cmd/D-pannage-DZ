@@ -1735,6 +1735,181 @@ select.field-input {
     line-height: 1.6;
 }
 </style>
+    <!-- نافذة الطلب الحالي -->
+<div id="activeRequestModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">📋</div>
+            <h2 data-i18n="activeRequestTitle">طلبك الحالي</h2>
+            <p id="activeRequestSubtitle">—</p>
+        </div>
+
+        <div class="request-details">
+            <div class="request-row">
+                <span data-i18n="requestId">رقم الطلب</span>
+                <b id="reqId">—</b>
+            </div>
+            <div class="request-row">
+                <span data-i18n="requestType">نوع الخدمة</span>
+                <b id="reqType">—</b>
+            </div>
+            <div class="request-row">
+                <span data-i18n="requestDestination">الوجهة</span>
+                <b id="reqDest">—</b>
+            </div>
+            <div class="request-row">
+                <span data-i18n="requestStatus">الحالة</span>
+                <b id="reqStatus">—</b>
+            </div>
+            <div class="request-row">
+                <span data-i18n="requestTime">الوقت</span>
+                <b id="reqTime">—</b>
+            </div>
+        </div>
+
+        <div id="reqProviderBlock" style="display:none;">
+            <div class="modal-divider"></div>
+            <div class="provider-accepted">
+                <div class="provider-accepted-icon">🚛</div>
+                <div class="provider-accepted-info">
+                    <h3 id="reqProviderName">—</h3>
+                    <p id="reqProviderPhone">—</p>
+                </div>
+            </div>
+            <a class="btn-primary" id="reqCallBtn" href="#" style="display:block;text-align:center;text-decoration:none;margin-top:12px;">
+                📞 <span data-i18n="callProvider">اتصل بمقدم الخدمة</span>
+            </a>
+            <button class="btn-primary" style="background:linear-gradient(145deg,#16A34A,#15803D);box-shadow:0 6px 20px rgba(22,163,74,0.4);margin-top:8px;" onclick="completeActiveRequest()">
+                ✅ <span data-i18n="markComplete">تم إنجاز الطلب</span>
+            </button>
+        </div>
+
+        <div id="reqCancelBlock">
+            <button class="btn-cancel" onclick="openCancelRequest()">
+                ❌ <span data-i18n="cancelRequest">إلغاء الطلب</span>
+            </button>
+        </div>
+
+        <button class="modal-close" onclick="closeModal('activeRequestModal')">
+            <span data-i18n="close">إغلاق</span>
+        </button>
+
+    </div>
+</div>
+
+<!-- نافذة إلغاء الطلب -->
+<div id="cancelRequestModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon red">❌</div>
+            <h2 data-i18n="cancelRequestTitle">إلغاء الطلب</h2>
+            <p data-i18n="cancelRequestSubtitle">اذكر السبب</p>
+        </div>
+
+        <label class="field-label" data-i18n="cancelReason">سبب الإلغاء</label>
+        <textarea id="cancelReasonInput" class="field-input" rows="3" placeholder="..." style="resize:vertical;min-height:80px;font-family:inherit;"></textarea>
+
+        <button class="btn-primary" style="background:linear-gradient(145deg,#DC2626,#991B1B);box-shadow:0 6px 20px rgba(220,38,38,0.4);" onclick="confirmCancelRequest()">
+            <span data-i18n="confirmCancel">تأكيد الإلغاء</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('cancelRequestModal')">
+            <span data-i18n="back">العودة</span>
+        </button>
+
+    </div>
+</div>
+
+<style>
+.request-details {
+    background: rgba(15,26,48,0.5);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+.request-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(38,56,92,0.5);
+    font-size: 13px;
+    gap: 12px;
+}
+.request-row:last-child {
+    border-bottom: 0;
+}
+.request-row span {
+    color: var(--muted);
+}
+.request-row b {
+    color: var(--ink);
+    font-weight: 800;
+    text-align: left;
+    flex: 1;
+    word-break: break-word;
+}
+.provider-accepted {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(22,163,74,0.1);
+    border: 1.5px solid rgba(22,163,74,0.4);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+.provider-accepted-icon {
+    font-size: 34px;
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,0.25);
+    border-radius: 14px;
+    flex-shrink: 0;
+}
+.provider-accepted-info {
+    flex: 1;
+}
+.provider-accepted-info h3 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.provider-accepted-info p {
+    font-size: 13px;
+    color: #4ADE80;
+    font-weight: 700;
+    direction: ltr;
+}
+.btn-cancel {
+    width: 100%;
+    background: rgba(220,38,38,0.12);
+    border: 1.5px solid rgba(220,38,38,0.5);
+    color: #FCA5A5;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.btn-cancel:active {
+    transform: scale(0.97);
+    background: rgba(220,38,38,0.22);
+}
+</style>
 <div id="toast"></div>
 
 <script>
@@ -1974,13 +2149,7 @@ function closeModal(id) {
     if (modal) modal.classList.remove("open");
 }
 function openAccount() {
-    var session = Store.getJSON("salakni_session", null);
-    if (!session) {
-        openRegister();
-        return;
-    }
-    toast("👤 " + Store.get("salakni_user_name"));
-}
+    showAccountScreen();
 }
 
 function emergencyCall() {
