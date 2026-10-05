@@ -3678,6 +3678,218 @@ function updateActiveRequestButton() {
 var _styleEl = document.createElement("style");
 _styleEl.textContent = ".btn-active-request{width:100%;background:linear-gradient(145deg,rgba(37,99,235,0.25),rgba(37,99,235,0.15));border:1.5px solid rgba(37,99,235,0.6);color:#93C5FD;padding:14px;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 0 20px rgba(37,99,235,0.3);margin-bottom:14px;display:block}.btn-active-request:active{transform:scale(0.97)}";
 document.head.appendChild(_styleEl);
+    /* =====================================================
+   الجزء 13: دوال التقييمات والسلوك
+===================================================== */
+
+Object.assign(I18N.ar, {
+    ratingTitle: "قيّم مقدم الخدمة",
+    ratingComment: "تعليق (اختياري)",
+    ratingSubmit: "إرسال التقييم",
+    ratingSkip: "تخطي",
+    ratingThanks: "شكرًا لتقييمك",
+    ratingNeedStars: "اختر عدد النجوم",
+    ratingAlready: "تم تقييم هذا الطلب من قبل",
+    behaviourExcellent: "ممتاز",
+    behaviourGood: "جيد",
+    behaviourAverage: "متوسط",
+    behaviourBad: "ضعيف",
+    behaviourNew: "جديد",
+    noRatingsYet: "بدون تقييمات بعد"
+});
+
+Object.assign(I18N.fr, {
+    ratingTitle: "Évaluer le prestataire",
+    ratingComment: "Commentaire (optionnel)",
+    ratingSubmit: "Envoyer l'évaluation",
+    ratingSkip: "Passer",
+    ratingThanks: "Merci pour votre évaluation",
+    ratingNeedStars: "Choisissez les étoiles",
+    ratingAlready: "Déjà évalué",
+    behaviourExcellent: "Excellent",
+    behaviourGood: "Bon",
+    behaviourAverage: "Moyen",
+    behaviourBad: "Faible",
+    behaviourNew: "Nouveau",
+    noRatingsYet: "Pas encore d'évaluations"
+});
+
+var _ratingStars = 0;
+var _ratingRequest = null;
+
+/* ---------- فتح نافذة التقييم ---------- */
+function openRatingModal(request) {
+    if (!request || !request.acceptedBy) return;
+
+    /* التحقق: هل قُيّم من قبل؟ */
+    var ratings = Store.getJSON("salakni_ratings", []);
+    if (ratings.some(function(r) { return r.requestId === request.id; })) {
+        toast("ℹ️ " + t("ratingAlready"));
+        return;
+    }
+
+    _ratingRequest = request;
+    _ratingStars = 0;
+    setRatingStars(0);
+
+    var nameEl = document.getElementById("ratingProviderName");
+    if (nameEl) nameEl.textContent = request.acceptedBy.name || "";
+
+    var commentEl = document.getElementById("ratingComment");
+    if (commentEl) commentEl.value = "";
+
+    openModal("ratingModal");
+}
+
+/* ---------- تعيين النجوم ---------- */
+function setRatingStars(n) {
+    _ratingStars = n;
+    var spans = document.querySelectorAll("#ratingStars span");
+    for (var i = 0; i < spans.length; i++) {
+        spans[i].textContent = i < n ? "★" : "☆";
+    }
+}
+
+/* ---------- الضغط على نجمة ---------- */
+function setRating(n) {
+    setRatingStars(n);
+}
+
+/* ---------- إرسال التقييم ---------- */
+function submitRating() {
+    if (!_ratingStars) {
+        toast("⚠️ " + t("ratingNeedStars"));
+        return;
+    }
+
+    if (!_ratingRequest || !_ratingRequest.acceptedBy) {
+        closeModal("ratingModal");
+        return;
+    }
+
+    var ratings = Store.getJSON("salakni_ratings", []);
+
+    ratings.push({
+        requestId: _ratingRequest.id,
+        providerId: _ratingRequest.acceptedBy.phone,
+        providerName: _ratingRequest.acceptedBy.name || "",
+        stars: _ratingStars,
+        comment: (document.getElementById("ratingComment").value || "").trim().slice(0, 140),
+        createdAt: new Date().toISOString()
+    });
+
+    Store.setJSON("salakni_ratings", ratings);
+
+    /* تطبيق نظام السلوك */
+    applyBehaviourRules(_ratingRequest.acceptedBy.phone);
+
+    closeModal("ratingModal");
+    toast("✅ " + t("ratingThanks"));
+
+    _ratingRequest = null;
+    _ratingStars = 0;
+}
+
+/* ---------- تخطي التقييم ---------- */
+function skipRating() {
+    closeModal("ratingModal");
+    _ratingRequest = null;
+    _ratingStars = 0;
+}
+
+/* ---------- ملخص تقييمات مقدم الخدمة ---------- */
+function getProviderRating(phone) {
+    var all = Store.getJSON("salakni_ratings", []);
+    var mine = all.filter(function(r) { return r.providerId === phone; });
+
+    if (mine.length === 0) {
+        return { count: 0, avg: 0, text: t("noRatingsYet") };
+    }
+
+    var sum = 0;
+    for (var i = 0; i < mine.length; i++) sum += mine[i].stars;
+
+    var avg = Math.round((sum / mine.length) * 10) / 10;
+
+    return {
+        count: mine.length,
+        avg: avg,
+        text: "⭐ " + avg + " (" + mine.length + ")"
+    };
+}
+
+/* ---------- تصنيف السلوك ---------- */
+function getBehaviourClass(phone) {
+    var r = getProviderRating(phone);
+    if (r.count < 5) return t("behaviourNew");
+    if (r.avg >= 4.5) return t("behaviourExcellent");
+    if (r.avg >= 3.5) return t("behaviourGood");
+    if (r.avg >= 2.5) return t("behaviourAverage");
+    return t("behaviourBad");
+}
+
+/* ---------- قواعد السلوك ---------- */
+function applyBehaviourRules(phone) {
+    var all = Store.getJSON("salakni_ratings", []);
+    var mine = all.filter(function(r) { return r.providerId === phone; });
+
+    if (mine.length < 5) return;
+
+    /* آخر 10 تقييمات */
+    var last10 = mine.slice(-10);
+
+    /* هل كلها سلبية (1-2 نجوم)؟ */
+    var allBad = last10.every(function(r) { return r.stars <= 2; });
+
+    if (last10.length === 10 && allBad) {
+        var users = Store.getJSON("salakni_users", []);
+        var idx = users.findIndex(function(u) { return u.phone === phone; });
+
+        if (idx !== -1) {
+            users[idx].suspended = true;
+            users[idx].suspendedAt = new Date().toISOString();
+            Store.setJSON("salakni_users", users);
+
+            /* إشعار */
+            addNotification(phone, "⛔ تم إغلاق حسابك",
+                "بسبب 10 تقييمات سلبية متتالية. رقمك صالح لفتح حساب جديد.");
+        }
+    }
+}
+
+/* ---------- إشعار داخلي ---------- */
+function addNotification(ownerPhone, title, body) {
+    var notifs = Store.getJSON("salakni_notifications", []);
+
+    notifs.unshift({
+        id: "N-" + Date.now(),
+        owner: ownerPhone,
+        title: title,
+        body: body || "",
+        ts: Date.now(),
+        read: false
+    });
+
+    Store.setJSON("salakni_notifications", notifs.slice(0, 50));
+
+    /* عرض Toast للمستخدم الحالي */
+    var session = Store.getJSON("salakni_session", null);
+    if (session && session.phone === ownerPhone) {
+        toast("🔔 " + title);
+    }
+}
+
+/* ---------- عرض التقييمات في بطاقات مقدمي الخدمة ---------- */
+function enhanceProvidersWithRating(providers) {
+    if (!Array.isArray(providers)) return providers;
+
+    return providers.map(function(p) {
+        var r = getProviderRating(p.phone);
+        p.rating = r;
+        p.behaviour = getBehaviourClass(p.phone);
+        return p;
+    });
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
