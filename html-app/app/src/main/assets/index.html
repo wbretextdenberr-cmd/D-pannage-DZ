@@ -1401,7 +1401,24 @@ locateUser = function() {
             renderNearbyList(providers);
         }
     }, 800);
-};
+};/* نصوص إضافية */
+Object.assign(I18N.ar, {
+    emergencySubtitle: "اختر الجهة المختصة",
+    close: "إغلاق"
+});
+
+Object.assign(I18N.fr, {
+    emergencySubtitle: "Choisissez le service",
+    close: "Fermer"
+});
+
+/* إغلاق النافذة عند الضغط خارجها */
+document.addEventListener("click", function(e) {
+    if (e.target.classList && e.target.classList.contains("modal-bg")) {
+        e.target.classList.remove("open");
+    }
+});
+
 window.addEventListener("load", () => {
     var leafletScript = document.createElement("script");
 leafletScript.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
