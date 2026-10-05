@@ -1,42 +1,1042 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-    <title>SALAKNI DZ — سلكني ديزاد لإغاثة السيارات 24/7</title>
-    <meta
-      name="description"
-      content="سلكني ديزاد — تطبيق المساعدة والإغاثة على الطرقات في الجزائر. قطر، ورشات متنقلة، قطع غيار، 24/7."
-    />
-    <meta name="theme-color" content="#0B1324" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Salakni DZ" />
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0B1324">
+<title>SALAKNI DZ — سلكني ديزاد</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="app-icon.svg">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" type="image/svg+xml" href="./app-icon.svg" />
-    <link rel="apple-touch-icon" href="./app-icon.svg" />
+<style>
+:root {
+    --dz-green: #006233;
+    --dz-white: #FFFFFF;
+    --dz-red:   #D21034;
+    --bg:       #0B1324;
+    --surface:  #172238;
+    --surface2: #1E2C47;
+    --border:   #26385C;
+    --primary:  #2563EB;
+    --accent:   #F59E0B;
+    --danger:   #DC2626;
+    --success:  #16A34A;
+    --ink:      #E6EDF7;
+    --muted:    #94A3B8;
+    --dim:      #64748B;
+    --glow-blue:  0 0 20px rgba(37,99,235,0.45);
+    --glow-red:   0 0 20px rgba(220,38,38,0.55);
+    --glow-green: 0 0 20px rgba(22,163,74,0.55);
+    --shadow:     0 8px 24px rgba(0,0,0,0.35);
+}
 
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--ink);
+    direction: rtl;
+    line-height: 1.6;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior: none;
+}
+
+body.lang-fr {
+    direction: ltr;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%230B1324'/><stop offset='1' stop-color='%23111C33'/></linearGradient></defs><rect width='1200' height='800' fill='url(%23g)'/><circle cx='200' cy='650' r='180' fill='%23163055' opacity='0.35'/><circle cx='1000' cy='150' r='220' fill='%23006233' opacity='0.18'/><circle cx='600' cy='400' r='300' fill='%232563EB' opacity='0.06'/></svg>");
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+    opacity: 0.9;
+}
+
+.screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.screen.active {
+    display: flex;
+    animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+
+#splash {
+    background: linear-gradient(160deg, #0B1324 0%, #111C33 55%, #1A2A45 100%);
+    justify-content: space-between;
+    padding: 30px 22px 40px;
+    position: relative;
+    overflow-y: auto;
+}
+
+.dz-flag-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    display: flex;
+    z-index: 100;
+}
+.dz-flag-bar span { flex: 1; }
+.dz-flag-bar .g { background: var(--dz-green); }
+.dz-flag-bar .w { background: var(--dz-white); }
+.dz-flag-bar .r { background: var(--dz-red); }
+
+.lang-switch {
+    position: absolute;
+    top: 22px;
+    left: 22px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+    z-index: 50;
+}
+.lang-switch:active {
+    transform: scale(0.95);
+    background: rgba(255,255,255,0.15);
+}
+
+.splash-header {
+    text-align: center;
+    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.splash-logo {
+    width: 96px;
+    height: 96px;
+    border-radius: 26px;
+    background: linear-gradient(145deg, #2563EB, #1E40AF);
+    display: grid;
+    place-items: center;
+    font-size: 52px;
+    box-shadow: var(--glow-blue), var(--shadow);
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); box-shadow: var(--glow-blue), var(--shadow); }
+    50%      { transform: scale(1.05); box-shadow: 0 0 35px rgba(37,99,235,0.7), var(--shadow); }
+}
+
+.splash-brand {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 2px 15px rgba(37,99,235,0.6);
+}
+
+.splash-brand span {
+    color: var(--dz-red);
+}
+
+.splash-tagline {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.emergency-block {
+    margin: 34px 0 22px;
+}
+
+.emergency-title {
+    text-align: center;
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.emergency-title::before,
+.emergency-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.emergency-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.emg-btn {
+    background: rgba(220,38,38,0.12);
+    border: 1.5px solid rgba(220,38,38,0.45);
+    border-radius: 16px;
+    padding: 14px 8px;
+    text-decoration: none;
+    color: var(--ink);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 0 12px rgba(220,38,38,0.15);
+}
+
+.emg-btn:active {
+    transform: scale(0.95);
+    background: rgba(220,38,38,0.25);
+    box-shadow: var(--glow-red);
+}
+
+.emg-icon {
+    font-size: 26px;
+}
+
+.emg-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #FCA5A5;
+    line-height: 1.3;
+}
+
+.emg-num {
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    direction: ltr;
+    letter-spacing: 0.5px;
+}
+
+.splash-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.btn-share {
+    background: rgba(22,163,74,0.15);
+    border: 1.5px solid rgba(22,163,74,0.5);
+    color: #4ADE80;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 0 15px rgba(22,163,74,0.2);
+    font-family: inherit;
+}
+
+.btn-share:active {
+    transform: scale(0.97);
+    background: rgba(22,163,74,0.28);
+    box-shadow: var(--glow-green);
+}
+
+.btn-enter {
+    background: linear-gradient(145deg, #2563EB, #1D4ED8);
+    border: 0;
+    color: #fff;
+    padding: 18px;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: var(--glow-blue), var(--shadow);
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-enter:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 30px rgba(37,99,235,0.8), var(--shadow);
+}
+
+.splash-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 11px;
+    color: var(--dim);
+    line-height: 1.8;
+}
+
+.splash-footer b {
+    color: var(--dz-green);
+    font-weight: 700;
+}
+
+#home, #account, #emergency {
+    background: var(--bg);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.placeholder-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    text-align: center;
+    gap: 12px;
+    font-size: 15px;
+}
+
+.placeholder-msg .big {
+    font-size: 60px;
+    margin-bottom: 10px;
+}
+
+#toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #101828;
+    color: #fff;
+    padding: 14px 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+    z-index: 9999;
+    max-width: 85%;
+    text-align: center;
+    transition: transform 0.3s ease;
+    border: 1px solid var(--border);
+    pointer-events: none;
+}
+
+#toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+
+<body>
+
+<div class="dz-flag-bar">
+    <span class="g"></span>
+    <span class="w"></span>
+    <span class="r"></span>
+</div>
+
+<div id="splash" class="screen active">
+
+    <button class="lang-switch" onclick="toggleLang()" id="langBtn">
+        🇫🇷 <span id="langLabel">Français</span>
+    </button>
+
+    <div class="splash-header">
+        <div class="splash-logo">🚗</div>
+        <div class="splash-brand">SALAKNI<span>.DZ</span></div>
+        <div class="splash-tagline" data-i18n="tagline">مساعدتك عند تعطل مركبتك</div>
+    </div>
+
+    <div class="emergency-block">
+        <div class="emergency-title" data-i18n="emergencyTitle">الطوارئ</div>
+        <div class="emergency-grid">
+
+            <a class="emg-btn" href="tel:1055">
+                <div class="emg-icon">🛡️</div>
+                <div class="emg-name" data-i18n="police1">الدرك الوطني</div>
+                <div class="emg-num">1055</div>
+            </a>
+
+            <a class="emg-btn" href="tel:17">
+                <div class="emg-icon">🚓</div>
+                <div class="emg-name" data-i18n="police2">الشرطة</div>
+                <div class="emg-num">17</div>
+            </a>
+
+            <a class="emg-btn" href="tel:14">
+                <div class="emg-icon">🚒</div>
+                <div class="emg-name" data-i18n="police3">الحماية المدنية</div>
+                <div class="emg-num">14</div>
+            </a>
+
+        </div>
+    </div>
+
+    <div class="splash-actions">
+
+        <button class="btn-share" onclick="shareLocation()">
+            📍 <span data-i18n="shareLocation">مشاركة موقعي لوصول الخدمة</span>
+        </button>
+
+        <button class="btn-enter" onclick="enterApp()">
+            ✅ <span data-i18n="enterApp">دخول التطبيق</span>
+        </button>
+
+    </div>
+
+    <div class="splash-footer">
+        <b>🇩🇿 Salakni DZ</b><br>
+        <span data-i18n="footer">خدمة الإغاثة والمساعدة على الطرقات</span><br>
+        <span data-i18n="footer2">24/7 في كل ولايات الجزائر</span>
+    </div>
+
+</div>
+
+<!-- =====================================================
+     الشاشة الرئيسية (Home)
+===================================================== -->
+<div id="home" class="screen">
+
+    <header class="home-header">
+        <button class="icon-btn red" onclick="emergencyCall()" title="طوارئ">🚨</button>
+        <div class="home-title">
+            <div class="home-brand">Salakni <span>.DZ</span></div>
+            <div class="home-sub" data-i18n="tagline">مساعدتك عند تعطل مركبتك</div>
+        </div>
+        <button class="icon-btn blue" onclick="openAccount()" title="حسابي">👤</button>
+    </header>
+
+    <div class="home-body">
+
+        <div class="greeting" id="greeting">
+            <span data-i18n="welcome">مرحبًا بك</span>
+        </div>
+
+        <h2 class="section-title" data-i18n="services">الخدمات</h2>
+
+        <div class="services-grid">
+
+            <div class="service-card glow-green" onclick="openService('tow-cars')">
+                <div class="service-icon">🚗</div>
+                <div class="service-name" data-i18n="svcTowCars">قطر السيارات</div>
+                <div class="service-desc" data-i18n="svcTowCarsDesc">مساعدة ونقل السيارة</div>
+            </div>
+
+            <div class="service-card glow-red" onclick="openService('tow-trucks')">
+                <div class="service-icon">🚛</div>
+                <div class="service-name" data-i18n="svcTowTrucks">قطر الشاحنات</div>
+                <div class="service-desc" data-i18n="svcTowTrucksDesc">أعطال ونجدة الشاحنات</div>
+            </div>
+
+            <div class="service-card glow-green" onclick="openService('workshop')">
+                <div class="service-icon">🔧</div>
+                <div class="service-name" data-i18n="svcWorkshop">ورشة متنقلة</div>
+                <div class="service-desc" data-i18n="svcWorkshopDesc">مصلح قريب منك</div>
+            </div>
+
+            <div class="service-card glow-red" onclick="openService('parts')">
+                <div class="service-icon">⚙️</div>
+                <div class="service-name" data-i18n="svcParts">قطع الغيار</div>
+                <div class="service-desc" data-i18n="svcPartsDesc">محلات قطع الغيار القريبة</div>
+            </div>
+
+        </div>
+
+        <div class="map-section">
+            <h2 class="section-title" data-i18n="yourLocation">موقعك</h2>
+            <div class="map-container">
+                <div id="homeMap"></div>
+                <div class="map-overlay" id="mapStatus">📍 <span data-i18n="locating">جاري تحديد موقعك...</span></div>
+            </div>
+        </div>
+
+        <div id="nearbyList" class="nearby-list"></div>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="navHome()">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label" data-i18n="navHome">الرئيسية</span>
+        </button>
+        <button class="nav-btn" onclick="navNearby()">
+            <span class="nav-icon">📍</span>
+            <span class="nav-label" data-i18n="navNearby">قريب مني</span>
+        </button>
+        <button class="nav-btn" onclick="navAccount()">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label" data-i18n="navAccount">حسابي</span>
+        </button>
+        <button class="nav-btn red" onclick="emergencyCall()">
+            <span class="nav-icon">🚨</span>
+            <span class="nav-label" data-i18n="navEmergency">طوارئ</span>
+        </button>
+    </nav>
+
+</div>
+
+<style>
+.home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 12px;
+    background: linear-gradient(180deg, rgba(23,34,56,0.95), rgba(23,34,56,0.6));
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(12px);
+}
+
+.home-title {
+    flex: 1;
+    text-align: center;
+}
+
+.home-brand {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.home-brand span {
+    color: var(--dz-red);
+}
+
+.home-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.icon-btn {
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.icon-btn:active {
+    transform: scale(0.9);
+}
+
+.icon-btn.red {
+    background: linear-gradient(145deg, #DC2626, #991B1B);
+    box-shadow: 0 0 15px rgba(220,38,38,0.5);
+}
+
+.icon-btn.blue {
+    background: linear-gradient(145deg, #2563EB, #1E40AF);
+    box-shadow: 0 0 15px rgba(37,99,235,0.5);
+}
+
+.home-body {
+    padding: 16px;
+    padding-bottom: 100px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.greeting {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    margin: 14px 0 12px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.service-card {
+    background: linear-gradient(160deg, #1E2C47, #172238);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.service-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.service-card.glow-green::before {
+    box-shadow: inset 0 0 25px rgba(22,163,74,0.35), 0 0 20px rgba(22,163,74,0.25);
+}
+
+.service-card.glow-red::before {
+    box-shadow: inset 0 0 25px rgba(220,38,38,0.35), 0 0 20px rgba(220,38,38,0.25);
+}
+
+.service-card.glow-green {
+    border-color: rgba(22,163,74,0.4);
+}
+
+.service-card.glow-red {
+    border-color: rgba(220,38,38,0.4);
+}
+
+.service-card:active {
+    transform: scale(0.96);
+}
+
+.service-card:active::before {
+    opacity: 1;
+}
+
+.service-icon {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+    transition: transform 0.25s;
+}
+
+.service-card:active .service-icon {
+    transform: scale(1.15);
+}
+
+.service-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+}
+
+.service-desc {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.map-section {
+    margin-top: 22px;
+}
+
+.map-container {
+    position: relative;
+    height: 260px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #172238;
+    box-shadow: var(--shadow);
+}
+
+#homeMap {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.map-overlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    background: rgba(23,34,56,0.95);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--ink);
+    text-align: center;
+    font-weight: 700;
+    z-index: 500;
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    transition: opacity 0.4s;
+}
+
+.map-overlay.hidden {
+    opacity: 0;
+}
+
+.leaflet-container {
+    background: #172238;
+    font-family: inherit;
+}
+
+.nearby-list {
+    margin-top: 20px;
+}
+
+.provider-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 11px;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.35s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.provider-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.provider-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.provider-name .emoji {
+    font-size: 20px;
+}
+
+.provider-badge {
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.badge-green {
+    background: rgba(22,163,74,0.18);
+    color: #4ADE80;
+    border: 1px solid rgba(22,163,74,0.4);
+}
+
+.badge-red {
+    background: rgba(220,38,38,0.18);
+    color: #FCA5A5;
+    border: 1px solid rgba(220,38,38,0.4);
+}
+
+.provider-info {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-top: 6px;
+}
+
+.provider-info b {
+    color: var(--ink);
+}
+
+.provider-call {
+    width: 100%;
+    border: 0;
+    background: linear-gradient(145deg, #16A34A, #15803D);
+    color: #fff;
+    padding: 12px;
+    border-radius: 12px;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(22,163,74,0.3);
+    font-family: inherit;
+}
+
+.provider-call:active {
+    transform: scale(0.97);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background: rgba(15,26,48,0.98);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 30;
+    backdrop-filter: blur(15px);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.nav-btn {
+    flex: 1;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.nav-btn .nav-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.nav-btn .nav-label {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.nav-btn.active {
+    color: #60A5FA;
+}
+
+.nav-btn.active .nav-label {
+    font-weight: 900;
+}
+
+.nav-btn.red .nav-icon {
+    filter: drop-shadow(0 0 8px rgba(220,38,38,0.7));
+}
+
+.nav-btn:active {
+    transform: scale(0.92);
+}
+</style>
+
+<div id="account" class="screen">
+    <div class="placeholder-msg">
+        <div class="big">👤</div>
+        <div>الحساب — قيد البناء</div>
+    </div>
+</div>
+
+<div id="emergency" class="screen">
+    <div class="placeholder-msg">
+        <div class="big">🚨</div>
+        <div>الطوارئ — قيد البناء</div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const Store = {
+    get(key) {
+        try { return localStorage.getItem(key); }
+        catch(e) { return null; }
+    },
+    set(key, val) {
+        try { localStorage.setItem(key, val); }
+        catch(e) {}
+    },
+    getJSON(key, def) {
+        try {
+            const v = this.get(key);
+            return v ? JSON.parse(v) : def;
+        } catch(e) { return def; }
+    },
+    setJSON(key, obj) {
+        this.set(key, JSON.stringify(obj));
+    },
+    remove(key) {
+        try { localStorage.removeItem(key); }
+        catch(e) {}
+    }
+};
+
+const I18N = {
+    ar: {
+        tagline: "مساعدتك عند تعطل مركبتك",
+        emergencyTitle: "الطوارئ",
+        police1: "الدرك الوطني",
+        police2: "الشرطة",
+        police3: "الحماية المدنية",
+        shareLocation: "مشاركة موقعي لوصول الخدمة",
+        enterApp: "دخول التطبيق",
+        footer: "خدمة الإغاثة والمساعدة على الطرقات",
+        footer2: "24/7 في كل ولايات الجزائر",
+        langLabel: "Français"
+    },
+    fr: {
+        tagline: "Assistance en cas de panne",
+        emergencyTitle: "Urgences",
+        police1: "Gendarmerie",
+        police2: "Police",
+        police3: "Protection Civile",
+        shareLocation: "Partager ma position",
+        enterApp: "Entrer",
+        footer: "Service d'assistance routière",
+        footer2: "24/7 dans toute l'Algérie",
+        langLabel: "العربية"
+    }
+};
+
+let currentLang = Store.get("salakni_lang") || "ar";
+
+function applyLang() {
+    const dict = I18N[currentLang];
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+    });
+    const langLabel = document.getElementById("langLabel");
+    if (langLabel) langLabel.textContent = dict.langLabel;
+
+    if (currentLang === "fr") {
+        document.body.classList.add("lang-fr");
+        document.documentElement.lang = "fr";
+        document.documentElement.dir = "ltr";
+    } else {
+        document.body.classList.remove("lang-fr");
+        document.documentElement.lang = "ar";
+        document.documentElement.dir = "rtl";
+    }
+    Store.set("salakni_lang", currentLang);
+}
+
+function toggleLang() {
+    currentLang = currentLang === "ar" ? "fr" : "ar";
+    applyLang();
+}
+
+function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+}
+
+function shareLocation() {
+    if (!navigator.geolocation) {
+        toast("⚠️ الموقع غير متاح على هذا الجهاز");
+        return;
+    }
+    toast("📍 جاري تحديد موقعك...");
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const link = "https://www.google.com/maps?q=" + lat + "," + lng;
+            Store.setJSON("salakni_shared_location", { lat: lat, lng: lng, ts: Date.now() });
+            const text = (currentLang === "ar"
+                ? "أحتاج مساعدة على الطريق. موقعي: "
+                : "J'ai besoin d'aide sur la route. Ma position: ") + link;
+            window.location.href = "whatsapp://send?text=" + encodeURIComponent(text);
+        },
+        (err) => {
+            toast("⚠️ تعذر تحديد الموقع. اسمح بالوصول للموقع.");
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+}
+
+function enterApp() {
+    Store.set("salakni_splash_seen", "true");
+    showScreen("home");
+    if (typeof renderHome === "function") {
+        renderHome();
+    }
+}
+
+let toastTimer = null;
+function toast(msg) {
+    const el = document.getElementById("toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+window.addEventListener("load", () => {
+    applyLang();
+    const splashSeen = Store.get("salakni_splash_seen");
+    if (splashSeen === "true") {
+        showScreen("home");
+        if (typeof renderHome === "function") {
+            setTimeout(renderHome, 100);
+        }
+    } else {
+        showScreen("splash");
+    }
+});
+</script>
+
+</body>
 </html>
