@@ -1023,7 +1023,157 @@ function toast(msg) {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
 }
+/* =====================================================
+   الجزء 3: الدوال + النصوص
+===================================================== */
 
+Object.assign(I18N.ar, {
+    welcome: "مرحبًا بك",
+    services: "الخدمات",
+    svcTowCars: "قطر السيارات",
+    svcTowCarsDesc: "مساعدة ونقل السيارة",
+    svcTowTrucks: "قطر الشاحنات",
+    svcTowTrucksDesc: "أعطال ونجدة الشاحنات",
+    svcWorkshop: "ورشة متنقلة",
+    svcWorkshopDesc: "مصلح قريب منك",
+    svcParts: "قطع الغيار",
+    svcPartsDesc: "محلات قطع الغيار القريبة",
+    yourLocation: "موقعك",
+    locating: "جاري تحديد موقعك...",
+    locationOk: "تم تحديد موقعك",
+    locationError: "تعذر تحديد موقعك",
+    navHome: "الرئيسية",
+    navNearby: "قريب مني",
+    navAccount: "حسابي",
+    navEmergency: "طوارئ",
+    soon: "قريباً...",
+    noProviders: "لا يوجد مقدمو خدمة قريبون حالياً"
+});
+
+Object.assign(I18N.fr, {
+    welcome: "Bienvenue",
+    services: "Services",
+    svcTowCars: "Remorquage Auto",
+    svcTowCarsDesc: "Assistance et transport",
+    svcTowTrucks: "Remorquage Camions",
+    svcTowTrucksDesc: "Pannes et secours",
+    svcWorkshop: "Atelier Mobile",
+    svcWorkshopDesc: "Mécanicien proche",
+    svcParts: "Pièces Détachées",
+    svcPartsDesc: "Magasins à proximité",
+    yourLocation: "Votre position",
+    locating: "Localisation en cours...",
+    locationOk: "Position détectée",
+    locationError: "Position introuvable",
+    navHome: "Accueil",
+    navNearby: "À proximité",
+    navAccount: "Compte",
+    navEmergency: "Urgence",
+    soon: "Bientôt...",
+    noProviders: "Aucun prestataire à proximité"
+});
+
+function t(key) {
+    return (I18N[currentLang] && I18N[currentLang][key]) || key;
+}
+
+function navHome() {
+    setActiveNav(0);
+    if (typeof renderHome === "function") renderHome();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function navNearby() {
+    setActiveNav(1);
+    if (typeof locateUser === "function") locateUser();
+}
+
+function navAccount() {
+    setActiveNav(2);
+    openAccount();
+}
+
+function setActiveNav(index) {
+    document.querySelectorAll(".nav-btn").forEach(function(b, i) {
+        b.classList.toggle("active", i === index);
+    });
+}
+
+function openService(id) {
+    toast("🚧 " + t("soon") + " — " + id);
+}
+
+function openAccount() {
+    toast("👤 " + t("soon"));
+}
+
+function emergencyCall() {
+    var msg = currentLang === "ar"
+        ? "🚨 اتصل بأحد الأرقام:\n🛡️ الدرك: 1055\n🚓 الشرطة: 17\n🚒 الحماية المدنية: 14"
+        : "🚨 Appelez un numéro:\n🛡️ Gendarmerie: 1055\n🚓 Police: 17\n🚒 Protection Civile: 14";
+    toast(msg);
+}
+
+function renderHome() {
+    var greet = document.getElementById("greeting");
+    if (greet) {
+        var savedName = Store.get("salakni_user_name");
+        if (savedName) {
+            greet.textContent = (currentLang === "ar" ? "مرحباً، " : "Bonjour, ") + savedName;
+        } else {
+            greet.textContent = t("welcome");
+        }
+    }
+    applyLang();
+    if (typeof locateUser === "function") {
+        setTimeout(locateUser, 300);
+    }
+}
+
+function locateUser() {
+    var status = document.getElementById("mapStatus");
+    if (status) {
+        status.classList.remove("hidden");
+        status.innerHTML = '📍 <span>' + t("locating") + '</span>';
+    }
+
+    if (!navigator.geolocation) {
+        if (status) status.innerHTML = '⚠️ ' + t("locationError");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+            var accuracy = pos.coords.accuracy;
+
+            Store.setJSON("salakni_user_location", {
+                lat: lat,
+                lng: lng,
+                acc: accuracy,
+                ts: Date.now()
+            });
+
+            if (status) {
+                status.innerHTML = '✅ ' + t("locationOk");
+                setTimeout(function() {
+                    status.classList.add("hidden");
+                }, 2500);
+            }
+
+            if (typeof updateHomeMap === "function") {
+                updateHomeMap(lat, lng, accuracy);
+            }
+        },
+        function(err) {
+            if (status) {
+                status.innerHTML = '⚠️ ' + t("locationError");
+            }
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+}
 window.addEventListener("load", () => {
     applyLang();
     const splashSeen = Store.get("salakni_splash_seen");
