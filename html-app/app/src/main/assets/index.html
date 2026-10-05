@@ -1121,11 +1121,9 @@ function openAccount() {
 }
 
 function emergencyCall() {
-    var msg = currentLang === "ar"
-        ? "🚨 اتصل بأحد الأرقام:\n🛡️ الدرك: 1055\n🚓 الشرطة: 17\n🚒 الحماية المدنية: 14"
-        : "🚨 Appelez un numéro:\n🛡️ Gendarmerie: 1055\n🚓 Police: 17\n🚒 Protection Civile: 14";
-    toast(msg);
+    openModal("emergencyModal");
 }
+    
 
 function renderHome() {
     var greet = document.getElementById("greeting");
