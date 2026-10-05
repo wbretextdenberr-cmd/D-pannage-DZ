@@ -2220,6 +2220,91 @@ function submitWorkshopRequest() {
 
     toast("✅ " + t("workshopSaved"));
 }
+    /* =====================================================
+   الجزء 9: دوال قطع الغيار
+===================================================== */
+
+Object.assign(I18N.ar, {
+    partsTitle: "قطع الغيار",
+    partsSubtitle: "اختر نوع المركبة",
+    partsCar: "سيارة",
+    partsTruck: "شاحنة",
+    partsMoto: "دراجة نارية",
+    partsDetailsTitle: "تفاصيل المركبة",
+    partsDetailsSubtitle: "لنجد المحل المناسب",
+    partsShopType: "نوع المحل",
+    partsShopChoose: "اختر نوع المحل",
+    partsMechElec: "هيكل ميكانيك وكهرباء",
+    partsElec: "كهرباء وحدها",
+    partsSaved: "تم تسجيل طلب قطع الغيار",
+    partsFillShop: "اختر نوع المحل"
+});
+
+Object.assign(I18N.fr, {
+    partsTitle: "Pièces Détachées",
+    partsSubtitle: "Choisissez le véhicule",
+    partsCar: "Voiture",
+    partsTruck: "Camion",
+    partsMoto: "Moto",
+    partsDetailsTitle: "Détails du véhicule",
+    partsDetailsSubtitle: "Pour trouver le magasin",
+    partsShopType: "Type de magasin",
+    partsShopChoose: "Choisir le type",
+    partsMechElec: "Mécanique et électricité",
+    partsElec: "Électricité seulement",
+    partsSaved: "Demande de pièces enregistrée",
+    partsFillShop: "Choisissez le type de magasin"
+});
+
+var currentPartsVehicle = null;
+
+function selectPartsVehicle(vehicle) {
+    currentPartsVehicle = vehicle;
+    closeModal("partsModal");
+
+    var brand = document.getElementById("partsBrand");
+    var model = document.getElementById("partsModel");
+    var shopType = document.getElementById("partsShopType");
+    if (brand) brand.value = "";
+    if (model) model.value = "";
+    if (shopType) shopType.value = "";
+
+    openModal("partsDetailsModal");
+}
+
+function submitPartsRequest() {
+    var shopType = document.getElementById("partsShopType").value;
+
+    if (!shopType) {
+        toast("⚠️ " + t("partsFillShop"));
+        return;
+    }
+
+    var brand = document.getElementById("partsBrand").value;
+    var model = document.getElementById("partsModel").value.trim();
+
+    closeModal("partsDetailsModal");
+
+    var userLoc = Store.getJSON("salakni_user_location", null);
+
+    var request = {
+        id: "PRT-" + Date.now(),
+        type: "parts",
+        driverLocation: userLoc,
+        vehicleType: currentPartsVehicle,
+        brand: brand,
+        model: model,
+        shopType: shopType,
+        status: "new",
+        createdAt: new Date().toISOString()
+    };
+
+    var requests = Store.getJSON("salakni_requests", []);
+    requests.unshift(request);
+    Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+    toast("✅ " + t("partsSaved"));
+}
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
