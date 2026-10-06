@@ -3325,8 +3325,10 @@ function finalizeRegister() {
             lat: pendingUser.provider.lat,
             lng: pendingUser.provider.lng,
             busy: false,
-            createdAt: new Date().toISOString()
-        });
+                specialties: pendingUser.provider.specialties || null,
+                motoEquipped: pendingUser.provider.motoEquipped || false,
+                createdAt: new Date().toISOString()
+            });
         Store.setJSON("salakni_providers", providers);
     }
 
