@@ -1583,7 +1583,25 @@ select.field-input {
         <input type="password" id="registerPassword" class="field-input" placeholder="••••••">
 
         <div id="providerFields" style="display:none;">
-
+<div id="towerSpecialtyFields" style="display:none;margin-bottom:8px;">
+    <label class="field-label" data-i18n="towerSpecialty">تخصص القاطر</label>
+    <label class="ack-check">
+        <input type="checkbox" id="towerCars" value="cars">
+        <span data-i18n="towerCars">🚗 قطر سيارات</span>
+    </label>
+    <label class="ack-check">
+        <input type="checkbox" id="towerTrucks" value="trucks">
+        <span data-i18n="towerTrucks">🚛 قطر شاحنات</span>
+    </label>
+    <label class="ack-check">
+        <input type="checkbox" id="towerMotos" value="motos">
+        <span data-i18n="towerMotos">🏍️ نقل دراجات نارية</span>
+    </label>
+    <label class="ack-check">
+        <input type="checkbox" id="towerMotoEquip">
+        <span data-i18n="towerMotoEquip">هل لديك تجهيز نقل الدراجة؟</span>
+    </label>
+</div>
             <label class="field-label" data-i18n="businessName">اسم النشاط</label>
             <input type="text" id="registerBusiness" class="field-input" placeholder="Ex: ورشة الأمل">
 
@@ -1960,6 +1978,31 @@ select.field-input {
 }
 .rating-stars span:active {
     transform: scale(1.2);
+}
+    .ack-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(15,26,48,0.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+}
+.ack-check input {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+.ack-check:active {
+    transform: scale(0.98);
 }
 </style>
     <div id="toast"></div>
