@@ -4087,7 +4087,7 @@ function findProvidersInRadius(driverLat, driverLng, providers, radiusKm) {
 }
 
 /* ---------- الحصول على قائمة مقدمي الخدمة المتاحين ---------- */
-function getAvailableProviders(roleFilter) {
+function getAvailableProviders(roleFilter, specialty) {
     var users = Store.getJSON("salakni_users", []);
 
     return users.filter(function(u) {
@@ -4102,6 +4102,14 @@ function getAvailableProviders(roleFilter) {
                 u.role !== "workshop" && u.role !== "workshop-mobile") return false;
             if (roleFilter === "parts_shop" &&
                 u.role !== "parts_shop" && u.role !== "shop") return false;
+        }
+
+        /* فلترة حسب تخصص القاطر */
+        if (roleFilter === "tower" && specialty) {
+            var specs = u.specialties;
+            if (!specs || !Array.isArray(specs) || specs.indexOf(specialty) === -1) {
+                return false;
+            }
         }
 
         return true;
