@@ -2005,6 +2005,194 @@ select.field-input {
     transform: scale(0.98);
 }
 </style>
+   <!-- نافذة الرصيد -->
+<div id="walletModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon" style="background:linear-gradient(145deg,#16A34A,#15803D);box-shadow:0 0 25px rgba(22,163,74,0.55);">💰</div>
+            <h2>رصيدي</h2>
+            <p>إدارة رصيدك وحركاتك</p>
+        </div>
+
+        <div class="wallet-balance-box">
+            <div class="wallet-balance-label">الرصيد الحالي</div>
+            <div class="wallet-balance-value" id="walletBalanceValue">0 دج</div>
+        </div>
+
+        <div class="wallet-stats">
+            <div class="wallet-stat">
+                <div class="wallet-stat-icon">📊</div>
+                <div class="wallet-stat-label">طلبات منجزة</div>
+                <div class="wallet-stat-value" id="walletCompletedCount">0</div>
+            </div>
+            <div class="wallet-stat">
+                <div class="wallet-stat-icon">🎁</div>
+                <div class="wallet-stat-label">مجانية متبقية</div>
+                <div class="wallet-stat-value" id="walletFreeLeft">10</div>
+            </div>
+        </div>
+
+        <div id="walletStatusBox" class="wallet-status-box"></div>
+
+        <div class="modal-divider"></div>
+
+        <h3 style="color:#fff;font-size:15px;margin-bottom:10px;">سجل الحركات</h3>
+        <div id="walletHistory" class="wallet-history"></div>
+
+        <div class="modal-divider"></div>
+
+        <button class="btn-primary" style="background:linear-gradient(145deg,#16A34A,#15803D);box-shadow:0 6px 20px rgba(22,163,74,0.4);" onclick="topUpWallet()">
+            💳 تعبئة الرصيد
+        </button>
+
+        <button class="modal-close" onclick="closeModal('walletModal')">إغلاق</button>
+
+    </div>
+</div>
+
+<!-- نافذة "رصيدك غير كافٍ" -->
+<div id="notEnoughBalanceModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon red">⚠️</div>
+            <h2>رصيدك غير كافٍ</h2>
+            <p>عبّئ رصيدك لتتمكن من قبول الطلبات</p>
+        </div>
+
+        <div class="not-enough-info">
+            <div class="not-enough-row">
+                <span>رصيدك الحالي</span>
+                <b id="notEnoughCurrent">0 دج</b>
+            </div>
+            <div class="not-enough-row">
+                <span>الحد الأدنى المطلوب</span>
+                <b id="notEnoughRequired">30 دج</b>
+            </div>
+        </div>
+
+        <button class="btn-primary" style="background:linear-gradient(145deg,#16A34A,#15803D);box-shadow:0 6px 20px rgba(22,163,74,0.4);" onclick="closeModal('notEnoughBalanceModal'); openWallet();">
+            💳 تعبئة الرصيد
+        </button>
+
+        <button class="modal-close" onclick="closeModal('notEnoughBalanceModal')">إلغاء</button>
+
+    </div>
+</div>
+
+<style>
+.wallet-balance-box {
+    background: linear-gradient(145deg, rgba(22,163,74,0.15), rgba(22,163,74,0.05));
+    border: 1.5px solid rgba(22,163,74,0.5);
+    border-radius: 18px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    box-shadow: 0 0 25px rgba(22,163,74,0.2);
+}
+.wallet-balance-label {
+    font-size: 13px;
+    color: #4ADE80;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.wallet-balance-value {
+    font-size: 34px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+.wallet-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.wallet-stat {
+    background: rgba(15,26,48,0.6);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+}
+.wallet-stat-icon { font-size: 22px; margin-bottom: 4px; }
+.wallet-stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.wallet-stat-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+}
+.wallet-status-box {
+    background: rgba(15,26,48,0.6);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 14px;
+}
+.wallet-status-box.free {
+    background: rgba(22,163,74,0.15);
+    border-color: rgba(22,163,74,0.5);
+    color: #4ADE80;
+}
+.wallet-status-box.warning {
+    background: rgba(245,158,11,0.15);
+    border-color: rgba(245,158,11,0.5);
+    color: #FCD34D;
+}
+.wallet-status-box.danger {
+    background: rgba(220,38,38,0.15);
+    border-color: rgba(220,38,38,0.5);
+    color: #FCA5A5;
+}
+.wallet-history { max-height: 180px; overflow-y: auto; }
+.wallet-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(38,56,92,0.5);
+    font-size: 13px;
+}
+.wallet-history-item:last-child { border-bottom: 0; }
+.wallet-history-item .label { color: var(--muted); }
+.wallet-history-item .amount { font-weight: 800; direction: ltr; }
+.wallet-history-item .amount.plus { color: #4ADE80; }
+.wallet-history-item .amount.minus { color: #FCA5A5; }
+.wallet-history-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 20px;
+}
+.not-enough-info {
+    background: rgba(220,38,38,0.1);
+    border: 1.5px solid rgba(220,38,38,0.4);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+.not-enough-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(220,38,38,0.2);
+}
+.not-enough-row:last-child { border-bottom: 0; }
+.not-enough-row span { color: var(--muted); }
+.not-enough-row b { color: #fff; font-weight: 800; direction: ltr; }
+</style>
     <div id="toast"></div>
 
 <script>
