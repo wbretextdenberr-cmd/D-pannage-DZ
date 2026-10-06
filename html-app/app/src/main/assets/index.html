@@ -2513,7 +2513,16 @@ function renderNearbyList(providers) {
             ? '<span class="provider-badge badge-red">🔴 مشغول</span>'
             : '<span class="provider-badge badge-green">🟢 متاح</span>';
 
-        card.innerHTML =
+       /* نص التخصص للقاطرات */
+var specText = "";
+if (p.role === "tower" && p.specialties && Array.isArray(p.specialties)) {
+    var specLabels = [];
+    if (p.specialties.indexOf("cars") !== -1) specLabels.push("🚗");
+    if (p.specialties.indexOf("trucks") !== -1) specLabels.push("🚛");
+    if (p.specialties.indexOf("motos") !== -1) specLabels.push("🏍️");
+    if (specLabels.length) specText = ' <span style="font-size:13px">' + specLabels.join(" ") + '</span>';
+}
+ card.innerHTML =
             '<div class="provider-head">' +
                 '<div class="provider-name"><span class="emoji">' + (p.emoji || "🔧") + '</span>' + escapeHtml(p.name) + '</div>' +
                 busyBadge +
