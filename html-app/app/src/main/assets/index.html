@@ -4138,8 +4138,13 @@ function calculateDispatch(request) {
     var lng = request.driverLocation.lng;
     var roleFilter = getProviderRolesForRequest(request.type);
 
-    var candidates = getAvailableProviders(roleFilter);
+    
+/* تحديد التخصص المطلوب */
+var specialty = null;
+if (request.type === "tow-cars") specialty = "cars";
+else if (request.type === "tow-trucks") specialty = "trucks";
 
+var candidates = getAvailableProviders(roleFilter, specialty);
     if (candidates.length === 0) {
         return { total: 0, radiusKm: 0, order: [], providers: [] };
     }
