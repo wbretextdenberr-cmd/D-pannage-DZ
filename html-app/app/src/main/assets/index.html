@@ -4419,6 +4419,260 @@ function recomputeDispatch(requestId) {
     /* إرسال لمقدمي الخدمة */
     dispatchRequestToProviders(request, request.dispatch);
 }
+    /* =====================================================
+   الجزء 16: نظام الرصيد والاشتراك المؤجل
+===================================================== */
+
+/* ثوابت النظام */
+var WALLET_FREE_REQUESTS = 10;      /* أول 10 طلبات مجانية */
+var WALLET_COMMISSION_RATE = 0.01;  /* عمولة 1% */
+var WALLET_MIN_BALANCE = 30;        /* الحد الأدنى التقني */
+
+/* ---------- قراءة محفظة مقدم الخدمة ---------- */
+function getWallet(phone) {
+    var wallets = Store.getJSON("salakni_wallets", {});
+    if (!wallets[phone]) {
+        wallets[phone] = {
+            balance: 0,
+            completedRequests: 0,
+            history: [],
+            activatedAt: null
+        };
+        Store.setJSON("salakni_wallets", wallets);
+    }
+    return wallets[phone];
+}
+
+/* ---------- حفظ محفظة مقدم الخدمة ---------- */
+function saveWallet(phone, wallet) {
+    var wallets = Store.getJSON("salakni_wallets", {});
+    wallets[phone] = wallet;
+    Store.setJSON("salakni_wallets", wallets);
+}
+
+/* ---------- إضافة حركة للسجل ---------- */
+function addWalletHistory(wallet, type, amount, label) {
+    wallet.history.unshift({
+        type: type,             /* "topup" | "commission" */
+        amount: amount,
+        label: label || "",
+        ts: Date.now()
+    });
+    /* احتفظ بآخر 50 حركة فقط */
+    wallet.history = wallet.history.slice(0, 50);
+}
+
+/* ---------- التحقق: هل الاشتراك مفعّل؟ ---------- */
+function isSubscriptionActive(phone) {
+    var wallet = getWallet(phone);
+    return wallet.completedRequests >= WALLET_FREE_REQUESTS;
+}
+
+/* ---------- عدد الطلبات المجانية المتبقية ---------- */
+function getFreeRequestsLeft(phone) {
+    var wallet = getWallet(phone);
+    var left = WALLET_FREE_REQUESTS - wallet.completedRequests;
+    return left > 0 ? left : 0;
+}
+
+/* ---------- فحص الرصيد عند القبول ---------- */
+function canAcceptRequest(phone, requestValue) {
+    /* إذا لم يُفعّل الاشتراك بعد → يمكنه القبول */
+    if (!isSubscriptionActive(phone)) {
+        return { ok: true, reason: "free" };
+    }
+
+    /* الاشتراك مفعّل: يحتاج رصيداً */
+    var wallet = getWallet(phone);
+    var commission = Math.ceil((requestValue || 3000) * WALLET_COMMISSION_RATE);
+
+    if (wallet.balance < commission) {
+        return {
+            ok: false,
+            reason: "insufficient",
+            needed: commission,
+            balance: wallet.balance
+        };
+    }
+
+    return { ok: true, reason: "paid", needed: commission };
+}
+
+/* ---------- خصم العمولة بعد الإنجاز ---------- */
+function deductCommission(phone, requestValue) {
+    var wallet = getWallet(phone);
+
+    /* زيادة عدّاد الطلبات المنجزة */
+    wallet.completedRequests = (wallet.completedRequests || 0) + 1;
+
+    /* إذا لم يُفعّل الاشتراك بعد → لا خصم */
+    if (wallet.completedRequests <= WALLET_FREE_REQUESTS) {
+        /* إشعارات عند الاقتراب من نهاية المجاني */
+        if (wallet.completedRequests === 5) {
+            addNotification(phone, "🎁 تنبيه",
+                "بقي 5 طلبات مجانية قبل تفعيل الاشتراك");
+        } else if (wallet.completedRequests === 8) {
+            addNotification(phone, "⚠️ تنبيه",
+                "بقي طلبان مجانيان — استعد لتعبئة رصيدك");
+        } else if (wallet.completedRequests === WALLET_FREE_REQUESTS) {
+            wallet.activatedAt = Date.now();
+            addNotification(phone, "💰 تم تفعيل الاشتراك",
+                "ستُخصم عمولة 1% من كل طلب. عبّئ رصيدك.");
+        }
+        saveWallet(phone, wallet);
+        return { deducted: 0, isFree: true };
+    }
+
+    /* اشتراك مفعّل: اخصم 1% */
+    var commission = Math.ceil((requestValue || 3000) * WALLET_COMMISSION_RATE);
+    wallet.balance = Math.max(0, wallet.balance - commission);
+
+    addWalletHistory(wallet, "commission", -commission,
+        "عمولة طلب بقيمة " + (requestValue || 3000) + " دج");
+
+    /* إشعارات الرصيد المنخفض */
+    if (wallet.balance < WALLET_MIN_BALANCE && wallet.balance > 0) {
+        addNotification(phone, "🚨 رصيدك على وشك النفاد",
+            "رصيدك الحالي " + wallet.balance + " دج");
+    } else if (wallet.balance === 0) {
+        addNotification(phone, "⛔ رصيدك صفر",
+            "لن تتمكن من قبول طلبات حتى تعبّئ رصيدك");
+    }
+
+    saveWallet(phone, wallet);
+    return { deducted: commission, isFree: false };
+}
+
+/* ---------- فتح شاشة الرصيد ---------- */
+function openWallet() {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        toast("🔐 سجّل الدخول أولاً");
+        return;
+    }
+
+    var wallet = getWallet(session.phone);
+
+    /* الرصيد */
+    var balanceEl = document.getElementById("walletBalanceValue");
+    if (balanceEl) balanceEl.textContent = wallet.balance + " دج";
+
+    /* الطلبات المنجزة */
+    var completedEl = document.getElementById("walletCompletedCount");
+    if (completedEl) completedEl.textContent = wallet.completedRequests;
+
+    /* المجانية المتبقية */
+    var freeLeft = getFreeRequestsLeft(session.phone);
+    var freeEl = document.getElementById("walletFreeLeft");
+    if (freeEl) freeEl.textContent = freeLeft;
+
+    /* الحالة */
+    var statusBox = document.getElementById("walletStatusBox");
+    if (statusBox) {
+        statusBox.className = "wallet-status-box";
+
+        if (!isSubscriptionActive(session.phone)) {
+            statusBox.classList.add("free");
+            statusBox.innerHTML =
+                "🎁 <b>الحساب مجاني</b><br>" +
+                "تبقى لك <b>" + freeLeft + "</b> طلبات مجانية قبل تفعيل الاشتراك.";
+        } else if (wallet.balance >= WALLET_MIN_BALANCE) {
+            statusBox.classList.add("warning");
+            statusBox.innerHTML =
+                "💰 <b>الاشتراك مفعّل</b><br>" +
+                "تُخصم عمولة 1% من كل طلب. رصيدك كافٍ.";
+        } else {
+            statusBox.classList.add("danger");
+            statusBox.innerHTML =
+                "⛔ <b>رصيدك منخفض</b><br>" +
+                "عبّئ رصيدك لتتمكن من قبول الطلبات.";
+        }
+    }
+
+    /* سجل الحركات */
+    var historyEl = document.getElementById("walletHistory");
+    if (historyEl) {
+        if (!wallet.history || wallet.history.length === 0) {
+            historyEl.innerHTML = '<div class="wallet-history-empty">لا توجد حركات بعد.</div>';
+        } else {
+            historyEl.innerHTML = wallet.history.map(function(h) {
+                var sign = h.amount > 0 ? "+" : "";
+                var cls = h.amount > 0 ? "plus" : "minus";
+                var label = h.label || (h.type === "topup" ? "تعبئة رصيد" : "عمولة");
+                var date = new Date(h.ts).toLocaleDateString(currentLang === "ar" ? "ar-DZ" : "fr-FR");
+                return '<div class="wallet-history-item">' +
+                    '<div><div class="label">' + escapeHtml(label) + '</div>' +
+                    '<div class="label" style="font-size:11px">' + date + '</div></div>' +
+                    '<div class="amount ' + cls + '">' + sign + h.amount + ' دج</div>' +
+                    '</div>';
+            }).join("");
+        }
+    }
+
+    openModal("walletModal");
+}
+
+/* ---------- تعبئة الرصيد (تجريبي) ---------- */
+function topUpWallet() {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        toast("🔐 سجّل الدخول أولاً");
+        return;
+    }
+
+    /* في الوضع التجريبي: تعبئة 1000 دج فوري */
+    var amount = 1000;
+
+    var wallet = getWallet(session.phone);
+    wallet.balance += amount;
+    addWalletHistory(wallet, "topup", amount, "تعبئة رصيد تجريبية");
+    saveWallet(session.phone, wallet);
+
+    toast("✅ تمت إضافة " + amount + " دج");
+
+    /* تحديث الشاشة */
+    openWallet();
+}
+
+/* ---------- عرض نافذة "رصيدك غير كافٍ" ---------- */
+function showNotEnoughBalance(needed, current) {
+    var neededEl = document.getElementById("notEnoughRequired");
+    if (neededEl) neededEl.textContent = needed + " دج";
+
+    var currentEl = document.getElementById("notEnoughCurrent");
+    if (currentEl) currentEl.textContent = current + " دج";
+
+    openModal("notEnoughBalanceModal");
+}
+
+/* ---------- تعديل completeActiveRequest لإضافة الخصم ---------- */
+var _origCompleteActiveRequest = completeActiveRequest;
+completeActiveRequest = function() {
+    if (!currentActiveRequestId) return;
+
+    /* اقرأ الطلب لمعرفة قيمة مقدم الخدمة */
+    var requests = Store.getJSON("salakni_requests", []);
+    var req = requests.find(function(r) { return r.id === currentActiveRequestId; });
+    if (!req) return;
+
+    /* اخصم العمولة من مقدم الخدمة */
+    if (req.acceptedBy && req.acceptedBy.phone) {
+        var requestValue = 3000; /* قيمة افتراضية — تُحدَّث لاحقاً من التسعير */
+        if (req.pricing && req.pricing.mode === "standard" && req.pricing.max) {
+            requestValue = req.pricing.max;
+        }
+        var result = deductCommission(req.acceptedBy.phone, requestValue);
+
+        if (result.isFree) {
+            toast("🎁 طلب مجاني — بقي " + getFreeRequestsLeft(req.acceptedBy.phone) + " مجاني");
+        } else {
+            toast("💰 خُصمت عمولة " + result.deducted + " دج");
+        }
+    }
+
+    /* استدعاء الأصلي */
+    _origCompleteActiveRequest();
+};
 /* إغلاق النافذة عند الضغط خارجها */
 document.addEventListener("click", function(e) {
     if (e.target.classList && e.target.classList.contains("modal-bg")) {
