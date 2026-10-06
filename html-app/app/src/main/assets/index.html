@@ -2452,16 +2452,19 @@ function getDemoProviders() {
             : "";
 
         return {
-            id: u.phone,
-            name: u.business || u.name || "مقدم خدمة",
-            emoji: getRoleEmoji(u.role),
-            lat: u.lat,
-            lng: u.lng,
-            phone: u.phone,
-            busy: u.busy === true,
-            km: Math.round(km * 10) / 10,
-            rating: rating,
-            behaviour: behaviour
+    id: u.phone,
+    name: u.business || u.name || "مقدم خدمة",
+    emoji: getRoleEmoji(u.role),
+    role: u.role,
+    specialties: u.specialties || null,
+    lat: u.lat,
+    lng: u.lng,
+    phone: u.phone,
+    busy: u.busy === true,
+    km: Math.round(km * 10) / 10,
+    rating: rating,
+    behaviour: behaviour
+};
         };
     }).sort(function(a, b) {
         return a.km - b.km;
