@@ -2529,7 +2529,23 @@ if (p.role === "tower" && p.specialties && Array.isArray(p.specialties)) {
             '</div>' +
             '<div class="provider-info">📍 <b>' + (p.km || "?") + ' كم</b></div>' +
             '<button class="provider-call" onclick="callProvider(\'' + escapeHtml(p.phone || "") + '\')">📞 اتصال</button>';
-
+/* إضافة التخصص برمجياً */
+if (p.role === "tower" && p.specialties && Array.isArray(p.specialties)) {
+    var nameEl = card.querySelector(".provider-name");
+    if (nameEl) {
+        var specLabels = [];
+        if (p.specialties.indexOf("cars") !== -1) specLabels.push("🚗");
+        if (p.specialties.indexOf("trucks") !== -1) specLabels.push("🚛");
+        if (p.specialties.indexOf("motos") !== -1) specLabels.push("🏍️");
+        if (specLabels.length) {
+            var span = document.createElement("span");
+            span.style.fontSize = "13px";
+            span.style.marginRight = "6px";
+            span.textContent = specLabels.join(" ");
+            nameEl.appendChild(span);
+        }
+    }
+}
         box.appendChild(card);
     });
 }
