@@ -3101,12 +3101,22 @@ function resetRegisterForm() {
 function onRoleChange() {
     var role = document.getElementById("registerRole").value;
     var pf = document.getElementById("providerFields");
+    var specialty = document.getElementById("towerSpecialtyFields");
     if (!pf) return;
 
     if (role === "driver" || role === "") {
         pf.style.display = "none";
+        if (specialty) specialty.style.display = "none";
     } else {
         pf.style.display = "block";
+
+        if (specialty) {
+            if (role === "tower") {
+                specialty.style.display = "block";
+            } else {
+                specialty.style.display = "none";
+            }
+        }
     }
 }
 
@@ -3219,6 +3229,27 @@ function submitRegister() {
             lng: currentProviderLocation.lng,
             acc: currentProviderLocation.acc
         };
+        
+/* إذا كان قاطر: اجمع التخصصات */
+if (role === "tower") {
+    var towerCars = document.getElementById("towerCars");
+    var towerTrucks = document.getElementById("towerTrucks");
+    var towerMotos = document.getElementById("towerMotos");
+    var towerMotoEquip = document.getElementById("towerMotoEquip");
+
+    var specialties = [];
+    if (towerCars && towerCars.checked) specialties.push("cars");
+    if (towerTrucks && towerTrucks.checked) specialties.push("trucks");
+    if (towerMotos && towerMotos.checked) specialties.push("motos");
+
+    if (specialties.length === 0) {
+        toast("⚠️ اختر نوعاً واحداً على الأقل من التخصصات");
+        return;
+    }
+
+    providerData.specialties = specialties;
+    providerData.motoEquipped = towerMotoEquip ? towerMotoEquip.checked : false;
+}
     }
 
     pendingUser = {
