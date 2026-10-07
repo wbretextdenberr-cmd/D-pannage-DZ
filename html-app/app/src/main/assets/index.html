@@ -5354,5 +5354,628 @@ document.head.appendChild(leafletScript);
     transform: scale(0.97);
 }
 </style>
+    
+<!-- ================================================
+     🌟 كتلة نظام التسعير الجديدة (v2)
+     ================================================ -->
+
+<!-- نافذة التسعير -->
+<div id="pricingModal" class="modal-bg">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-icon" style="background:linear-gradient(145deg,#F59E0B,#B45309);box-shadow:0 0 25px rgba(245,158,11,0.55);">💰</div>
+            <h2 id="pricingModalTitle">التسعير</h2>
+            <p id="pricingModalSubtitle">اختر طريقة التسعير</p>
+        </div>
+
+        <div id="pricingInfoBox" class="pricing-info-box">
+            <div class="pricing-info-row">
+                <span>📍 المسافة التقديرية</span>
+                <b id="pricingDistance">—</b>
+            </div>
+            <div class="pricing-info-row">
+                <span>💵 السعر التلقائي</span>
+                <b id="pricingAutoPrice">—</b>
+            </div>
+        </div>
+
+        <div class="pricing-options">
+            <button class="pricing-btn accept" onclick="confirmAutoPrice()" id="pricingAcceptBtn">
+                ✅ <span id="pricingAcceptLabel">أقبل بالسعر</span>
+            </button>
+            <button class="pricing-btn edit" onclick="openManualPrice()">
+                ✏️ <span id="pricingEditLabel">أعدّل السعر</span>
+            </button>
+            <button class="pricing-btn negotiate" onclick="confirmNegotiatedPrice()">
+                🤝 <span id="pricingNegotiateLabel">حسب الاتفاق</span>
+            </button>
+        </div>
+
+        <button class="modal-close" onclick="cancelPricing()" id="pricingCancelBtn">
+            إلغاء
+        </button>
+    </div>
+</div>
+
+<!-- نافذة تعديل السعر يدوياً -->
+<div id="manualPriceModal" class="modal-bg">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-icon" style="background:linear-gradient(145deg,#F59E0B,#B45309);box-shadow:0 0 25px rgba(245,158,11,0.55);">✏️</div>
+            <h2 id="manualPriceTitle">تعديل السعر</h2>
+            <p id="manualPriceSubtitle">أدخل السعر الذي تريده</p>
+        </div>
+
+        <div class="pricing-info-box">
+            <div class="pricing-info-row">
+                <span>💵 السعر المقترح</span>
+                <b id="manualSuggestedPrice">—</b>
+            </div>
+        </div>
+
+        <label class="field-label" id="manualPriceLabel">السعر (دج)</label>
+        <input type="number" id="manualPriceInput" class="field-input" 
+               inputmode="numeric" min="0" step="100" 
+               placeholder="Ex: 12000"
+               style="text-align:center;font-size:22px;font-weight:900;direction:ltr;">
+
+        <button class="btn-primary" onclick="saveManualPrice()" 
+                style="background:linear-gradient(145deg,#F59E0B,#B45309);box-shadow:0 6px 20px rgba(245,158,11,0.4);">
+            <span id="manualPriceSaveLabel">حفظ السعر</span>
+        </button>
+
+        <button class="modal-close" onclick="closeModal('manualPriceModal'); openModal('pricingModal');" 
+                id="manualPriceBackLabel">
+            رجوع
+        </button>
+    </div>
+</div>
+
+<style>
+.pricing-info-box {
+    background: rgba(15,26,48,0.6);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+.pricing-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(38,56,92,0.5);
+}
+.pricing-info-row:last-child { border-bottom: 0; }
+.pricing-info-row span { color: var(--muted); }
+.pricing-info-row b { color: #fff; font-weight: 800; direction: ltr; }
+
+.pricing-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.pricing-btn {
+    width: 100%;
+    border: 0;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.pricing-btn:active { transform: scale(0.97); }
+.pricing-btn.accept {
+    background: linear-gradient(145deg, #16A34A, #15803D);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(22,163,74,0.4);
+}
+.pricing-btn.edit {
+    background: linear-gradient(145deg, #F59E0B, #B45309);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(245,158,11,0.4);
+}
+.pricing-btn.negotiate {
+    background: rgba(37,99,235,0.15);
+    border: 1.5px solid rgba(37,99,235,0.5) !important;
+    color: #93C5FD;
+}
+</style>
+
+<script>
+/* ============================================================
+   🌟 نظام التسعير الجديدة (v2)
+   - يضيف: نافذة تسعير لقطر السيارات
+   - يعدّل: acceptReq / canAcceptRequest / deductCommission
+   - يضيف: عمولات مختلفة حسب نوع الخدمة
+   ============================================================ */
+
+/* ---------- 1. نصوص i18n الجديدة ---------- */
+Object.assign(I18N.ar, {
+    pricingTitle: "التسعير",
+    pricingSubtitle: "اختر طريقة التسعير",
+    pricingDistance: "📍 المسافة التقديرية",
+    pricingAutoPrice: "💵 السعر التلقائي",
+    pricingAccept: "✅ أقبل بالسعر",
+    pricingEdit: "✏️ أعدّل السعر",
+    pricingNegotiate: "🤝 حسب الاتفاق",
+    manualPriceTitle: "تعديل السعر",
+    manualPriceSubtitle: "أدخل السعر الذي تريده",
+    manualSuggestedPrice: "💵 السعر المقترح",
+    manualPriceLabel: "السعر (دج)",
+    manualPriceSave: "حفظ السعر",
+    pricingKm: "كم",
+    pricingDzd: "دج",
+    pricingAgreement: "حسب الاتفاق",
+    pricingCancel: "إلغاء",
+    pricingBack: "رجوع",
+    /* رسائل العمولات */
+    commFixedWorkshop: "100 دج (ورشة متنقلة)",
+    commPercent: "1% من قيمة الطلب",
+    commFreeParts: "مجاني (قطع غيار)"
+});
+
+Object.assign(I18N.fr, {
+    pricingTitle: "Tarification",
+    pricingSubtitle: "Choisissez le mode de tarification",
+    pricingDistance: "📍 Distance estimée",
+    pricingAutoPrice: "💵 Prix automatique",
+    pricingAccept: "✅ Accepter le prix",
+    pricingEdit: "✏️ Modifier le prix",
+    pricingNegotiate: "🤝 À l'amiable",
+    manualPriceTitle: "Modifier le prix",
+    manualPriceSubtitle: "Entrez le prix souhaité",
+    manualSuggestedPrice: "💵 Prix suggéré",
+    manualPriceLabel: "Prix (DA)",
+    manualPriceSave: "Enregistrer",
+    pricingKm: "km",
+    pricingDzd: "DA",
+    pricingAgreement: "À l'amiable",
+    pricingCancel: "Annuler",
+    pricingBack: "Retour",
+    commFixedWorkshop: "100 DA (atelier mobile)",
+    commPercent: "1% du montant",
+    commFreeParts: "Gratuit (pièces)"
+});
+
+/* ---------- 2. دالة حساب المسافة (Haversine × 1.4) ---------- */
+function calculateDistanceKm(lat1, lng1, lat2, lng2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var straight = R * c;
+    /* معامل الطريق الفعلي */
+    return Math.round(straight * 1.4 * 10) / 10;
+}
+
+/* ---------- 3. حساب سعر قطر السيارات ---------- */
+function calculateTowPrice(distanceKm) {
+    /* أقل من 100 كم → اتفاق */
+    if (distanceKm < 100) {
+        return {
+            mode: "agreement",
+            value: null,
+            distance: distanceKm,
+            text: t("pricingAgreement")
+        };
+    }
+    /* 100 كم أو أكثر → 70 × 1.5 × المسافة */
+    var price = Math.round(70 * 1.5 * distanceKm);
+    return {
+        mode: "auto",
+        value: price,
+        distance: distanceKm,
+        text: price + " " + t("pricingDzd")
+    };
+}
+
+/* ---------- 4. متغيرات نافذة التسعير ---------- */
+var _pendingRequestData = null;
+var _pendingPricing = null;
+
+/* ---------- 5. فتح نافذة التسعير ---------- */
+function openPricingModal(requestData, destinationLat, destinationLng) {
+    _pendingRequestData = requestData;
+
+    /* احسب المسافة */
+    var userLoc = Store.getJSON("salakni_user_location", null);
+    var distanceKm = 0;
+
+    if (userLoc && destinationLat && destinationLng) {
+        distanceKm = calculateDistanceKm(userLoc.lat, userLoc.lng, destinationLat, destinationLng);
+    } else if (userLoc && requestData && requestData.destination) {
+        /* ليس لدينا إحداثيات الوجهة — استخدم تقديراً ثابتاً */
+        distanceKm = 0;
+    }
+
+    _pendingPricing = calculateTowPrice(distanceKm);
+
+    /* اعرض البيانات */
+    var distEl = document.getElementById("pricingDistance");
+    if (distEl) distEl.textContent = _pendingPricing.distance + " " + t("pricingKm");
+
+    var priceEl = document.getElementById("pricingAutoPrice");
+    if (priceEl) {
+        priceEl.textContent = _pendingPricing.value 
+            ? _pendingPricing.value + " " + t("pricingDzd")
+            : t("pricingAgreement");
+    }
+
+    /* إخفاء/إظهار زر القبول حسب النوع */
+    var acceptBtn = document.getElementById("pricingAcceptBtn");
+    var editBtn = document.querySelector(".pricing-btn.edit");
+    
+    if (_pendingPricing.mode === "agreement") {
+        if (acceptBtn) acceptBtn.style.display = "none";
+        if (editBtn) editBtn.style.display = "none";
+    } else {
+        if (acceptBtn) acceptBtn.style.display = "flex";
+        if (editBtn) editBtn.style.display = "flex";
+    }
+
+    openModal("pricingModal");
+}
+
+/* ---------- 6. قبول السعر التلقائي ---------- */
+function confirmAutoPrice() {
+    if (!_pendingPricing || _pendingPricing.mode !== "auto") return;
+    
+    var data = Object.assign({}, _pendingRequestData);
+    data.pricing = {
+        mode: "auto",
+        value: _pendingPricing.value,
+        distance: _pendingPricing.distance
+    };
+    
+    closeModal("pricingModal");
+    _finalizeTowRequest(data);
+    
+    _pendingRequestData = null;
+    _pendingPricing = null;
+}
+
+/* ---------- 7. حسب الاتفاق ---------- */
+function confirmNegotiatedPrice() {
+    var data = Object.assign({}, _pendingRequestData);
+    data.pricing = {
+        mode: "agreement",
+        value: null,
+        distance: _pendingPricing ? _pendingPricing.distance : 0
+    };
+    
+    closeModal("pricingModal");
+    _finalizeTowRequest(data);
+    
+    _pendingRequestData = null;
+    _pendingPricing = null;
+}
+
+/* ---------- 8. تعديل السعر يدوياً ---------- */
+function openManualPrice() {
+    if (!_pendingPricing) return;
+    
+    var sugEl = document.getElementById("manualSuggestedPrice");
+    if (sugEl) {
+        sugEl.textContent = _pendingPricing.value 
+            ? _pendingPricing.value + " " + t("pricingDzd")
+            : t("pricingAgreement");
+    }
+    
+    var input = document.getElementById("manualPriceInput");
+    if (input) {
+        input.value = _pendingPricing.value || "";
+        input.focus();
+    }
+    
+    closeModal("pricingModal");
+    openModal("manualPriceModal");
+}
+
+/* ---------- 9. حفظ السعر اليدوي ---------- */
+function saveManualPrice() {
+    var input = document.getElementById("manualPriceInput");
+    if (!input) return;
+    
+    var value = parseInt(input.value, 10);
+    if (!value || value <= 0) {
+        toast("⚠️ أدخل سعراً صحيحاً");
+        return;
+    }
+    
+    var data = Object.assign({}, _pendingRequestData);
+    data.pricing = {
+        mode: "manual",
+        value: value,
+        distance: _pendingPricing ? _pendingPricing.distance : 0
+    };
+    
+    closeModal("manualPriceModal");
+    _finalizeTowRequest(data);
+    
+    _pendingRequestData = null;
+    _pendingPricing = null;
+}
+
+/* ---------- 10. إلغاء التسعير ---------- */
+function cancelPricing() {
+    closeModal("pricingModal");
+    closeModal("manualPriceModal");
+    _pendingRequestData = null;
+    _pendingPricing = null;
+}
+
+/* ---------- 11. إعادة تعريف submitTowRequest ---------- */
+var _origSubmitTowRequest = submitTowRequest;
+submitTowRequest = function() {
+    var wilaya = document.getElementById("destWilaya").value.trim();
+    var commune = document.getElementById("destCommune").value.trim();
+    var fault = document.getElementById("destFault").value;
+    var vehicle = document.getElementById("destVehicle").value;
+
+    if (!wilaya || !commune) {
+        toast("⚠️ " + t("fillAllFields"));
+        return;
+    }
+
+    closeModal("destinationModal");
+
+    /* جهّز البيانات */
+    var data = {
+        method: "custom",
+        wilaya: wilaya,
+        commune: commune,
+        fault: fault,
+        vehicle: vehicle
+    };
+    
+    /* افتح نافذة التسعير */
+    openPricingModal(data, null, null);
+};
+
+/* دالة مساعدة: تُستدعى بعد اختيار التسعير */
+function _finalizeTowRequest(data) {
+    var userLoc = Store.getJSON("salakni_user_location", null);
+
+    var request = {
+        id: "REQ-" + Date.now(),
+        type: "tow-cars",
+        driverLocation: userLoc,
+        destination: {
+            wilaya: data.wilaya,
+            commune: data.commune
+        },
+        method: data.method,
+        fault: data.fault,
+        vehicleType: data.vehicle,
+        pricing: data.pricing || { mode: "agreement", value: null },
+        status: "new",
+        createdAt: new Date().toISOString()
+    };
+
+    request.dispatch = calculateDispatch(request);
+
+    var requests = Store.getJSON("salakni_requests", []);
+    requests.unshift(request);
+    Store.setJSON("salakni_requests", requests.slice(0, 20));
+
+    dispatchRequestToProviders(request, request.dispatch);
+
+    var msg = t("requestSaved");
+    if (data.pricing && data.pricing.value) {
+        msg += " — 💰 " + data.pricing.value + " " + t("pricingDzd");
+    } else {
+        msg += " — 🤝 " + t("pricingAgreement");
+    }
+    toast("✅ " + msg);
+}
+
+/* ---------- 12. نظام العمولات الجديد ---------- */
+
+/* أنواع الخدمات الثابتة (100 دج) */
+var FIXED_COMMISSION_TYPES = {
+    "workshop": 100
+};
+
+/* أنواع الخدمات المجانية */
+var FREE_COMMISSION_TYPES = {
+    "parts": true
+};
+
+/* ---------- إعادة تعريف canAcceptRequest ---------- */
+var _origCanAcceptRequest = canAcceptRequest;
+canAcceptRequest = function(phone, requestValue, requestType) {
+    /* قطع غيار → مجاني دائماً */
+    if (requestType && FREE_COMMISSION_TYPES[requestType]) {
+        return { ok: true, reason: "free-parts", needed: 0, balance: 0 };
+    }
+    
+    /* الورشة المتنقلة → 100 دج ثابتة */
+    if (requestType && FIXED_COMMISSION_TYPES[requestType]) {
+        var fixedAmount = FIXED_COMMISSION_TYPES[requestType];
+        var wallet = getWallet(phone);
+        
+        /* إذا اشتراكه غير مفعّل → مجاني */
+        if (!isSubscriptionActive(phone)) {
+            return { ok: true, reason: "free" };
+        }
+        
+        if (wallet.balance < fixedAmount) {
+            return {
+                ok: false,
+                reason: "insufficient",
+                needed: fixedAmount,
+                balance: wallet.balance
+            };
+        }
+        return { ok: true, reason: "fixed", needed: fixedAmount };
+    }
+    
+    /* قطر السيارات/الشاحنات → 1% (السلوك الأصلي) */
+    return _origCanAcceptRequest(phone, requestValue);
+};
+
+/* ---------- إعادة تعريف deductCommission ---------- */
+var _origDeductCommission = deductCommission;
+deductCommission = function(phone, requestValue, requestType) {
+    /* قطع غيار → لا خصم */
+    if (requestType && FREE_COMMISSION_TYPES[requestType]) {
+        var wallet = getWallet(phone);
+        wallet.completedRequests = (wallet.completedRequests || 0) + 1;
+        saveWallet(phone, wallet);
+        return { deducted: 0, isFree: true, isParts: true };
+    }
+    
+    /* الورشة المتنقلة → 100 دج ثابتة */
+    if (requestType && FIXED_COMMISSION_TYPES[requestType]) {
+        var fixedAmount = FIXED_COMMISSION_TYPES[requestType];
+        var wallet2 = getWallet(phone);
+        wallet2.completedRequests = (wallet2.completedRequests || 0) + 1;
+        
+        /* إذا اشتراكه غير مفعّل → مجاني */
+        if (wallet2.completedRequests <= WALLET_FREE_REQUESTS) {
+            if (wallet2.completedRequests === WALLET_FREE_REQUESTS) {
+                wallet2.activatedAt = Date.now();
+                addNotification(phone, "💰 تم تفعيل الاشتراك",
+                    "ستُخصم 100 دج لكل طلب ورشة. عبّئ رصيدك.");
+            }
+            saveWallet(phone, wallet2);
+            return { deducted: 0, isFree: true };
+        }
+        
+        wallet2.balance = Math.max(0, wallet2.balance - fixedAmount);
+        addWalletHistory(wallet2, "commission", -fixedAmount,
+            "عمولة ورشة متنقلة");
+        
+        if (wallet2.balance < WALLET_MIN_BALANCE && wallet2.balance > 0) {
+            addNotification(phone, "🚨 رصيدك على وشك النفاد",
+                "رصيدك الحالي " + wallet2.balance + " دج");
+        }
+        
+        saveWallet(phone, wallet2);
+        return { deducted: fixedAmount, isFree: false };
+    }
+    
+    /* قطر السيارات/الشاحنات → 1% (السلوك الأصلي) */
+    return _origDeductCommission(phone, requestValue);
+};
+
+/* ---------- إعادة تعريف acceptReq ---------- */
+var _origAcceptReq = acceptReq;
+acceptReq = function(requestId) {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        toast("⚠️ " + t("userRoleRequired"));
+        return;
+    }
+
+    var requests = Store.getJSON("salakni_requests", []);
+    var idx = requests.findIndex(function(r) { return r.id === requestId; });
+    if (idx === -1) {
+        toast("⚠️ " + t("noActiveRequest"));
+        return;
+    }
+
+    var req = requests[idx];
+
+    if (req.status === "accepted" || req.status === "completed") {
+        toast("⚠️ " + t("requestAlreadyTaken"));
+        return;
+    }
+
+    var users = Store.getJSON("salakni_users", []);
+    var me = users.find(function(u) { return u.phone === session.phone; });
+    if (!me) {
+        toast("⚠️ " + t("userRoleRequired"));
+        return;
+    }
+
+    /* احسب قيمة الطلب */
+    var requestValue = 3000;
+    if (req.pricing && req.pricing.value) {
+        requestValue = req.pricing.value;
+    }
+
+    /* افحص الرصيد — مع تمرير نوع الطلب */
+    var check = canAcceptRequest(session.phone, requestValue, req.type);
+
+    if (!check.ok) {
+        showNotEnoughBalance(check.needed, check.balance);
+        return;
+    }
+
+    /* اقبل الطلب */
+    requests[idx].status = "accepted";
+    requests[idx].acceptedBy = {
+        phone: me.phone,
+        name: me.name,
+        role: me.role
+    };
+    requests[idx].acceptedAt = new Date().toISOString();
+    Store.setJSON("salakni_requests", requests);
+
+    if (req.driverPhone) {
+        addNotification(req.driverPhone, "✅ " + t("requestAccepted"),
+            me.name + " — " + me.phone);
+    }
+
+    if (check.reason === "free") {
+        var left = getFreeRequestsLeft(session.phone);
+        toast(t("freeRequestAccept").replace("{n}", left));
+    } else if (check.reason === "free-parts") {
+        toast("✅ " + t("requestAccepted") + " — 🎁 مجاني");
+    } else if (check.reason === "fixed") {
+        toast("✅ " + t("requestAccepted") + " — 💰 " + check.needed + " دج");
+    } else {
+        toast("✅ " + t("requestAccepted") + " — 💰 " + check.needed + " دج");
+    }
+
+    if (typeof renderHome === "function") renderHome();
+};
+
+/* ---------- تعديل completeActiveRequest لتمرير نوع الطلب ---------- */
+var _origComplete2 = completeActiveRequest;
+completeActiveRequest = function() {
+    if (!currentActiveRequestId) return;
+
+    var requests = Store.getJSON("salakni_requests", []);
+    var req = requests.find(function(r) { return r.id === currentActiveRequestId; });
+    if (!req) return;
+
+    if (req.acceptedBy && req.acceptedBy.phone) {
+        var requestValue = 3000;
+        if (req.pricing && req.pricing.value) {
+            requestValue = req.pricing.value;
+        }
+        /* اخصم — مع تمرير نوع الطلب */
+        var result = deductCommission(req.acceptedBy.phone, requestValue, req.type);
+
+        if (result.isFree) {
+            toast("🎁 طلب مجاني — بقي " + getFreeRequestsLeft(req.acceptedBy.phone) + " مجاني");
+        } else if (result.isParts) {
+            toast("⚙️ طلب قطع غيار — بدون عمولة");
+        } else {
+            toast("💰 خُصمت عمولة " + result.deducted + " دج");
+        }
+    }
+
+    _origComplete2();
+};
+
+/* ---------- 13. إخفاء بطاقة الطلبات في قطع الغيار (لا تحتاج دفع) ---------- */
+console.log("✅ نظام التسعير v2 loaded successfully");
+</script>
+
 </body>
 </html>
