@@ -2669,12 +2669,7 @@ function updateIncomingRequestsBanner() {
 
     sectionTitle.parentNode.insertBefore(banner, sectionTitle);
 }
-    applyLang();
-    if (typeof locateUser === "function") {
-        setTimeout(locateUser, 300);
-    }
-}
-
+    
 function locateUser() {
     var status = document.getElementById("mapStatus");
     if (status) {
