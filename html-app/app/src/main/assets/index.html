@@ -4677,6 +4677,81 @@ function topUpWallet() {
     /* تحديث الشاشة */
     openWallet();
 }
+    /* ---------- قبول الطلب (من طرف مقدم الخدمة) ---------- */
+function acceptReq(requestId) {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        toast("⚠️ " + t("userRoleRequired"));
+        return;
+    }
+
+    /* 1. اقرأ الطلب */
+    var requests = Store.getJSON("salakni_requests", []);
+    var idx = requests.findIndex(function(r) { return r.id === requestId; });
+    if (idx === -1) {
+        toast("⚠️ " + t("noActiveRequest"));
+        return;
+    }
+
+    var req = requests[idx];
+
+    /* 2. تحقق أن الطلب لم يُقبل من أحد آخر */
+    if (req.status === "accepted" || req.status === "completed") {
+        toast("⚠️ " + t("requestAlreadyTaken"));
+        return;
+    }
+
+    /* 3. اقرأ بيانات مقدم الخدمة */
+    var users = Store.getJSON("salakni_users", []);
+    var me = users.find(function(u) { return u.phone === session.phone; });
+    if (!me) {
+        toast("⚠️ " + t("userRoleRequired"));
+        return;
+    }
+
+    /* 4. احسب قيمة الطلب (افتراضياً 3000 دج حتى نبني التسعير لاحقاً) */
+    var requestValue = 3000;
+    if (req.pricing && req.pricing.value) {
+        requestValue = req.pricing.value;
+    }
+
+    /* 5. افحص الرصيد */
+    var check = canAcceptRequest(session.phone, requestValue);
+
+    if (!check.ok) {
+        /* رصيد غير كافٍ */
+        showNotEnoughBalance(check.needed, check.balance);
+        return;
+    }
+
+    /* 6. اقبل الطلب */
+    requests[idx].status = "accepted";
+    requests[idx].acceptedBy = {
+        phone: me.phone,
+        name: me.name,
+        role: me.role
+    };
+    requests[idx].acceptedAt = new Date().toISOString();
+    Store.setJSON("salakni_requests", requests);
+
+    /* 7. إشعار السائق */
+    if (req.driverPhone) {
+        addNotification(req.driverPhone, "✅ " + t("requestAccepted"),
+            me.name + " — " + me.phone);
+    }
+
+    /* 8. رسالة نجاح */
+    if (check.reason === "free") {
+        var left = getFreeRequestsLeft(session.phone);
+        toast(t("freeRequestAccept").replace("{n}", left));
+    } else {
+        toast("✅ " + t("requestAccepted") + " — 💰 " + check.needed + " دج");
+    }
+
+    /* 9. حدّث الواجهة */
+    if (typeof renderHome === "function") renderHome();
+}
+
 
 /* ---------- عرض نافذة "رصيدك غير كافٍ" ---------- */
 function showNotEnoughBalance(needed, current) {
