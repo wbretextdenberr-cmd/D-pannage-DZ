@@ -2560,6 +2560,59 @@ function renderHome() {
             greet.textContent = t("welcome");
         }
     }
+
+    /* إظهار بطاقة الطلبات الواردة لمقدمي الخدمة */
+    updateIncomingRequestsBanner();
+
+    applyLang();
+    if (typeof locateUser === "function") {
+        setTimeout(locateUser, 300);
+    }
+}
+
+/* ---------- بطاقة الطلبات الواردة في الرئيسية ---------- */
+function updateIncomingRequestsBanner() {
+    /* احذف البطاقة القديمة إن وُجدت */
+    var existing = document.getElementById("incomingRequestsBanner");
+    if (existing) existing.remove();
+
+    /* هل المستخدم مقدم خدمة؟ */
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) return;
+
+    var users = Store.getJSON("salakni_users", []);
+    var me = users.find(function(u) { return u.phone === session.phone; });
+    if (!me || me.role === "driver") return;
+
+    /* عدد الطلبات الواردة */
+    var count = (typeof getIncomingRequests === "function")
+        ? getIncomingRequests().length
+        : 0;
+
+    if (count === 0) return;
+
+    /* ابحث عن نقطة الإدراج (قبل قسم الخدمات) */
+    var sectionTitle = document.querySelector("#home .section-title");
+    if (!sectionTitle) return;
+
+    /* أنشئ البطاقة */
+    var banner = document.createElement("button");
+    banner.id = "incomingRequestsBanner";
+    banner.className = "incoming-banner";
+    banner.onclick = function() { openIncomingRequests(); };
+
+    banner.innerHTML =
+        '<div class="incoming-banner-icon">📋</div>' +
+        '<div class="incoming-banner-info">' +
+            '<div class="incoming-banner-title">' + t("incomingRequestsTitle") + '</div>' +
+            '<div class="incoming-banner-count">' +
+                t("newRequestsCount").replace("{n}", count) +
+            '</div>' +
+        '</div>' +
+        '<div class="incoming-banner-arrow">›</div>';
+
+    sectionTitle.parentNode.insertBefore(banner, sectionTitle);
+}
     applyLang();
     if (typeof locateUser === "function") {
         setTimeout(locateUser, 300);
