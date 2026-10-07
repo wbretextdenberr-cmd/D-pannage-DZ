@@ -1,4 +1,4 @@
-DÉPANNAGE.DZ — Prototype Android/Web
+SALAKNI-DZ — Prototype Android/Web
 
 هذه النسخة واجهة أولية قابلة للتجربة على الهاتف (PWA):
 - طلب النجدة
