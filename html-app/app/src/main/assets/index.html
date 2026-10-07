@@ -2088,6 +2088,104 @@ select.field-input {
 
     </div>
 </div>
+    
+<!-- نافذة الطلبات الواردة لمقدم الخدمة -->
+<div id="incomingRequestsModal" class="modal-bg">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div class="modal-icon blue">📋</div>
+            <h2 data-i18n="incomingRequestsTitle">📋 الطلبات الواردة</h2>
+            <p data-i18n="incomingRequestsSubtitle">الطلبات الجديدة الموجّهة إليك</p>
+        </div>
+
+        <div id="incomingRequestsList" class="incoming-requests-list"></div>
+
+        <button class="modal-close" onclick="closeModal('incomingRequestsModal')">
+            <span data-i18n="close">إغلاق</span>
+        </button>
+
+    </div>
+</div>
+
+<style>
+.incoming-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: 14px;
+}
+.incoming-request-card {
+    background: linear-gradient(160deg, #1E2C47, #172238);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.incoming-request-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.incoming-request-type {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+}
+.incoming-request-id {
+    font-size: 11px;
+    color: var(--muted);
+    direction: ltr;
+}
+.incoming-request-info {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+}
+.incoming-request-info b {
+    color: var(--ink);
+}
+.incoming-request-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+.incoming-request-actions button {
+    flex: 1;
+    border: 0;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.btn-accept {
+    background: linear-gradient(145deg, #16A34A, #15803D);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(22,163,74,0.35);
+}
+.btn-reject {
+    background: rgba(220,38,38,0.15);
+    border: 1.5px solid rgba(220,38,38,0.5) !important;
+    color: #FCA5A5;
+}
+.btn-accept:active, .btn-reject:active {
+    transform: scale(0.96);
+}
+.no-incoming-requests {
+    text-align: center;
+    color: var(--muted);
+    padding: 30px 20px;
+    font-size: 14px;
+}
+</style>
 
 <style>
 .wallet-balance-box {
@@ -4257,8 +4355,18 @@ Object.assign(I18N.ar, {
     freeRequestAccept: "🎁 قبول مجاني — بقي {n} مجاني",
     myIncomingRequests: "📋 الطلبات الواردة",
     noIncomingRequests: "لا توجد طلبات جديدة حالياً",
-    requestValue: "قيمة الطلب",
-    userRoleRequired: "🔐 سجّل الدخول كمقدم خدمة أولاً"
+        requestValue: "قيمة الطلب",
+    userRoleRequired: "🔐 سجّل الدخول كمقدم خدمة أولاً",
+    incomingRequestsTitle: "📋 الطلبات الواردة",
+    incomingRequestsSubtitle: "الطلبات الجديدة الموجّهة إليك",
+    viewIncomingRequests: "عرض الطلبات",
+    newRequestsCount: "{n} طلب جديد",
+    noNewRequests: "لا توجد طلبات جديدة حالياً",
+    clientName: "العميل",
+    distance: "المسافة",
+    fromYou: "منك",
+    acceptBtn: "✅ قبول",
+    rejectBtn: "❌ رفض"
 });
 Object.assign(I18N.ar, {
     dispatchRadius: "نطاق البحث",
@@ -4282,8 +4390,18 @@ Object.assign(I18N.fr, {
     freeRequestAccept: "🎁 Acceptation gratuite — {n} restants",
     myIncomingRequests: "📋 Demandes reçues",
     noIncomingRequests: "Aucune demande nouvelle",
-    requestValue: "Valeur de la demande",
-    userRoleRequired: "🔐 Connectez-vous comme prestataire"
+        requestValue: "Valeur de la demande",
+    userRoleRequired: "🔐 Connectez-vous comme prestataire",
+    incomingRequestsTitle: "📋 Demandes reçues",
+    incomingRequestsSubtitle: "Les nouvelles demandes qui vous sont adressées",
+    viewIncomingRequests: "Voir les demandes",
+    newRequestsCount: "{n} nouvelle(s) demande(s)",
+    noNewRequests: "Aucune nouvelle demande",
+    clientName: "Client",
+    distance: "Distance",
+    fromYou: "de vous",
+    acceptBtn: "✅ Accepter",
+    rejectBtn: "❌ Refuser"
 });
 
 Object.assign(I18N.fr, {
@@ -4750,6 +4868,96 @@ function acceptReq(requestId) {
 
     /* 9. حدّث الواجهة */
     if (typeof renderHome === "function") renderHome();
+}
+    
+/* ---------- قراءة الطلبات الواردة لمقدم الخدمة ---------- */
+function getIncomingRequests() {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) return [];
+
+    var requests = Store.getJSON("salakni_requests", []);
+    return requests.filter(function(r) {
+        /* الطلبات الجديدة فقط (لم تُقبل بعد) */
+        if (r.status !== "new") return false;
+        /* موجّهة لمقدم الخدمة الحالي */
+        if (!r.dispatch || !r.dispatch.order) return false;
+        if (r.dispatch.order.indexOf(session.phone) === -1) return false;
+        return true;
+    });
+}
+
+/* ---------- فتح نافذة الطلبات الواردة ---------- */
+function openIncomingRequests() {
+    renderIncomingRequests();
+    openModal("incomingRequestsModal");
+}
+
+/* ---------- عرض الطلبات الواردة ---------- */
+function renderIncomingRequests() {
+    var box = document.getElementById("incomingRequestsList");
+    if (!box) return;
+
+    var list = getIncomingRequests();
+
+    if (!list.length) {
+        box.innerHTML = '<div class="no-incoming-requests">' +
+            t("noNewRequests") + '</div>';
+        return;
+    }
+
+    box.innerHTML = list.map(function(r) {
+        var typeLabel = getRequestTypeLabel(r.type);
+        var idShort = r.id.split("-").pop();
+        var dest = getRequestDestinationLabel(r);
+        var val = (r.pricing && r.pricing.value) ? r.pricing.value : 3000;
+        var clientName = r.driverName || t("clientName");
+
+        return '<div class="incoming-request-card">' +
+            '<div class="incoming-request-head">' +
+                '<div class="incoming-request-type">' + escapeHtml(typeLabel) + '</div>' +
+                '<div class="incoming-request-id">#' + escapeHtml(idShort) + '</div>' +
+            '</div>' +
+            '<div class="incoming-request-info">' +
+                '👤 <b>' + escapeHtml(clientName) + '</b><br>' +
+                '📍 <b>' + escapeHtml(dest) + '</b><br>' +
+                '💰 ' + t("requestValue") + ': <b>' + val + ' دج</b>' +
+            '</div>' +
+            '<div class="incoming-request-actions">' +
+                '<button class="btn-accept" onclick="acceptReq(\'' + escapeHtml(r.id) + '\'); closeModal(\'incomingRequestsModal\');">' +
+                    t("acceptBtn") +
+                '</button>' +
+                '<button class="btn-reject" onclick="rejectReq(\'' + escapeHtml(r.id) + '\')">' +
+                    t("rejectBtn") +
+                '</button>' +
+            '</div>' +
+        '</div>';
+    }).join("");
+}
+
+/* ---------- رفض الطلب ---------- */
+function rejectReq(requestId) {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) return;
+
+    var requests = Store.getJSON("salakni_requests", []);
+    var idx = requests.findIndex(function(r) { return r.id === requestId; });
+    if (idx === -1) return;
+
+    var req = requests[idx];
+
+    /* احذف مقدم الخدمة من قائمة التوزيع فقط */
+    if (req.dispatch && req.dispatch.order) {
+        var pos = req.dispatch.order.indexOf(session.phone);
+        if (pos !== -1) {
+            req.dispatch.order.splice(pos, 1);
+            Store.setJSON("salakni_requests", requests);
+        }
+    }
+
+    toast("❌ " + t("requestRejected"));
+
+    /* حدّث القائمة */
+    renderIncomingRequests();
 }
 
 
