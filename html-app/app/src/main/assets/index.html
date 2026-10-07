@@ -2559,12 +2559,14 @@ function t(key) {
 
 function navHome() {
     setActiveNav(0);
+    showScreen("home");
     if (typeof renderHome === "function") renderHome();
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function navNearby() {
     setActiveNav(1);
+    showScreen("home");
     if (typeof locateUser === "function") locateUser();
 }
 
