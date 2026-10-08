@@ -2122,6 +2122,66 @@ select.field-input {
     </div>
 </div>
 
+<!-- نافذة الإشعارات -->
+<div id="notificationsModal" class="modal-bg">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-icon blue">🔔</div>
+            <h2>الإشعارات</h2>
+            <p>آخر التحديثات والطلبات</p>
+        </div>
+        <div id="notificationsList" class="notifications-list"></div>
+        <button class="btn-primary" onclick="clearNotifications()" style="background:linear-gradient(145deg,#DC2626,#991B1B);box-shadow:0 6px 20px rgba(220,38,38,0.4);">
+            🗑️ مسح الكل
+        </button>
+        <button class="modal-close" onclick="closeModal('notificationsModal')">
+            إغلاق
+        </button>
+    </div>
+</div>
+
+<!-- نافذة حول التطبيق -->
+<div id="aboutModal" class="modal-bg">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-icon" style="background:linear-gradient(145deg,#2563EB,#1E40AF);box-shadow:0 0 25px rgba(37,99,235,0.55);">ℹ️</div>
+            <h2>حول التطبيق</h2>
+            <p>SALAKNI DZ — سلكني ديزاد</p>
+        </div>
+        <div class="about-body" dir="rtl">
+            <p><b>الإصدار:</b> 1.0.0</p>
+            <p><b>الوصف:</b> تطبيق الإغاثة والمساعدة على الطرقات في الجزائر.</p>
+            <p><b>الخدمات:</b></p>
+            <ul>
+                <li>🚗 قطر السيارات</li>
+                <li>🚛 قطر الشاحنات</li>
+                <li>🔧 الورشة المتنقلة</li>
+                <li>⚙️ قطع الغيار</li>
+            </ul>
+            <p><b>ساعات العمل:</b> 24/7 في كل ولايات الجزائر.</p>
+            <p class="about-copy">© 2026 SALAKNI DZ — جميع الحقوق محفوظة.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('aboutModal')">
+            إغلاق
+        </button>
+    </div>
+</div>
+
+<style>
+.notifications-list { display:flex; flex-direction:column; gap:10px; max-height:50vh; overflow-y:auto; margin-bottom:14px; }
+.notifications-empty { text-align:center; padding:30px 10px; opacity:.75; }
+.notification-item { display:flex; gap:10px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); }
+.notification-item.unread { border-color:#2563EB; background:rgba(37,99,235,0.12); }
+.notification-icon { font-size:20px; }
+.notification-body { flex:1; text-align:right; }
+.notification-title { font-weight:700; font-size:14px; }
+.notification-text { font-size:13px; opacity:.85; margin-top:3px; }
+.notification-time { font-size:11px; opacity:.6; margin-top:5px; }
+.about-body { text-align:right; line-height:1.9; margin-bottom:14px; }
+.about-body ul { margin:4px 0 10px; padding-right:20px; }
+.about-copy { font-size:12px; opacity:.65; text-align:center; margin-top:12px; }
+</style>
+
 <style>
 .incoming-requests-list {
     display: flex;
@@ -2469,7 +2529,7 @@ function shareLocation() {
     }
     toast("📍 جاري تحديد موقعك...");
     navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             const link = "https://www.google.com/maps?q=" + lat + "," + lng;
@@ -2477,7 +2537,16 @@ function shareLocation() {
             const text = (currentLang === "ar"
                 ? "أحتاج مساعدة على الطريق. موقعي: "
                 : "J'ai besoin d'aide sur la route. Ma position: ") + link;
-            window.location.href = "whatsapp://send?text=" + encodeURIComponent(text);
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: "SALAKNI DZ",
+                        text: text
+                    });
+                } catch (e) {}
+            } else {
+                window.location.href = "whatsapp://send?text=" + encodeURIComponent(text);
+            }
         },
         (err) => {
             toast("⚠️ تعذر تحديد الموقع. اسمح بالوصول للموقع.");
@@ -4014,7 +4083,58 @@ function logoutAccount() {
 
 /* ---------- الإشعارات ---------- */
 function openNotifications() {
-    toast("🔔 " + t("notifications"));
+    renderNotifications();
+    openModal("notificationsModal");
+}
+
+function renderNotifications() {
+    var box = document.getElementById("notificationsList");
+    if (!box) return;
+
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) {
+        box.innerHTML = '<div class="notifications-empty">🔐 سجّل الدخول أولاً</div>';
+        return;
+    }
+
+    var all = Store.getJSON("salakni_notifications", []);
+    var mine = all.filter(function(n) { return n.owner === session.phone; });
+
+    if (mine.length === 0) {
+        box.innerHTML = '<div class="notifications-empty">📭 لا توجد إشعارات</div>';
+        return;
+    }
+
+    box.innerHTML = mine.map(function(n) {
+        var date = new Date(n.ts).toLocaleString(currentLang === "ar" ? "ar-DZ" : "fr-FR");
+        var cls = n.read ? "notification-item" : "notification-item unread";
+        return '<div class="' + cls + '">' +
+            '<div class="notification-icon">🔔</div>' +
+            '<div class="notification-body">' +
+                '<div class="notification-title">' + escapeHtml(n.title) + '</div>' +
+                (n.body ? '<div class="notification-text">' + escapeHtml(n.body) + '</div>' : '') +
+                '<div class="notification-time">' + date + '</div>' +
+            '</div>' +
+        '</div>';
+    }).join("");
+
+    /* علّم الكل كمقروء */
+    all.forEach(function(n) {
+        if (n.owner === session.phone) n.read = true;
+    });
+    Store.setJSON("salakni_notifications", all);
+}
+
+function clearNotifications() {
+    var session = Store.getJSON("salakni_session", null);
+    if (!session) return;
+
+    var all = Store.getJSON("salakni_notifications", []);
+    var remaining = all.filter(function(n) { return n.owner !== session.phone; });
+    Store.setJSON("salakni_notifications", remaining);
+
+    toast("🗑️ تم مسح الإشعارات");
+    renderNotifications();
 }
 
 /* ---------- سياسة الخصوصية ---------- */
@@ -4024,7 +4144,7 @@ function openPrivacy() {
 
 /* ---------- حول التطبيق ---------- */
 function openAbout() {
-    toast("ℹ️ " + t("aboutText"));
+    openModal("aboutModal");
 }
 
 /* ---------- استرجاع مقدمي الخدمة المسجلين ---------- */
